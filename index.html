@@ -191,6 +191,85 @@
       color: #444;
     }
 
+    .selectRow {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .selectRow select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .miniAddButton {
+      width: 54px;
+      min-width: 54px;
+      min-height: 52px;
+      margin-top: 0;
+      padding: 0;
+      font-size: 24px;
+      background: #eef4fb;
+      color: #1f5ea8;
+      border: 1px solid #c7d9ef;
+    }
+
+    #referenceModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #referenceModal.open {
+      display: flex;
+    }
+
+    .modalCard {
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .modalCard h2 {
+      margin-bottom: 16px;
+    }
+
+    .modalInfo {
+      padding: 12px;
+      background: #f4f6f8;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+
+    .modalButtons {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .modalButtons button {
+      margin-top: 0;
+    }
+
+    #referenceCancelButton {
+      background: #eeeeee;
+      color: #333;
+    }
+
+    #referenceSaveButton {
+      background: #2e7d32;
+      color: white;
+    }
+
   </style>
 
 </head>
@@ -202,18 +281,24 @@
   <h1>📦 Inventaire matériel</h1>
 
   <div id="contextPanel">
+
     <div class="contextTitle">
       📍 Contexte actuel
     </div>
 
-    <div id="contextValue" class="contextValue"></div>
+    <div
+      id="contextValue"
+      class="contextValue"
+    ></div>
 
     <button id="clearContextButton">
       ✕ Effacer le contexte
     </button>
+
   </div>
 
   <div id="mappingWarning">
+
     <div class="warning">
       ⚙️ Configuration des colonnes requise
     </div>
@@ -222,7 +307,11 @@
       Vérifie les associations de colonnes
       dans les options du widget Grist.
     </p>
+
   </div>
+
+
+  <!-- SCAN -->
 
   <label for="serial">
     N° de série
@@ -272,6 +361,7 @@
       readonly
     >
 
+
     <label>
       Type
     </label>
@@ -280,25 +370,56 @@
       <option value="">-- Choisir --</option>
     </select>
 
+
     <label>
       Marque
     </label>
 
-    <select id="editMarque">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="editMarque">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Marque"
+        data-prefix="edit"
+        title="Ajouter une marque"
+      >
+        ➕
+      </button>
+
+    </div>
+
 
     <label>
       Modèle
     </label>
 
-    <select id="editModele">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="editModele">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Modele"
+        data-prefix="edit"
+        title="Ajouter un modèle"
+      >
+        ➕
+      </button>
+
+    </div>
 
     <div class="hint">
       La liste des modèles est filtrée selon la marque choisie.
     </div>
+
 
     <label>
       Utilisateur
@@ -309,43 +430,92 @@
       type="text"
     >
 
+
     <label>
       Site
     </label>
 
-    <select id="editSite">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="editSite">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Site"
+        data-prefix="edit"
+        title="Ajouter un site"
+      >
+        ➕
+      </button>
+
+    </div>
+
 
     <label>
       Localisation
     </label>
 
-    <select id="editLocalisation">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="editLocalisation">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Localisation"
+        data-prefix="edit"
+        title="Ajouter une localisation"
+      >
+        ➕
+      </button>
+
+    </div>
 
     <div class="hint">
       La liste des localisations est filtrée selon le site choisi.
     </div>
+
 
     <label>
       État
     </label>
 
     <select id="editEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
+
 
     <label>
       Commentaire
     </label>
 
     <textarea id="editCommentaire"></textarea>
+
 
     <button id="confirmButton">
       ✅ Confirmer l'inventaire
@@ -370,6 +540,7 @@
       readonly
     >
 
+
     <label>
       Type
     </label>
@@ -378,25 +549,56 @@
       <option value="">-- Choisir --</option>
     </select>
 
+
     <label>
       Marque
     </label>
 
-    <select id="newMarque">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="newMarque">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Marque"
+        data-prefix="new"
+        title="Ajouter une marque"
+      >
+        ➕
+      </button>
+
+    </div>
+
 
     <label>
       Modèle
     </label>
 
-    <select id="newModele">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="newModele">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Modele"
+        data-prefix="new"
+        title="Ajouter un modèle"
+      >
+        ➕
+      </button>
+
+    </div>
 
     <div class="hint">
       La liste des modèles est filtrée selon la marque choisie.
     </div>
+
 
     <label>
       Utilisateur
@@ -407,43 +609,92 @@
       type="text"
     >
 
+
     <label>
       Site
     </label>
 
-    <select id="newSite">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="newSite">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Site"
+        data-prefix="new"
+        title="Ajouter un site"
+      >
+        ➕
+      </button>
+
+    </div>
+
 
     <label>
       Localisation
     </label>
 
-    <select id="newLocalisation">
-      <option value="">-- Choisir --</option>
-    </select>
+    <div class="selectRow">
+
+      <select id="newLocalisation">
+        <option value="">-- Choisir --</option>
+      </select>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Localisation"
+        data-prefix="new"
+        title="Ajouter une localisation"
+      >
+        ➕
+      </button>
+
+    </div>
 
     <div class="hint">
       La liste des localisations est filtrée selon le site choisi.
     </div>
+
 
     <label>
       État
     </label>
 
     <select id="newEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
+
 
     <label>
       Commentaire
     </label>
 
     <textarea id="newCommentaire"></textarea>
+
 
     <button id="addButton">
       💾 Ajouter à l'inventaire
@@ -471,7 +722,60 @@
 </div>
 
 
+<!-- MODALE AJOUT RÉFÉRENCE -->
+
+<div id="referenceModal">
+
+  <div class="modalCard">
+
+    <h2 id="referenceModalTitle">
+      Ajouter
+    </h2>
+
+    <div
+      id="referenceModalInfo"
+      class="modalInfo"
+      style="display:none;"
+    ></div>
+
+    <label for="referenceNameInput">
+      Nom
+    </label>
+
+    <input
+      id="referenceNameInput"
+      type="text"
+      autocomplete="off"
+    >
+
+    <div class="modalButtons">
+
+      <button
+        id="referenceCancelButton"
+        type="button"
+      >
+        Annuler
+      </button>
+
+      <button
+        id="referenceSaveButton"
+        type="button"
+      >
+        ✅ Ajouter
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
+
+/* ==================================================
+   VARIABLES
+================================================== */
 
 let records = [];
 let currentRecordId = null;
@@ -491,9 +795,14 @@ let contexteSession = {
   localisationLabel: ""
 };
 
+let ajoutReferenceCourant = {
+  type: null,
+  prefixe: null
+};
+
 
 /* ==================================================
-   CONFIGURATION DES TABLES DE RÉFÉRENCE
+   CONFIGURATION
 ================================================== */
 
 const CONFIG_REFERENCES = {
@@ -584,9 +893,27 @@ const contextValue =
 const clearContextButton =
   document.getElementById("clearContextButton");
 
+const referenceModal =
+  document.getElementById("referenceModal");
+
+const referenceModalTitle =
+  document.getElementById("referenceModalTitle");
+
+const referenceModalInfo =
+  document.getElementById("referenceModalInfo");
+
+const referenceNameInput =
+  document.getElementById("referenceNameInput");
+
+const referenceCancelButton =
+  document.getElementById("referenceCancelButton");
+
+const referenceSaveButton =
+  document.getElementById("referenceSaveButton");
+
 
 /* ==================================================
-   COLONNES ATTENDUES
+   COLONNES PRINCIPALES
 ================================================== */
 
 const columns = [
@@ -659,7 +986,7 @@ const columns = [
 
 
 /* ==================================================
-   INITIALISATION GRIST
+   INITIALISATION
 ================================================== */
 
 grist.ready({
@@ -669,7 +996,7 @@ grist.ready({
 
 
 /* ==================================================
-   OUTILS DE NORMALISATION
+   NORMALISATION
 ================================================== */
 
 function normaliserNom(valeur) {
@@ -682,6 +1009,19 @@ function normaliserNom(valeur) {
 
 }
 
+
+function normaliserValeur(valeur) {
+
+  return String(valeur || "")
+    .trim()
+    .toLocaleLowerCase("fr");
+
+}
+
+
+/* ==================================================
+   TABLES / COLONNES
+================================================== */
 
 async function trouverTableId(nomRecherche) {
 
@@ -709,8 +1049,7 @@ async function trouverTableId(nomRecherche) {
     throw new Error(
       'Table introuvable : "' +
       nomRecherche +
-      '". Tables disponibles : ' +
-      tables.join(", ")
+      '".'
     );
 
   }
@@ -720,16 +1059,10 @@ async function trouverTableId(nomRecherche) {
 }
 
 
-/* ==================================================
-   FETCH TABLE -> LIGNES
-================================================== */
-
 function convertirFetchTableEnLignes(data) {
 
   if (Array.isArray(data)) {
-
     return data;
-
   }
 
   if (
@@ -765,7 +1098,9 @@ function convertirFetchTableEnLignes(data) {
 
       }
 
-      lignes.push(ligne);
+      lignes.push(
+        ligne
+      );
 
     }
 
@@ -778,9 +1113,65 @@ function convertirFetchTableEnLignes(data) {
 }
 
 
-/* ==================================================
-   TROUVER UNE COLONNE
-================================================== */
+function obtenirColonnesDisponibles(
+  raw,
+  lignes
+) {
+
+  if (
+    raw &&
+    !Array.isArray(raw) &&
+    typeof raw === "object"
+  ) {
+
+    return Object.keys(raw);
+
+  }
+
+  if (
+    lignes &&
+    lignes.length > 0
+  ) {
+
+    return Object.keys(
+      lignes[0]
+    );
+
+  }
+
+  return [];
+
+}
+
+
+function trouverColonneParNom(
+  colonnes,
+  nomRecherche
+) {
+
+  const cible =
+    normaliserNom(
+      nomRecherche
+    );
+
+  return (
+    colonnes.find(
+      function(colonne) {
+
+        return (
+          normaliserNom(colonne)
+          ===
+          cible
+        );
+
+      }
+    )
+    ||
+    null
+  );
+
+}
+
 
 function trouverColonne(
   lignes,
@@ -796,31 +1187,16 @@ function trouverColonne(
 
   }
 
-  const cible =
-    normaliserNom(
-      nomRecherche
-    );
-
-  return (
-    Object.keys(lignes[0])
-      .find(function(colonne) {
-
-        return (
-          normaliserNom(colonne)
-          ===
-          cible
-        );
-
-      })
-    ||
-    null
+  return trouverColonneParNom(
+    Object.keys(lignes[0]),
+    nomRecherche
   );
 
 }
 
 
 /* ==================================================
-   EXTRAIRE UN ROW ID
+   ROW ID
 ================================================== */
 
 function extraireRowId(valeur) {
@@ -884,7 +1260,7 @@ function extraireRowId(valeur) {
 
 
 /* ==================================================
-   CHARGER UNE RÉFÉRENCE SIMPLE
+   CHARGEMENT RÉFÉRENCES
 ================================================== */
 
 async function chargerReferenceSimple(
@@ -907,17 +1283,15 @@ async function chargerReferenceSimple(
       raw
     );
 
-  if (
-    lignes.length === 0
-  ) {
-
-    return [];
-
-  }
+  const colonnes =
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonneLibelle =
-    trouverColonne(
-      lignes,
+    trouverColonneParNom(
+      colonnes,
       nomColonne
     );
 
@@ -968,26 +1342,14 @@ async function chargerReferenceSimple(
 
       });
 
-  valeurs.sort(function(a, b) {
-
-    return a.label.localeCompare(
-      b.label,
-      "fr",
-      {
-        sensitivity: "base"
-      }
-    );
-
-  });
+  valeurs.sort(
+    trierParLibelle
+  );
 
   return valeurs;
 
 }
 
-
-/* ==================================================
-   CHARGER LES MODÈLES
-================================================== */
 
 async function chargerModeles() {
 
@@ -1008,33 +1370,31 @@ async function chargerModeles() {
       raw
     );
 
-  if (
-    lignes.length === 0
-  ) {
-
-    return [];
-
-  }
+  const colonnes =
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonneModele =
-    trouverColonne(
-      lignes,
+    trouverColonneParNom(
+      colonnes,
       CONFIG_REFERENCES
         .Modele
         .libelle
     );
 
   const colonneMarque =
-    trouverColonne(
-      lignes,
+    trouverColonneParNom(
+      colonnes,
       CONFIG_REFERENCES
         .Modele
         .marque
     );
 
   const colonneType =
-    trouverColonne(
-      lignes,
+    trouverColonneParNom(
+      colonnes,
       CONFIG_REFERENCES
         .Modele
         .type
@@ -1105,26 +1465,14 @@ async function chargerModeles() {
 
       });
 
-  valeurs.sort(function(a, b) {
-
-    return a.label.localeCompare(
-      b.label,
-      "fr",
-      {
-        sensitivity: "base"
-      }
-    );
-
-  });
+  valeurs.sort(
+    trierParLibelle
+  );
 
   return valeurs;
 
 }
 
-
-/* ==================================================
-   CHARGER LES LOCALISATIONS
-================================================== */
 
 async function chargerLocalisations() {
 
@@ -1145,25 +1493,23 @@ async function chargerLocalisations() {
       raw
     );
 
-  if (
-    lignes.length === 0
-  ) {
-
-    return [];
-
-  }
+  const colonnes =
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonneLocalisation =
-    trouverColonne(
-      lignes,
+    trouverColonneParNom(
+      colonnes,
       CONFIG_REFERENCES
         .Localisation
         .libelle
     );
 
   const colonneSite =
-    trouverColonne(
-      lignes,
+    trouverColonneParNom(
+      colonnes,
       CONFIG_REFERENCES
         .Localisation
         .site
@@ -1225,175 +1571,127 @@ async function chargerLocalisations() {
 
       });
 
-  valeurs.sort(function(a, b) {
-
-    return a.label.localeCompare(
-      b.label,
-      "fr",
-      {
-        sensitivity: "base"
-      }
-    );
-
-  });
+  valeurs.sort(
+    trierParLibelle
+  );
 
   return valeurs;
 
 }
 
 
+function trierParLibelle(a, b) {
+
+  return a.label.localeCompare(
+    b.label,
+    "fr",
+    {
+      sensitivity: "base"
+    }
+  );
+
+}
+
+
 /* ==================================================
-   CHARGER TOUTES LES LISTES
+   RECHARGEMENT DE TOUTES LES RÉFÉRENCES
 ================================================== */
 
-async function chargerListesReferences() {
+async function chargerListesReferences(
+  forcer = false
+) {
 
   if (
-    referencesChargees
+    referencesChargees &&
+    !forcer
   ) {
 
     return;
 
   }
 
-  try {
+  const [
+    sites,
+    types,
+    marques,
+    modeles,
+    localisations
+  ] = await Promise.all([
 
-    statusBox.style.display =
-      "block";
+    chargerReferenceSimple(
+      CONFIG_REFERENCES.Site.table,
+      CONFIG_REFERENCES.Site.libelle
+    ),
 
-    statusBox.innerHTML =
-      "⏳ Chargement des listes…";
+    chargerReferenceSimple(
+      CONFIG_REFERENCES.TypeMateriel.table,
+      CONFIG_REFERENCES.TypeMateriel.libelle
+    ),
 
-    const [
-      sites,
-      types,
-      marques,
-      modeles,
-      localisations
-    ] = await Promise.all([
+    chargerReferenceSimple(
+      CONFIG_REFERENCES.Marque.table,
+      CONFIG_REFERENCES.Marque.libelle
+    ),
 
-      chargerReferenceSimple(
-        CONFIG_REFERENCES.Site.table,
-        CONFIG_REFERENCES.Site.libelle
-      ),
+    chargerModeles(),
 
-      chargerReferenceSimple(
-        CONFIG_REFERENCES.TypeMateriel.table,
-        CONFIG_REFERENCES.TypeMateriel.libelle
-      ),
+    chargerLocalisations()
 
-      chargerReferenceSimple(
-        CONFIG_REFERENCES.Marque.table,
-        CONFIG_REFERENCES.Marque.libelle
-      ),
+  ]);
 
-      chargerModeles(),
+  listeSites =
+    sites;
 
-      chargerLocalisations()
+  listeTypes =
+    types;
 
-    ]);
+  listeMarques =
+    marques;
 
-    listeSites =
-      sites;
+  listeModeles =
+    modeles;
 
-    listeTypes =
-      types;
+  listeLocalisations =
+    localisations;
 
-    listeMarques =
-      marques;
+  remplirSelectSimple(
+    "newSite",
+    listeSites
+  );
 
-    listeModeles =
-      modeles;
+  remplirSelectSimple(
+    "editSite",
+    listeSites
+  );
 
-    listeLocalisations =
-      localisations;
+  remplirSelectSimple(
+    "newType",
+    listeTypes
+  );
 
-    remplirSelectSimple(
-      "newSite",
-      listeSites
-    );
+  remplirSelectSimple(
+    "editType",
+    listeTypes
+  );
 
-    remplirSelectSimple(
-      "editSite",
-      listeSites
-    );
+  remplirSelectSimple(
+    "newMarque",
+    listeMarques
+  );
 
-    remplirSelectSimple(
-      "newType",
-      listeTypes
-    );
+  remplirSelectSimple(
+    "editMarque",
+    listeMarques
+  );
 
-    remplirSelectSimple(
-      "editType",
-      listeTypes
-    );
-
-    remplirSelectSimple(
-      "newMarque",
-      listeMarques
-    );
-
-    remplirSelectSimple(
-      "editMarque",
-      listeMarques
-    );
-
-    mettreAJourModeles(
-      "new"
-    );
-
-    mettreAJourModeles(
-      "edit"
-    );
-
-    mettreAJourLocalisations(
-      "new"
-    );
-
-    mettreAJourLocalisations(
-      "edit"
-    );
-
-    referencesChargees =
-      true;
-
-    statusBox.style.display =
-      "none";
-
-  }
-
-  catch(error) {
-
-    console.error(
-      error
-    );
-
-    statusBox.style.display =
-      "block";
-
-    statusBox.innerHTML = `
-
-      <div class="error">
-        ⚠️ Impossible de charger
-        les listes de référence.
-      </div>
-
-      <p>
-        ${echapperHTML(
-          error.message ||
-          String(error)
-        )}
-      </p>
-
-    `;
-
-  }
+  referencesChargees =
+    true;
 
 }
 
 
 /* ==================================================
-   REMPLIR UN SELECT
+   SELECTS
 ================================================== */
 
 function remplirSelectSimple(
@@ -1405,6 +1703,9 @@ function remplirSelectSimple(
     document.getElementById(
       selectId
     );
+
+  const ancienneValeur =
+    select.value;
 
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
@@ -1430,6 +1731,28 @@ function remplirSelectSimple(
     select.appendChild(
       option
     );
+
+  }
+
+  if (
+    ancienneValeur &&
+    Array.from(
+      select.options
+    ).some(
+      function(option) {
+
+        return (
+          option.value
+          ===
+          ancienneValeur
+        );
+
+      }
+    )
+  ) {
+
+    select.value =
+      ancienneValeur;
 
   }
 
@@ -1649,27 +1972,12 @@ function mettreAJourLocalisations(
 
 
 /* ==================================================
-   ÉVÉNEMENTS TYPE / MARQUE / SITE
+   EVENTS SELECTS
 ================================================== */
 
 document
   .getElementById(
     "newMarque"
-  )
-  .addEventListener(
-    "change",
-    function() {
-
-      mettreAJourModeles(
-        "new"
-      );
-
-    }
-  );
-
-document
-  .getElementById(
-    "newType"
   )
   .addEventListener(
     "change",
@@ -1692,6 +2000,21 @@ document
 
       mettreAJourModeles(
         "edit"
+      );
+
+    }
+  );
+
+document
+  .getElementById(
+    "newType"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourModeles(
+        "new"
       );
 
     }
@@ -1744,7 +2067,7 @@ document
 
 
 /* ==================================================
-   DONNÉES DE L'INVENTAIRE
+   DONNÉES INVENTAIRE
 ================================================== */
 
 grist.onRecords(
@@ -1804,7 +2127,38 @@ grist.onRecords(
       !referencesChargees
     ) {
 
-      await chargerListesReferences();
+      try {
+
+        await chargerListesReferences();
+
+      }
+
+      catch(error) {
+
+        console.error(
+          error
+        );
+
+        statusBox.style.display =
+          "block";
+
+        statusBox.innerHTML = `
+
+          <div class="error">
+            ⚠️ Impossible de charger
+            les listes de référence.
+          </div>
+
+          <p>
+            ${echapperHTML(
+              error.message ||
+              String(error)
+            )}
+          </p>
+
+        `;
+
+      }
 
     }
 
@@ -1813,7 +2167,7 @@ grist.onRecords(
 
 
 /* ==================================================
-   COLONNES RÉELLES GRIST
+   MAPPING COLONNES PRINCIPALES
 ================================================== */
 
 function obtenirColonneGrist(
@@ -1841,15 +2195,13 @@ function obtenirColonneGrist(
     Array.isArray(mapping)
   ) {
 
-    if (
-      mapping.length === 0
-    ) {
-
-      return null;
-
-    }
-
-    return mapping[0];
+    return (
+      mapping.length
+        ?
+        mapping[0]
+        :
+        null
+    );
 
   }
 
@@ -1919,7 +2271,7 @@ function verifierChamps(
 
 
 /* ==================================================
-   RÉFÉRENCES
+   VALEURS DE RÉFÉRENCE
 ================================================== */
 
 function valeurReference(
@@ -1973,33 +2325,26 @@ function selectionnerReferenceOuLibelle(
     );
 
   if (
-    rowId !== null
+    rowId !== null &&
+    Array.from(
+      select.options
+    ).some(
+      function(option) {
+
+        return (
+          option.value
+          ===
+          String(rowId)
+        );
+
+      }
+    )
   ) {
 
-    const existe =
-      Array.from(
-        select.options
-      )
-      .some(
-        function(option) {
+    select.value =
+      String(rowId);
 
-          return (
-            option.value
-            ===
-            String(rowId)
-          );
-
-        }
-      );
-
-    if (existe) {
-
-      select.value =
-        String(rowId);
-
-      return;
-
-    }
+    return;
 
   }
 
@@ -2016,36 +2361,8 @@ function selectionnerReferenceOuLibelle(
   }
 
   if (
-    Array.isArray(valeur)
-  ) {
-
-    for (
-      const element
-      of valeur
-    ) {
-
-      if (
-        typeof element === "string" &&
-        element !== "R"
-      ) {
-
-        texte =
-          element;
-
-      }
-
-    }
-
-  }
-
-  if (
     texte !== null
   ) {
-
-    const cible =
-      normaliserNom(
-        texte
-      );
 
     const elementTrouve =
       liste.find(
@@ -2056,55 +2373,906 @@ function selectionnerReferenceOuLibelle(
               element.label
             )
             ===
-            cible
+            normaliserNom(
+              texte
+            )
           );
 
         }
       );
 
-    if (elementTrouve) {
+    if (
+      elementTrouve &&
+      Array.from(
+        select.options
+      ).some(
+        function(option) {
 
-      const existe =
-        Array.from(
-          select.options
-        )
-        .some(
-          function(option) {
-
-            return (
-              option.value
-              ===
-              String(
-                elementTrouve.id
-              )
-            );
-
-          }
-        );
-
-      if (existe) {
-
-        select.value =
-          String(
-            elementTrouve.id
+          return (
+            option.value
+            ===
+            String(
+              elementTrouve.id
+            )
           );
 
-        return;
+        }
+      )
+    ) {
 
-      }
+      select.value =
+        String(
+          elementTrouve.id
+        );
 
     }
 
   }
 
-  select.value =
+}
+
+
+/* ==================================================
+   AJOUT DES RÉFÉRENCES
+================================================== */
+
+document
+  .querySelectorAll(
+    "[data-add-ref]"
+  )
+  .forEach(
+    function(button) {
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          ouvrirAjoutReference(
+            button.dataset.addRef,
+            button.dataset.prefix
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+function ouvrirAjoutReference(
+  type,
+  prefixe
+) {
+
+  ajoutReferenceCourant = {
+    type: type,
+    prefixe: prefixe
+  };
+
+  referenceNameInput.value =
     "";
+
+  referenceModalInfo.style.display =
+    "none";
+
+  referenceModalInfo.textContent =
+    "";
+
+  if (
+    type === "Site"
+  ) {
+
+    referenceModalTitle.textContent =
+      "➕ Ajouter un site";
+
+  }
+
+  if (
+    type === "Marque"
+  ) {
+
+    referenceModalTitle.textContent =
+      "➕ Ajouter une marque";
+
+  }
+
+  if (
+    type === "Localisation"
+  ) {
+
+    const siteId =
+      valeurReference(
+        prefixe + "Site"
+      );
+
+    if (!siteId) {
+
+      alert(
+        "Choisis d'abord un site."
+      );
+
+      return;
+
+    }
+
+    const site =
+      listeSites.find(
+        function(item) {
+
+          return (
+            item.id === siteId
+          );
+
+        }
+      );
+
+    referenceModalTitle.textContent =
+      "➕ Ajouter une localisation";
+
+    referenceModalInfo.style.display =
+      "block";
+
+    referenceModalInfo.textContent =
+      "Site : " +
+      (
+        site
+          ?
+          site.label
+          :
+          ""
+      );
+
+  }
+
+  if (
+    type === "Modele"
+  ) {
+
+    const marqueId =
+      valeurReference(
+        prefixe + "Marque"
+      );
+
+    if (!marqueId) {
+
+      alert(
+        "Choisis d'abord une marque."
+      );
+
+      return;
+
+    }
+
+    const marque =
+      listeMarques.find(
+        function(item) {
+
+          return (
+            item.id === marqueId
+          );
+
+        }
+      );
+
+    const typeId =
+      valeurReference(
+        prefixe + "Type"
+      );
+
+    const typeObjet =
+      listeTypes.find(
+        function(item) {
+
+          return (
+            item.id === typeId
+          );
+
+        }
+      );
+
+    referenceModalTitle.textContent =
+      "➕ Ajouter un modèle";
+
+    referenceModalInfo.style.display =
+      "block";
+
+    referenceModalInfo.textContent =
+      "Marque : " +
+      (
+        marque
+          ?
+          marque.label
+          :
+          ""
+      )
+      +
+      (
+        typeObjet
+          ?
+          " • Type : " +
+            typeObjet.label
+          :
+          ""
+      );
+
+  }
+
+  referenceModal.classList.add(
+    "open"
+  );
+
+  setTimeout(
+    function() {
+
+      referenceNameInput.focus();
+
+    },
+    100
+  );
+
+}
+
+
+referenceCancelButton.addEventListener(
+  "click",
+  fermerAjoutReference
+);
+
+
+referenceModal.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      referenceModal
+    ) {
+
+      fermerAjoutReference();
+
+    }
+
+  }
+);
+
+
+function fermerAjoutReference() {
+
+  referenceModal.classList.remove(
+    "open"
+  );
+
+  ajoutReferenceCourant = {
+    type: null,
+    prefixe: null
+  };
+
+}
+
+
+referenceNameInput.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      referenceSaveButton.click();
+
+    }
+
+  }
+);
+
+
+referenceSaveButton.addEventListener(
+  "click",
+  async function() {
+
+    const nom =
+      referenceNameInput
+        .value
+        .trim();
+
+    if (!nom) {
+
+      alert(
+        "Saisis un nom."
+      );
+
+      return;
+
+    }
+
+    referenceSaveButton.disabled =
+      true;
+
+    referenceSaveButton.textContent =
+      "⏳ Ajout…";
+
+    try {
+
+      await creerReference(
+        ajoutReferenceCourant.type,
+        ajoutReferenceCourant.prefixe,
+        nom
+      );
+
+      fermerAjoutReference();
+
+    }
+
+    catch(error) {
+
+      console.error(
+        error
+      );
+
+      alert(
+        "Erreur lors de l'ajout : "
+        +
+        (
+          error.message
+          ||
+          String(error)
+        )
+      );
+
+    }
+
+    finally {
+
+      referenceSaveButton.disabled =
+        false;
+
+      referenceSaveButton.textContent =
+        "✅ Ajouter";
+
+    }
+
+  }
+);
+
+
+/* ==================================================
+   CRÉATION D'UNE RÉFÉRENCE
+================================================== */
+
+async function creerReference(
+  type,
+  prefixe,
+  nom
+) {
+
+  if (
+    type === "Site"
+  ) {
+
+    await creerSite(
+      prefixe,
+      nom
+    );
+
+    return;
+
+  }
+
+  if (
+    type === "Marque"
+  ) {
+
+    await creerMarque(
+      prefixe,
+      nom
+    );
+
+    return;
+
+  }
+
+  if (
+    type === "Localisation"
+  ) {
+
+    await creerLocalisation(
+      prefixe,
+      nom
+    );
+
+    return;
+
+  }
+
+  if (
+    type === "Modele"
+  ) {
+
+    await creerModele(
+      prefixe,
+      nom
+    );
+
+    return;
+
+  }
 
 }
 
 
 /* ==================================================
-   CONTEXTE DE SESSION
+   AJOUT SITE
+================================================== */
+
+async function creerSite(
+  prefixe,
+  nom
+) {
+
+  const doublon =
+    listeSites.find(
+      function(item) {
+
+        return (
+          normaliserValeur(
+            item.label
+          )
+          ===
+          normaliserValeur(
+            nom
+          )
+        );
+
+      }
+    );
+
+  if (doublon) {
+
+    document.getElementById(
+      prefixe + "Site"
+    ).value =
+      String(
+        doublon.id
+      );
+
+    mettreAJourLocalisations(
+      prefixe
+    );
+
+    return;
+
+  }
+
+  const nouvelId =
+    await ajouterLigneReference(
+      CONFIG_REFERENCES.Site.table,
+      {
+        Site: nom
+      }
+    );
+
+  await chargerListesReferences(
+    true
+  );
+
+  document.getElementById(
+    prefixe + "Site"
+  ).value =
+    String(
+      nouvelId
+    );
+
+  mettreAJourLocalisations(
+    prefixe
+  );
+
+}
+
+
+/* ==================================================
+   AJOUT MARQUE
+================================================== */
+
+async function creerMarque(
+  prefixe,
+  nom
+) {
+
+  const doublon =
+    listeMarques.find(
+      function(item) {
+
+        return (
+          normaliserValeur(
+            item.label
+          )
+          ===
+          normaliserValeur(
+            nom
+          )
+        );
+
+      }
+    );
+
+  if (doublon) {
+
+    document.getElementById(
+      prefixe + "Marque"
+    ).value =
+      String(
+        doublon.id
+      );
+
+    mettreAJourModeles(
+      prefixe
+    );
+
+    return;
+
+  }
+
+  const nouvelId =
+    await ajouterLigneReference(
+      CONFIG_REFERENCES.Marque.table,
+      {
+        Marque: nom
+      }
+    );
+
+  await chargerListesReferences(
+    true
+  );
+
+  document.getElementById(
+    prefixe + "Marque"
+  ).value =
+    String(
+      nouvelId
+    );
+
+  mettreAJourModeles(
+    prefixe
+  );
+
+}
+
+
+/* ==================================================
+   AJOUT LOCALISATION
+================================================== */
+
+async function creerLocalisation(
+  prefixe,
+  nom
+) {
+
+  const siteId =
+    valeurReference(
+      prefixe + "Site"
+    );
+
+  if (!siteId) {
+
+    throw new Error(
+      "Choisis d'abord un site."
+    );
+
+  }
+
+  const doublon =
+    listeLocalisations.find(
+      function(item) {
+
+        return (
+          item.siteId === siteId
+          &&
+          normaliserValeur(
+            item.label
+          )
+          ===
+          normaliserValeur(
+            nom
+          )
+        );
+
+      }
+    );
+
+  if (doublon) {
+
+    mettreAJourLocalisations(
+      prefixe,
+      doublon.id
+    );
+
+    return;
+
+  }
+
+  const nouvelId =
+    await ajouterLigneReference(
+      CONFIG_REFERENCES.Localisation.table,
+      {
+        Localisation: nom,
+        Site: siteId
+      }
+    );
+
+  await chargerListesReferences(
+    true
+  );
+
+  document.getElementById(
+    prefixe + "Site"
+  ).value =
+    String(
+      siteId
+    );
+
+  mettreAJourLocalisations(
+    prefixe,
+    nouvelId
+  );
+
+}
+
+
+/* ==================================================
+   AJOUT MODÈLE
+================================================== */
+
+async function creerModele(
+  prefixe,
+  nom
+) {
+
+  const marqueId =
+    valeurReference(
+      prefixe + "Marque"
+    );
+
+  if (!marqueId) {
+
+    throw new Error(
+      "Choisis d'abord une marque."
+    );
+
+  }
+
+  const typeId =
+    valeurReference(
+      prefixe + "Type"
+    );
+
+  const doublon =
+    listeModeles.find(
+      function(item) {
+
+        const memeNom =
+          normaliserValeur(
+            item.label
+          )
+          ===
+          normaliserValeur(
+            nom
+          );
+
+        const memeMarque =
+          item.marqueId
+          ===
+          marqueId;
+
+        const memeType =
+          !typeId
+          ||
+          item.typeId === null
+          ||
+          item.typeId === typeId;
+
+        return (
+          memeNom &&
+          memeMarque &&
+          memeType
+        );
+
+      }
+    );
+
+  if (doublon) {
+
+    mettreAJourModeles(
+      prefixe,
+      doublon.id
+    );
+
+    return;
+
+  }
+
+  const champs =
+    {
+      "Modèle": nom,
+      "Marque": marqueId
+    };
+
+  if (typeId) {
+
+    champs.Type =
+      typeId;
+
+  }
+
+  const nouvelId =
+    await ajouterLigneReference(
+      CONFIG_REFERENCES.Modele.table,
+      champs
+    );
+
+  await chargerListesReferences(
+    true
+  );
+
+  document.getElementById(
+    prefixe + "Marque"
+  ).value =
+    String(
+      marqueId
+    );
+
+  if (typeId) {
+
+    document.getElementById(
+      prefixe + "Type"
+    ).value =
+      String(
+        typeId
+      );
+
+  }
+
+  mettreAJourModeles(
+    prefixe,
+    nouvelId
+  );
+
+}
+
+
+/* ==================================================
+   AJOUT GÉNÉRIQUE DANS UNE TABLE
+================================================== */
+
+async function ajouterLigneReference(
+  nomTable,
+  champsLogiques
+) {
+
+  const tableId =
+    await trouverTableId(
+      nomTable
+    );
+
+  const raw =
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
+  const lignes =
+    convertirFetchTableEnLignes(
+      raw
+    );
+
+  const colonnes =
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
+
+  const fields =
+    {};
+
+  for (
+    const [
+      nomLogique,
+      valeur
+    ]
+    of Object.entries(
+      champsLogiques
+    )
+  ) {
+
+    const vraieColonne =
+      trouverColonneParNom(
+        colonnes,
+        nomLogique
+      );
+
+    if (!vraieColonne) {
+
+      throw new Error(
+        'Colonne "' +
+        nomLogique +
+        '" introuvable dans la table "' +
+        tableId +
+        '".'
+      );
+
+    }
+
+    fields[
+      vraieColonne
+    ] =
+      valeur;
+
+  }
+
+  const avant =
+    lignes.map(
+      function(ligne) {
+
+        return Number(
+          ligne.id
+        );
+
+      }
+    );
+
+  await grist.docApi.applyUserActions([
+
+    [
+      "AddRecord",
+      tableId,
+      null,
+      fields
+    ]
+
+  ]);
+
+  const rawApres =
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
+  const lignesApres =
+    convertirFetchTableEnLignes(
+      rawApres
+    );
+
+  const nouvelleLigne =
+    lignesApres.find(
+      function(ligne) {
+
+        return (
+          !avant.includes(
+            Number(
+              ligne.id
+            )
+          )
+        );
+
+      }
+    );
+
+  if (!nouvelleLigne) {
+
+    throw new Error(
+      "La ligne semble avoir été créée, mais son identifiant n'a pas pu être retrouvé."
+    );
+
+  }
+
+  return Number(
+    nouvelleLigne.id
+  );
+
+}
+
+
+/* ==================================================
+   CONTEXTE SESSION
 ================================================== */
 
 function mettreAJourContexte(
@@ -2161,15 +3329,9 @@ function mettreAJourContexte(
 
 function afficherContexte() {
 
-  const aUnSite =
-    contexteSession.siteId !== null;
-
-  const aUneLocalisation =
-    contexteSession.localisationId !== null;
-
   if (
-    !aUnSite &&
-    !aUneLocalisation
+    !contexteSession.siteId &&
+    !contexteSession.localisationId
   ) {
 
     contextPanel.style.display =
@@ -2297,9 +3459,7 @@ barcodeImage.addEventListener(
       this.files[0];
 
     if (!file) {
-
       return;
-
     }
 
     masquerFormulaires();
@@ -2353,10 +3513,8 @@ barcodeImage.addEventListener(
           statusBox.innerHTML = `
 
             <span class="success">
-
               ✅ Code reconnu :
               ${echapperHTML(serial)}
-
             </span>
 
           `;
@@ -2376,17 +3534,13 @@ barcodeImage.addEventListener(
           statusBox.innerHTML = `
 
             <div class="error">
-
               ❌ Aucun code reconnu
-
             </div>
 
             <p>
-
               Essaie de reprendre la photo
               de plus près, sans reflet
               et avec le code bien net.
-
             </p>
 
           `;
@@ -2458,24 +3612,18 @@ function rechercherMateriel(
     resultBox.innerHTML = `
 
       <div class="success">
-
         ✅ Matériel trouvé
-
       </div>
 
       <div class="serial">
-
         ${echapperHTML(
           found.NumeroSerie || ""
         )}
-
       </div>
 
       <p>
-
         Vérifie ou modifie les informations
         puis confirme l'inventaire.
-
       </p>
 
     `;
@@ -2497,22 +3645,15 @@ function rechercherMateriel(
     resultBox.innerHTML = `
 
       <div class="warning">
-
         🆕 Nouveau matériel
-
       </div>
 
       <p>
-
         Le numéro de série
-
         <strong>
           ${echapperHTML(serial)}
         </strong>
-
-        n'existe pas encore
-        dans l'inventaire.
-
+        n'existe pas encore dans l'inventaire.
       </p>
 
     `;
@@ -2540,27 +3681,19 @@ function remplirFormulaireEdition(
     record.NumeroSerie || "";
 
   selectionnerReferenceOuLibelle(
-
     document.getElementById(
       "editType"
     ),
-
     record.TypeMateriel,
-
     listeTypes
-
   );
 
   selectionnerReferenceOuLibelle(
-
     document.getElementById(
       "editMarque"
     ),
-
     record.Marque,
-
     listeMarques
-
   );
 
   mettreAJourModeles(
@@ -2574,15 +3707,11 @@ function remplirFormulaireEdition(
     record.Utilisateur || "";
 
   selectionnerReferenceOuLibelle(
-
     document.getElementById(
       "editSite"
     ),
-
     record.Site,
-
     listeSites
-
   );
 
   mettreAJourLocalisations(
@@ -2608,7 +3737,6 @@ function remplirFormulaireEdition(
 
 /* ==================================================
    FORMULAIRE CRÉATION
-   AVEC PRÉREMPLISSAGE CONTEXTE
 ================================================== */
 
 function remplirFormulaireCreation(
@@ -2640,7 +3768,7 @@ function remplirFormulaireCreation(
     "";
 
   if (
-    contexteSession.siteId !== null
+    contexteSession.siteId
   ) {
 
     document.getElementById(
@@ -2651,6 +3779,7 @@ function remplirFormulaireCreation(
       );
 
   }
+
   else {
 
     document.getElementById(
@@ -2700,7 +3829,7 @@ function masquerFormulaires() {
 
 
 /* ==================================================
-   PANNEAU SUCCÈS
+   SUCCÈS
 ================================================== */
 
 function afficherSucces(message) {
@@ -2727,7 +3856,7 @@ function afficherSucces(message) {
 
 
 /* ==================================================
-   AJOUT D'UN NOUVEAU MATÉRIEL
+   AJOUT MATÉRIEL
 ================================================== */
 
 addButton.addEventListener(
@@ -2836,10 +3965,7 @@ addButton.addEventListener(
       );
 
       await table.create({
-
-        fields:
-          fields
-
+        fields: fields
       });
 
       mettreAJourContexte(
@@ -2869,7 +3995,6 @@ addButton.addEventListener(
       );
 
       alert(
-
         "Erreur lors de l'ajout : "
         +
         (
@@ -2877,7 +4002,6 @@ addButton.addEventListener(
           ||
           String(error)
         )
-
       );
 
     }
@@ -2897,7 +4021,7 @@ addButton.addEventListener(
 
 
 /* ==================================================
-   CONFIRMATION D'UN MATÉRIEL EXISTANT
+   CONFIRMATION MATÉRIEL EXISTANT
 ================================================== */
 
 confirmButton.addEventListener(
@@ -2905,9 +4029,7 @@ confirmButton.addEventListener(
   async function() {
 
     if (!currentRecordId) {
-
       return;
-
     }
 
     if (!columnMappings) {
@@ -3021,7 +4143,6 @@ confirmButton.addEventListener(
       );
 
       alert(
-
         "Erreur lors de la confirmation : "
         +
         (
@@ -3029,7 +4150,6 @@ confirmButton.addEventListener(
           ||
           String(error)
         )
-
       );
 
     }
@@ -3074,7 +4194,7 @@ serialInput.addEventListener(
 
 
 /* ==================================================
-   PROTECTION HTML
+   HTML SAFE
 ================================================== */
 
 function echapperHTML(value) {
