@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1"
+  >
+
+  <title>Inventaire Grist</title>
+
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <script src="https://unpkg.com/@zxing/browser@latest"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      min-height: 52px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 56px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    #scanButton {
+      background: #1976d2;
+      color: white;
+    }
+
+    #confirmButton {
+      background: #2e7d32;
+      color: white;
+      display: none;
+    }
+
+    #video {
+      width: 100%;
+      border-radius: 12px;
+      display: none;
+      margin-top: 10px;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .serial {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>📦 Inventaire matériel</h1>
+
+  <label for="serial">N° de série</label>
+
+  <input
+    id="serial"
+    type="text"
+    placeholder="Scanner ou saisir le numéro"
+  >
+
+  <button id="scanButton">
+    📷 Scanner le code-barres
+  </button>
+
+  <video id="video"></video>
+
+  <div id="result"></div>
+
+  <button id="confirmButton">
+    ✅ Confirmer l'inventaire
+  </button>
+
+</div>
+
+<script>
+
+let records = [];
+let currentRecordId = null;
+let scannerControls = null;
+
+grist.ready({
+  requiredAccess: "full"
+});
+
+grist.onRecords(function(data) {
+  records = data || [];
+});
+
+const serialInput = document.getElementById("serial");
+const scanButton = document.getElementById("scanButton");
+const video = document.getElementById("video");
+const resultBox = document.getElementById("result");
+const confirmButton = document.getElementById("confirmButton");
+
+
+scanButton.addEventListener("click", async () => {
+
+  video.style.display = "block";
+  resultBox.style.display = "none";
+
+  try {
+
+    const reader =
+      new ZXingBrowser.BrowserMultiFormatReader();
+
+    scannerControls =
+      await reader.decodeFromConstraints(
+
+        {
+          video: {
+            facingMode: {
+              ideal: "environment"
+            }
+          }
+        },
+
+        video,
+
+        (result, error, controls) => {
+
+          if (result) {
+
+            const serial =
+              result.getText().trim();
+
+            serialInput.value = serial;
+
+            controls.stop();
+
+            video.style.display = "none";
+
+            rechercherMateriel(serial);
+          }
+
+        }
+      );
+
+  } catch(error) {
+
+    alert(
+      "Impossible d'accéder à la caméra : " +
+      error.message
+    );
+
+  }
+
+});
+
+
+function rechercherMateriel(serial) {
+
+  const found = records.find(record =>
+
+    String(record.NumeroSerie || "")
+      .trim()
+      .toUpperCase()
+
+    ===
+
+    serial
+      .trim()
+      .toUpperCase()
+
+  );
+
+  resultBox.style.display = "block";
+
+  if(found) {
+
+    currentRecordId = found.id;
+
+    resultBox.innerHTML = `
+      <strong>✅ Matériel trouvé</strong>
+
+      <div class="serial">
+        ${found.NumeroSerie || ""}
+      </div>
+
+      <div>
+        <strong>Type :</strong>
+        ${found.TypeMateriel || "-"}
+      </div>
+
+      <div>
+        <strong>Marque :</strong>
+        ${found.Marque || "-"}
+      </div>
+
+      <div>
+        <strong>Modèle :</strong>
+        ${found.Modele || "-"}
+      </div>
+
+      <div>
+        <strong>Utilisateur :</strong>
+        ${found.Utilisateur || "-"}
+      </div>
+
+      <div>
+        <strong>Localisation :</strong>
+        ${found.Localisation || "-"}
+      </div>
+    `;
+
+    confirmButton.style.display = "block";
+
+  } else {
+
+    currentRecordId = null;
+
+    resultBox.innerHTML = `
+      <strong>🆕 Nouveau matériel</strong>
+
+      <p>
+        Le numéro de série
+        <strong>${serial}</strong>
+        n'existe pas encore dans l'inventaire.
+      </p>
+    `;
+
+    confirmButton.style.display = "none";
+
+  }
+
+}
+
+
+confirmButton.addEventListener(
+  "click",
+  async () => {
+
+    if(!currentRecordId) {
+      return;
+    }
+
+    try {
+
+      const table =
+        await grist.getTable();
+
+      await table.update({
+        id: currentRecordId,
+
+        fields: {
+          DernierInventaire:
+            Math.floor(Date.now() / 1000)
+        }
+      });
+
+      resultBox.innerHTML += `
+        <p>
+          ✅ Inventaire confirmé.
+        </p>
+      `;
+
+      confirmButton.style.display = "none";
+
+    } catch(error) {
+
+      alert(
+        "Erreur lors de la mise à jour : "
+        + error.message
+      );
+
+    }
+
+  }
+);
+
+
+serialInput.addEventListener(
+  "change",
+  function() {
+
+    const serial =
+      serialInput.value.trim();
+
+    if(serial) {
+      rechercherMateriel(serial);
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
