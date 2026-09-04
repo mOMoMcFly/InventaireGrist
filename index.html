@@ -48,7 +48,7 @@
 
     h1 {
       font-size: 28px;
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
 
     h2 {
@@ -102,7 +102,8 @@
       cursor: default;
     }
 
-    #scanButton {
+    #scanButton,
+    #nextScanButton {
       background: #1f5ea8;
       color: white;
     }
@@ -117,6 +118,14 @@
       color: white;
     }
 
+    #clearContextButton {
+      background: #eeeeee;
+      color: #333;
+      min-height: 44px;
+      font-size: 15px;
+      margin-top: 10px;
+    }
+
     #preview {
       display: none;
       width: 100%;
@@ -128,13 +137,21 @@
     #result,
     #newForm,
     #editForm,
-    #mappingWarning {
+    #mappingWarning,
+    #successPanel,
+    #contextPanel {
       display: none;
       background: white;
       padding: 18px;
       border-radius: 12px;
       margin-top: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    #contextPanel {
+      margin-top: 0;
+      margin-bottom: 16px;
+      padding: 14px 16px;
     }
 
     .success {
@@ -164,6 +181,16 @@
       color: #666;
     }
 
+    .contextTitle {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .contextValue {
+      font-size: 15px;
+      color: #444;
+    }
+
   </style>
 
 </head>
@@ -174,10 +201,23 @@
 
   <h1>📦 Inventaire matériel</h1>
 
+  <div id="contextPanel">
+    <div class="contextTitle">
+      📍 Contexte actuel
+    </div>
+
+    <div id="contextValue" class="contextValue"></div>
+
+    <button id="clearContextButton">
+      ✕ Effacer le contexte
+    </button>
+  </div>
+
   <div id="mappingWarning">
     <div class="warning">
       ⚙️ Configuration des colonnes requise
     </div>
+
     <p>
       Vérifie les associations de colonnes
       dans les options du widget Grist.
@@ -427,6 +467,25 @@
 
   </div>
 
+
+  <!-- ==========================================
+       APRÈS VALIDATION
+       ========================================== -->
+
+  <div id="successPanel">
+
+    <div class="success">
+      ✅ Opération terminée
+    </div>
+
+    <div id="successMessage"></div>
+
+    <button id="nextScanButton">
+      📷 Scanner le suivant
+    </button>
+
+  </div>
+
 </div>
 
 
@@ -441,6 +500,18 @@ let listeSites = [];
 let listeTypes = [];
 let listeMarques = [];
 let listeModeles = [];
+
+/*
+  Contexte de session :
+  mémorisé uniquement en mémoire
+  tant que la page du widget reste ouverte.
+*/
+
+let contexteSession = {
+  siteId: null,
+  siteLabel: "",
+  localisation: ""
+};
 
 
 /* ==================================================
@@ -510,6 +581,24 @@ const confirmButton =
 
 const mappingWarning =
   document.getElementById("mappingWarning");
+
+const successPanel =
+  document.getElementById("successPanel");
+
+const successMessage =
+  document.getElementById("successMessage");
+
+const nextScanButton =
+  document.getElementById("nextScanButton");
+
+const contextPanel =
+  document.getElementById("contextPanel");
+
+const contextValue =
+  document.getElementById("contextValue");
+
+const clearContextButton =
+  document.getElementById("clearContextButton");
 
 
 /* ==================================================
@@ -601,7 +690,7 @@ grist.ready({
 
 
 /* ==================================================
-   UTILITAIRES NOMS
+   OUTILS DE NORMALISATION
 ================================================== */
 
 function normaliserNom(valeur) {
@@ -1276,8 +1365,7 @@ function mettreAJourModeles(
       :
       null;
 
-  let modelesFiltres =
-    [];
+  let modelesFiltres = [];
 
   if (
     marqueId !== null
@@ -1781,6 +1869,116 @@ function selectionnerReferenceOuLibelle(
 
 
 /* ==================================================
+   CONTEXTE DE SESSION
+================================================== */
+
+function mettreAJourContexte(
+  siteId,
+  localisation
+) {
+
+  const site =
+    listeSites.find(
+      function(item) {
+
+        return (
+          item.id === siteId
+        );
+
+      }
+    );
+
+  contexteSession.siteId =
+    siteId || null;
+
+  contexteSession.siteLabel =
+    site
+      ?
+      site.label
+      :
+      "";
+
+  contexteSession.localisation =
+    String(
+      localisation || ""
+    ).trim();
+
+  afficherContexte();
+
+}
+
+
+function afficherContexte() {
+
+  const aUnSite =
+    contexteSession.siteId !== null;
+
+  const aUneLocalisation =
+    contexteSession.localisation !== "";
+
+  if (
+    !aUnSite &&
+    !aUneLocalisation
+  ) {
+
+    contextPanel.style.display =
+      "none";
+
+    return;
+
+  }
+
+  const morceaux =
+    [];
+
+  if (
+    contexteSession.siteLabel
+  ) {
+
+    morceaux.push(
+      contexteSession.siteLabel
+    );
+
+  }
+
+  if (
+    contexteSession.localisation
+  ) {
+
+    morceaux.push(
+      contexteSession.localisation
+    );
+
+  }
+
+  contextValue.textContent =
+    morceaux.join(
+      " — "
+    );
+
+  contextPanel.style.display =
+    "block";
+
+}
+
+
+clearContextButton.addEventListener(
+  "click",
+  function() {
+
+    contexteSession = {
+      siteId: null,
+      siteLabel: "",
+      localisation: ""
+    };
+
+    afficherContexte();
+
+  }
+);
+
+
+/* ==================================================
    SCAN
 ================================================== */
 
@@ -1792,6 +1990,51 @@ scanButton.addEventListener(
 
   }
 );
+
+
+nextScanButton.addEventListener(
+  "click",
+  function() {
+
+    reinitialiserPourScanSuivant();
+
+    barcodeImage.click();
+
+  }
+);
+
+
+function reinitialiserPourScanSuivant() {
+
+  currentRecordId =
+    null;
+
+  serialInput.value =
+    "";
+
+  preview.style.display =
+    "none";
+
+  preview.removeAttribute(
+    "src"
+  );
+
+  statusBox.style.display =
+    "none";
+
+  resultBox.style.display =
+    "none";
+
+  editForm.style.display =
+    "none";
+
+  newForm.style.display =
+    "none";
+
+  successPanel.style.display =
+    "none";
+
+}
 
 
 barcodeImage.addEventListener(
@@ -1808,6 +2051,9 @@ barcodeImage.addEventListener(
     }
 
     masquerFormulaires();
+
+    successPanel.style.display =
+      "none";
 
     statusBox.style.display =
       "block";
@@ -2115,6 +2361,7 @@ function remplirFormulaireEdition(
 
 /* ==================================================
    FORMULAIRE CRÉATION
+   AVEC PRÉREMPLISSAGE CONTEXTE
 ================================================== */
 
 function remplirFormulaireCreation(
@@ -2150,15 +2397,35 @@ function remplirFormulaireCreation(
   ).value =
     "";
 
-  document.getElementById(
-    "newSite"
-  ).value =
-    "";
+  /*
+    Le contexte ne sert QUE pour les nouveaux matériels.
+  */
+
+  if (
+    contexteSession.siteId !== null
+  ) {
+
+    document.getElementById(
+      "newSite"
+    ).value =
+      String(
+        contexteSession.siteId
+      );
+
+  }
+  else {
+
+    document.getElementById(
+      "newSite"
+    ).value =
+      "";
+
+  }
 
   document.getElementById(
     "newLocalisation"
   ).value =
-    "";
+    contexteSession.localisation || "";
 
   document.getElementById(
     "newEtat"
@@ -2176,6 +2443,10 @@ function remplirFormulaireCreation(
 }
 
 
+/* ==================================================
+   MASQUAGE
+================================================== */
+
 function masquerFormulaires() {
 
   resultBox.style.display =
@@ -2186,6 +2457,33 @@ function masquerFormulaires() {
 
   editForm.style.display =
     "none";
+
+}
+
+
+/* ==================================================
+   PANNEAU SUCCÈS
+================================================== */
+
+function afficherSucces(message) {
+
+  editForm.style.display =
+    "none";
+
+  newForm.style.display =
+    "none";
+
+  statusBox.style.display =
+    "none";
+
+  resultBox.style.display =
+    "none";
+
+  successMessage.innerHTML =
+    message;
+
+  successPanel.style.display =
+    "block";
 
 }
 
@@ -2236,6 +2534,16 @@ addButton.addEventListener(
       const table =
         grist.getTable();
 
+      const siteId =
+        valeurReference(
+          "newSite"
+        );
+
+      const localisation =
+        document.getElementById(
+          "newLocalisation"
+        ).value.trim();
+
       const fields =
         construireChampsGrist({
 
@@ -2268,14 +2576,10 @@ addButton.addEventListener(
             ).value.trim(),
 
           Site:
-            valeurReference(
-              "newSite"
-            ),
+            siteId,
 
           Localisation:
-            document.getElementById(
-              "newLocalisation"
-            ).value.trim(),
+            localisation,
 
           Etat:
             document.getElementById(
@@ -2305,32 +2609,27 @@ addButton.addEventListener(
 
       });
 
-      newForm.style.display =
-        "none";
+      /*
+        On mémorise le contexte APRÈS validation.
+      */
 
-      statusBox.style.display =
-        "none";
+      mettreAJourContexte(
+        siteId || null,
+        localisation
+      );
 
-      resultBox.style.display =
-        "block";
-
-      resultBox.innerHTML = `
-
-        <div class="success">
-
-          ✅ Matériel ajouté et inventorié
-
-        </div>
+      afficherSucces(`
 
         <div class="serial">
-
-          ${echapperHTML(
-            numeroSerie
-          )}
-
+          ${echapperHTML(numeroSerie)}
         </div>
 
-      `;
+        <p>
+          Nouveau matériel ajouté
+          et inventorié.
+        </p>
+
+      `);
 
     }
 
@@ -2370,10 +2669,6 @@ addButton.addEventListener(
 
 /* ==================================================
    CONFIRMATION D'UN MATÉRIEL EXISTANT
-
-   Ce bouton fait TOUT :
-   - enregistre les valeurs du formulaire
-   - met à jour Dernier inventaire
 ================================================== */
 
 confirmButton.addEventListener(
@@ -2466,11 +2761,6 @@ confirmButton.addEventListener(
         fields
       );
 
-      /*
-        N° de série n'est volontairement
-        jamais envoyé : il reste protégé.
-      */
-
       await table.update({
 
         id:
@@ -2481,36 +2771,22 @@ confirmButton.addEventListener(
 
       });
 
-      resultBox.style.display =
-        "block";
+      const numeroSerie =
+        document.getElementById(
+          "editNumeroSerie"
+        ).value;
 
-      resultBox.innerHTML = `
-
-        <div class="success">
-
-          ✅ Inventaire confirmé
-
-        </div>
+      afficherSucces(`
 
         <div class="serial">
-
-          ${echapperHTML(
-            document.getElementById(
-              "editNumeroSerie"
-            ).value
-          )}
-
+          ${echapperHTML(numeroSerie)}
         </div>
 
         <p>
-
-          Les informations de l'équipement
-          et la date du dernier inventaire
-          ont été enregistrées.
-
+          Inventaire confirmé.
         </p>
 
-      `;
+      `);
 
     }
 
