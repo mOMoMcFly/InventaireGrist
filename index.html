@@ -321,10 +321,13 @@
       Localisation
     </label>
 
-    <input
-      id="editLocalisation"
-      type="text"
-    >
+    <select id="editLocalisation">
+      <option value="">-- Choisir --</option>
+    </select>
+
+    <div class="hint">
+      La liste des localisations est filtrée selon le site choisi.
+    </div>
 
     <label>
       État
@@ -416,10 +419,13 @@
       Localisation
     </label>
 
-    <input
-      id="newLocalisation"
-      type="text"
-    >
+    <select id="newLocalisation">
+      <option value="">-- Choisir --</option>
+    </select>
+
+    <div class="hint">
+      La liste des localisations est filtrée selon le site choisi.
+    </div>
 
     <label>
       État
@@ -476,11 +482,13 @@ let listeSites = [];
 let listeTypes = [];
 let listeMarques = [];
 let listeModeles = [];
+let listeLocalisations = [];
 
 let contexteSession = {
   siteId: null,
   siteLabel: "",
-  localisation: ""
+  localisationId: null,
+  localisationLabel: ""
 };
 
 
@@ -510,6 +518,12 @@ const CONFIG_REFERENCES = {
     libelle: "Modèle",
     marque: "Marque",
     type: "Type"
+  },
+
+  Localisation: {
+    table: "Localisation",
+    libelle: "Localisation",
+    site: "Site"
   }
 
 };
@@ -619,7 +633,8 @@ const columns = [
   {
     name: "Localisation",
     title: "Localisation",
-    optional: true
+    optional: true,
+    type: "Ref"
   },
 
   {
@@ -1108,6 +1123,126 @@ async function chargerModeles() {
 
 
 /* ==================================================
+   CHARGER LES LOCALISATIONS
+================================================== */
+
+async function chargerLocalisations() {
+
+  const tableId =
+    await trouverTableId(
+      CONFIG_REFERENCES
+        .Localisation
+        .table
+    );
+
+  const raw =
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
+  const lignes =
+    convertirFetchTableEnLignes(
+      raw
+    );
+
+  if (
+    lignes.length === 0
+  ) {
+
+    return [];
+
+  }
+
+  const colonneLocalisation =
+    trouverColonne(
+      lignes,
+      CONFIG_REFERENCES
+        .Localisation
+        .libelle
+    );
+
+  const colonneSite =
+    trouverColonne(
+      lignes,
+      CONFIG_REFERENCES
+        .Localisation
+        .site
+    );
+
+  if (!colonneLocalisation) {
+
+    throw new Error(
+      "Impossible de trouver la colonne Localisation."
+    );
+
+  }
+
+  if (!colonneSite) {
+
+    throw new Error(
+      'La table Localisation ne contient pas de colonne "Site".'
+    );
+
+  }
+
+  const valeurs =
+    lignes
+
+      .filter(function(ligne) {
+
+        return (
+          ligne.id !== null &&
+          ligne.id !== undefined &&
+          ligne[colonneLocalisation] !== null &&
+          ligne[colonneLocalisation] !== undefined &&
+          String(
+            ligne[colonneLocalisation]
+          ).trim() !== ""
+        );
+
+      })
+
+      .map(function(ligne) {
+
+        return {
+
+          id:
+            Number(
+              ligne.id
+            ),
+
+          label:
+            String(
+              ligne[colonneLocalisation]
+            ),
+
+          siteId:
+            extraireRowId(
+              ligne[colonneSite]
+            )
+
+        };
+
+      });
+
+  valeurs.sort(function(a, b) {
+
+    return a.label.localeCompare(
+      b.label,
+      "fr",
+      {
+        sensitivity: "base"
+      }
+    );
+
+  });
+
+  return valeurs;
+
+}
+
+
+/* ==================================================
    CHARGER TOUTES LES LISTES
 ================================================== */
 
@@ -1133,7 +1268,8 @@ async function chargerListesReferences() {
       sites,
       types,
       marques,
-      modeles
+      modeles,
+      localisations
     ] = await Promise.all([
 
       chargerReferenceSimple(
@@ -1151,7 +1287,9 @@ async function chargerListesReferences() {
         CONFIG_REFERENCES.Marque.libelle
       ),
 
-      chargerModeles()
+      chargerModeles(),
+
+      chargerLocalisations()
 
     ]);
 
@@ -1166,6 +1304,9 @@ async function chargerListesReferences() {
 
     listeModeles =
       modeles;
+
+    listeLocalisations =
+      localisations;
 
     remplirSelectSimple(
       "newSite",
@@ -1202,6 +1343,14 @@ async function chargerListesReferences() {
     );
 
     mettreAJourModeles(
+      "edit"
+    );
+
+    mettreAJourLocalisations(
+      "new"
+    );
+
+    mettreAJourLocalisations(
       "edit"
     );
 
@@ -1408,7 +1557,99 @@ function mettreAJourModeles(
 
 
 /* ==================================================
-   ÉVÉNEMENTS TYPE / MARQUE
+   LOCALISATIONS CONDITIONNELLES
+================================================== */
+
+function mettreAJourLocalisations(
+  prefixe,
+  valeurLocalisationAConserver = null
+) {
+
+  const siteSelect =
+    document.getElementById(
+      prefixe + "Site"
+    );
+
+  const localisationSelect =
+    document.getElementById(
+      prefixe + "Localisation"
+    );
+
+  const siteId =
+    siteSelect.value
+      ?
+      Number(
+        siteSelect.value
+      )
+      :
+      null;
+
+  let localisationsFiltrees = [];
+
+  if (
+    siteId !== null
+  ) {
+
+    localisationsFiltrees =
+      listeLocalisations.filter(
+        function(localisation) {
+
+          return (
+            localisation.siteId
+            ===
+            siteId
+          );
+
+        }
+      );
+
+  }
+
+  localisationSelect.innerHTML =
+    '<option value="">-- Choisir --</option>';
+
+  for (
+    const localisation
+    of localisationsFiltrees
+  ) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      String(
+        localisation.id
+      );
+
+    option.textContent =
+      localisation.label;
+
+    localisationSelect.appendChild(
+      option
+    );
+
+  }
+
+  if (
+    valeurLocalisationAConserver !== null &&
+    valeurLocalisationAConserver !== undefined
+  ) {
+
+    selectionnerReferenceOuLibelle(
+      localisationSelect,
+      valeurLocalisationAConserver,
+      listeLocalisations
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   ÉVÉNEMENTS TYPE / MARQUE / SITE
 ================================================== */
 
 document
@@ -1465,6 +1706,36 @@ document
     function() {
 
       mettreAJourModeles(
+        "edit"
+      );
+
+    }
+  );
+
+document
+  .getElementById(
+    "newSite"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourLocalisations(
+        "new"
+      );
+
+    }
+  );
+
+document
+  .getElementById(
+    "editSite"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourLocalisations(
         "edit"
       );
 
@@ -1838,7 +2109,7 @@ function selectionnerReferenceOuLibelle(
 
 function mettreAJourContexte(
   siteId,
-  localisation
+  localisationId
 ) {
 
   const site =
@@ -1847,6 +2118,17 @@ function mettreAJourContexte(
 
         return (
           item.id === siteId
+        );
+
+      }
+    );
+
+  const localisation =
+    listeLocalisations.find(
+      function(item) {
+
+        return (
+          item.id === localisationId
         );
 
       }
@@ -1862,10 +2144,15 @@ function mettreAJourContexte(
       :
       "";
 
-  contexteSession.localisation =
-    String(
-      localisation || ""
-    ).trim();
+  contexteSession.localisationId =
+    localisationId || null;
+
+  contexteSession.localisationLabel =
+    localisation
+      ?
+      localisation.label
+      :
+      "";
 
   afficherContexte();
 
@@ -1878,7 +2165,7 @@ function afficherContexte() {
     contexteSession.siteId !== null;
 
   const aUneLocalisation =
-    contexteSession.localisation !== "";
+    contexteSession.localisationId !== null;
 
   if (
     !aUnSite &&
@@ -1906,11 +2193,11 @@ function afficherContexte() {
   }
 
   if (
-    contexteSession.localisation
+    contexteSession.localisationLabel
   ) {
 
     morceaux.push(
-      contexteSession.localisation
+      contexteSession.localisationLabel
     );
 
   }
@@ -1933,7 +2220,8 @@ clearContextButton.addEventListener(
     contexteSession = {
       siteId: null,
       siteLabel: "",
-      localisation: ""
+      localisationId: null,
+      localisationLabel: ""
     };
 
     afficherContexte();
@@ -2297,10 +2585,10 @@ function remplirFormulaireEdition(
 
   );
 
-  document.getElementById(
-    "editLocalisation"
-  ).value =
-    record.Localisation || "";
+  mettreAJourLocalisations(
+    "edit",
+    record.Localisation
+  );
 
   document.getElementById(
     "editEtat"
@@ -2372,10 +2660,10 @@ function remplirFormulaireCreation(
 
   }
 
-  document.getElementById(
-    "newLocalisation"
-  ).value =
-    contexteSession.localisation || "";
+  mettreAJourLocalisations(
+    "new",
+    contexteSession.localisationId
+  );
 
   document.getElementById(
     "newEtat"
@@ -2489,10 +2777,10 @@ addButton.addEventListener(
           "newSite"
         );
 
-      const localisation =
-        document.getElementById(
+      const localisationId =
+        valeurReference(
           "newLocalisation"
-        ).value.trim();
+        );
 
       const fields =
         construireChampsGrist({
@@ -2524,7 +2812,7 @@ addButton.addEventListener(
             siteId,
 
           Localisation:
-            localisation,
+            localisationId,
 
           Etat:
             document.getElementById(
@@ -2556,7 +2844,7 @@ addButton.addEventListener(
 
       mettreAJourContexte(
         siteId || null,
-        localisation
+        localisationId || null
       );
 
       afficherSucces(`
@@ -2672,9 +2960,9 @@ confirmButton.addEventListener(
             ),
 
           Localisation:
-            document.getElementById(
+            valeurReference(
               "editLocalisation"
-            ).value.trim(),
+            ),
 
           Etat:
             document.getElementById(
