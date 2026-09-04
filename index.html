@@ -172,9 +172,9 @@
   <h1>📦 Inventaire matériel</h1>
 
 
-  <!-- ==============================
-       AVERTISSEMENT MAPPING
-       ============================== -->
+  <!-- ==========================================
+       MAPPING
+       ========================================== -->
 
   <div id="mappingWarning">
 
@@ -190,9 +190,9 @@
   </div>
 
 
-  <!-- ==============================
+  <!-- ==========================================
        SCANNER
-       ============================== -->
+       ========================================== -->
 
   <label for="serial">
     N° de série
@@ -226,9 +226,9 @@
   <div id="result"></div>
 
 
-  <!-- ==============================
+  <!-- ==========================================
        MATÉRIEL EXISTANT
-       ============================== -->
+       ========================================== -->
 
   <div id="editForm">
 
@@ -349,9 +349,7 @@
       Commentaire
     </label>
 
-    <textarea
-      id="editCommentaire"
-    ></textarea>
+    <textarea id="editCommentaire"></textarea>
 
 
     <button id="saveButton">
@@ -366,9 +364,9 @@
   </div>
 
 
-  <!-- ==============================
+  <!-- ==========================================
        NOUVEAU MATÉRIEL
-       ============================== -->
+       ========================================== -->
 
   <div id="newForm">
 
@@ -492,9 +490,7 @@
       Commentaire
     </label>
 
-    <textarea
-      id="newCommentaire"
-    ></textarea>
+    <textarea id="newCommentaire"></textarea>
 
 
     <button id="addButton">
@@ -502,7 +498,6 @@
     </button>
 
   </div>
-
 
 </div>
 
@@ -562,7 +557,7 @@ const mappingWarning =
 
 
 /* ==================================================
-   COLONNES ATTENDUES
+   COLONNES ATTENDUES PAR LE WIDGET
 ================================================== */
 
 const columns = [
@@ -654,7 +649,8 @@ grist.ready({
 
 grist.onRecords(function(data, mappings) {
 
-  columnMappings = mappings;
+  columnMappings =
+    mappings;
 
   if (!mappings) {
 
@@ -666,7 +662,8 @@ grist.onRecords(function(data, mappings) {
     return;
   }
 
-  const mappedRecords = [];
+  const mappedRecords =
+    [];
 
   for (const record of data || []) {
 
@@ -679,12 +676,17 @@ grist.onRecords(function(data, mappings) {
       );
 
     if (mapped) {
-      mappedRecords.push(mapped);
+
+      mappedRecords.push(
+        mapped
+      );
+
     }
 
   }
 
-  records = mappedRecords;
+  records =
+    mappedRecords;
 
   mappingWarning.style.display =
     "none";
@@ -693,28 +695,84 @@ grist.onRecords(function(data, mappings) {
 
 
 /* ==================================================
-   CONVERSION VERS LES VRAIES COLONNES GRIST
+   RÉCUPÉRATION D'UNE COLONNE GRIST RÉELLE
 
-   IMPORTANT :
-   seules les colonnes fournies à cette fonction
-   seront envoyées à Grist.
+   Le mapping Grist associe par exemple :
+
+   NumeroSerie -> vraie colonne de la table
+   Etat        -> vraie colonne de la table
+
+   Cette fonction n'autorise qu'une colonne unique.
 ================================================== */
 
-function convertirChamps(widgetFields) {
-
-  const fields = {};
+function obtenirColonneGrist(nomLogique) {
 
   if (!columnMappings) {
-    return fields;
+
+    return null;
+
   }
+
+  const mapping =
+    columnMappings[nomLogique];
+
+  if (!mapping) {
+
+    return null;
+
+  }
+
+  /*
+    Les champs de ce widget ne permettent
+    pas de sélectionner plusieurs colonnes.
+
+    Par sécurité, si Grist renvoie malgré tout
+    un tableau, on prend la première colonne.
+  */
+
+  if (Array.isArray(mapping)) {
+
+    if (mapping.length === 0) {
+
+      return null;
+
+    }
+
+    return mapping[0];
+
+  }
+
+  return mapping;
+
+}
+
+
+/* ==================================================
+   CONSTRUCTION SÉCURISÉE D'UN OBJET FIELDS
+
+   IMPORTANT :
+
+   Cette fonction ajoute UNIQUEMENT les champs
+   qu'on lui transmet.
+
+   Elle ne complète jamais les autres colonnes
+   avec des valeurs vides.
+================================================== */
+
+function construireChampsGrist(champsLogiques) {
+
+  const fields =
+    {};
 
   for (
     const [nomLogique, valeur]
-    of Object.entries(widgetFields)
+    of Object.entries(champsLogiques)
   ) {
 
     const vraieColonne =
-      columnMappings[nomLogique];
+      obtenirColonneGrist(
+        nomLogique
+      );
 
     if (
       vraieColonne &&
@@ -735,7 +793,27 @@ function convertirChamps(widgetFields) {
 
 
 /* ==================================================
-   SCANNER
+   VÉRIFICATION AVANT ÉCRITURE
+================================================== */
+
+function verifierChamps(fields) {
+
+  if (
+    !fields ||
+    Object.keys(fields).length === 0
+  ) {
+
+    throw new Error(
+      "Aucune colonne valide n'a été trouvée. Vérifie le mappage du widget."
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   OUVERTURE DU SCANNER
 ================================================== */
 
 scanButton.addEventListener(
@@ -748,6 +826,10 @@ scanButton.addEventListener(
 );
 
 
+/* ==================================================
+   TRAITEMENT DE LA PHOTO
+================================================== */
+
 barcodeImage.addEventListener(
   "change",
   async function() {
@@ -756,7 +838,9 @@ barcodeImage.addEventListener(
       this.files[0];
 
     if (!file) {
+
       return;
+
     }
 
     masquerFormulaires();
@@ -768,7 +852,9 @@ barcodeImage.addEventListener(
       "📸 Photo reçue…";
 
     const imageUrl =
-      URL.createObjectURL(file);
+      URL.createObjectURL(
+        file
+      );
 
     preview.src =
       imageUrl;
@@ -819,7 +905,9 @@ barcodeImage.addEventListener(
 
         catch(error) {
 
-          console.error(error);
+          console.error(
+            error
+          );
 
           statusBox.innerHTML = `
 
@@ -899,6 +987,11 @@ function rechercherMateriel(serial) {
   ================================================ */
 
   if (found) {
+
+    /*
+      L'id sert uniquement à identifier
+      la ligne Grist à modifier.
+    */
 
     currentRecordId =
       found.id;
@@ -983,7 +1076,7 @@ function rechercherMateriel(serial) {
 
 
 /* ==================================================
-   FORMULAIRE ÉDITION
+   REMPLISSAGE DU FORMULAIRE D'ÉDITION
 ================================================== */
 
 function remplirFormulaireEdition(record) {
@@ -1045,7 +1138,7 @@ function remplirFormulaireEdition(record) {
 
 
 /* ==================================================
-   FORMULAIRE CRÉATION
+   REMPLISSAGE DU FORMULAIRE DE CRÉATION
 ================================================== */
 
 function remplirFormulaireCreation(serial) {
@@ -1107,7 +1200,7 @@ function remplirFormulaireCreation(serial) {
 
 
 /* ==================================================
-   MASQUER LES FORMULAIRES
+   MASQUAGE DES FORMULAIRES
 ================================================== */
 
 function masquerFormulaires() {
@@ -1139,6 +1232,7 @@ addButton.addEventListener(
       );
 
       return;
+
     }
 
     const numeroSerie =
@@ -1155,6 +1249,7 @@ addButton.addEventListener(
       );
 
       return;
+
     }
 
     addButton.disabled =
@@ -1168,8 +1263,17 @@ addButton.addEventListener(
       const table =
         grist.getTable();
 
+
+      /*
+        Pour une CRÉATION, nous voulons
+        bien renseigner tous ces champs.
+
+        DernierInventaire est initialisé
+        à la date du scan.
+      */
+
       const fields =
-        convertirChamps({
+        construireChampsGrist({
 
           NumeroSerie:
             numeroSerie,
@@ -1226,12 +1330,19 @@ addButton.addEventListener(
 
         });
 
+
+      verifierChamps(
+        fields
+      );
+
+
       await table.create({
 
         fields:
           fields
 
       });
+
 
       newForm.style.display =
         "none";
@@ -1264,7 +1375,9 @@ addButton.addEventListener(
 
     catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       alert(
 
@@ -1273,7 +1386,7 @@ addButton.addEventListener(
         (
           error.message
           ||
-          error
+          String(error)
         )
 
       );
@@ -1296,6 +1409,15 @@ addButton.addEventListener(
 
 /* ==================================================
    MODIFICATION D'UN MATÉRIEL EXISTANT
+
+   IMPORTANT :
+
+   NumeroSerie n'est PAS envoyé.
+
+   DernierInventaire n'est PAS envoyé.
+
+   Ces deux colonnes ne peuvent donc
+   pas être effacées par cette opération.
 ================================================== */
 
 saveButton.addEventListener(
@@ -1303,7 +1425,9 @@ saveButton.addEventListener(
   async function() {
 
     if (!currentRecordId) {
+
       return;
+
     }
 
     if (!columnMappings) {
@@ -1313,6 +1437,7 @@ saveButton.addEventListener(
       );
 
       return;
+
     }
 
     saveButton.disabled =
@@ -1326,8 +1451,13 @@ saveButton.addEventListener(
       const table =
         grist.getTable();
 
+
+      /*
+        UNIQUEMENT LES CHAMPS MODIFIABLES
+      */
+
       const fields =
-        convertirChamps({
+        construireChampsGrist({
 
           NumeroInventaire:
             document.getElementById(
@@ -1376,6 +1506,19 @@ saveButton.addEventListener(
 
         });
 
+
+      verifierChamps(
+        fields
+      );
+
+
+      /*
+        IMPORTANT :
+
+        fields ne contient NI NumeroSerie
+        NI DernierInventaire.
+      */
+
       await table.update({
 
         id:
@@ -1385,6 +1528,7 @@ saveButton.addEventListener(
           fields
 
       });
+
 
       resultBox.style.display =
         "block";
@@ -1407,13 +1551,22 @@ saveButton.addEventListener(
 
         </div>
 
+        <p>
+
+          Le numéro de série et la date
+          du dernier inventaire ont été conservés.
+
+        </p>
+
       `;
 
     }
 
     catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       alert(
 
@@ -1422,7 +1575,7 @@ saveButton.addEventListener(
         (
           error.message
           ||
-          error
+          String(error)
         )
 
       );
@@ -1444,10 +1597,12 @@ saveButton.addEventListener(
 
 
 /* ==================================================
-   CONFIRMER L'INVENTAIRE
+   CONFIRMATION DE L'INVENTAIRE
 
    IMPORTANT :
-   ici UNE SEULE COLONNE est envoyée à Grist.
+
+   UNE SEULE COLONNE est envoyée :
+   DernierInventaire
 ================================================== */
 
 confirmButton.addEventListener(
@@ -1455,7 +1610,9 @@ confirmButton.addEventListener(
   async function() {
 
     if (!currentRecordId) {
+
       return;
+
     }
 
     if (!columnMappings) {
@@ -1465,6 +1622,7 @@ confirmButton.addEventListener(
       );
 
       return;
+
     }
 
     confirmButton.disabled =
@@ -1480,12 +1638,11 @@ confirmButton.addEventListener(
 
 
       /*
-        Seule la colonne DernierInventaire
-        est transmise.
+        UNE SEULE VALEUR EST CONSTRUITE.
       */
 
       const fields =
-        convertirChamps({
+        construireChampsGrist({
 
           DernierInventaire:
             Math.floor(
@@ -1495,9 +1652,15 @@ confirmButton.addEventListener(
         });
 
 
+      verifierChamps(
+        fields
+      );
+
+
       /*
-        Les autres colonnes ne sont PAS
-        présentes dans fields.
+        fields contient uniquement
+        la vraie colonne Grist correspondant
+        à DernierInventaire.
       */
 
       await table.update({
@@ -1524,7 +1687,7 @@ confirmButton.addEventListener(
 
         <p>
 
-          La date du dernier inventaire
+          Seule la date du dernier inventaire
           vient d'être mise à jour.
 
         </p>
@@ -1535,7 +1698,9 @@ confirmButton.addEventListener(
 
     catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       alert(
 
@@ -1544,7 +1709,7 @@ confirmButton.addEventListener(
         (
           error.message
           ||
-          error
+          String(error)
         )
 
       );
@@ -1566,7 +1731,7 @@ confirmButton.addEventListener(
 
 
 /* ==================================================
-   SAISIE MANUELLE
+   SAISIE MANUELLE DU NUMÉRO
 ================================================== */
 
 serialInput.addEventListener(
