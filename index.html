@@ -256,9 +256,7 @@
   <div id="result"></div>
 
 
-  <!-- ==========================================
-       MATÉRIEL EXISTANT
-       ========================================== -->
+  <!-- MATÉRIEL EXISTANT -->
 
   <div id="editForm">
 
@@ -272,15 +270,6 @@
       id="editNumeroSerie"
       type="text"
       readonly
-    >
-
-    <label>
-      N° d'inventaire
-    </label>
-
-    <input
-      id="editNumeroInventaire"
-      type="text"
     >
 
     <label>
@@ -362,9 +351,7 @@
   </div>
 
 
-  <!-- ==========================================
-       NOUVEAU MATÉRIEL
-       ========================================== -->
+  <!-- NOUVEAU MATÉRIEL -->
 
   <div id="newForm">
 
@@ -378,15 +365,6 @@
       id="newNumeroSerie"
       type="text"
       readonly
-    >
-
-    <label>
-      N° d'inventaire
-    </label>
-
-    <input
-      id="newNumeroInventaire"
-      type="text"
     >
 
     <label>
@@ -468,9 +446,7 @@
   </div>
 
 
-  <!-- ==========================================
-       APRÈS VALIDATION
-       ========================================== -->
+  <!-- APRÈS VALIDATION -->
 
   <div id="successPanel">
 
@@ -500,12 +476,6 @@ let listeSites = [];
 let listeTypes = [];
 let listeMarques = [];
 let listeModeles = [];
-
-/*
-  Contexte de session :
-  mémorisé uniquement en mémoire
-  tant que la page du widget reste ouverte.
-*/
 
 let contexteSession = {
   siteId: null,
@@ -610,12 +580,6 @@ const columns = [
   {
     name: "NumeroSerie",
     title: "N° de série"
-  },
-
-  {
-    name: "NumeroInventaire",
-    title: "N° d'inventaire",
-    optional: true
   },
 
   {
@@ -2287,11 +2251,6 @@ function remplirFormulaireEdition(
   ).value =
     record.NumeroSerie || "";
 
-  document.getElementById(
-    "editNumeroInventaire"
-  ).value =
-    record.NumeroInventaire || "";
-
   selectionnerReferenceOuLibelle(
 
     document.getElementById(
@@ -2374,11 +2333,6 @@ function remplirFormulaireCreation(
     serial;
 
   document.getElementById(
-    "newNumeroInventaire"
-  ).value =
-    "";
-
-  document.getElementById(
     "newType"
   ).value =
     "";
@@ -2396,10 +2350,6 @@ function remplirFormulaireCreation(
     "newUtilisateur"
   ).value =
     "";
-
-  /*
-    Le contexte ne sert QUE pour les nouveaux matériels.
-  */
 
   if (
     contexteSession.siteId !== null
@@ -2550,11 +2500,6 @@ addButton.addEventListener(
           NumeroSerie:
             numeroSerie,
 
-          NumeroInventaire:
-            document.getElementById(
-              "newNumeroInventaire"
-            ).value.trim(),
-
           TypeMateriel:
             valeurReference(
               "newType"
@@ -2608,10 +2553,6 @@ addButton.addEventListener(
           fields
 
       });
-
-      /*
-        On mémorise le contexte APRÈS validation.
-      */
 
       mettreAJourContexte(
         siteId || null,
@@ -2704,11 +2645,6 @@ confirmButton.addEventListener(
 
       const fields =
         construireChampsGrist({
-
-          NumeroInventaire:
-            document.getElementById(
-              "editNumeroInventaire"
-            ).value.trim(),
 
           TypeMateriel:
             valeurReference(
