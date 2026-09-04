@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -10,13 +12,19 @@
 
   <title>Inventaire Grist</title>
 
+  <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+
+  <!-- ZXing pour lire les codes-barres -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
 
+
   <style>
+
     * {
       box-sizing: border-box;
     }
+
 
     html,
     body {
@@ -27,73 +35,102 @@
       -webkit-overflow-scrolling: touch;
     }
 
+
     body {
       padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
       background: #f5f6f8;
       color: #222;
     }
+
 
     .container {
       max-width: 520px;
       margin: auto;
     }
 
+
     h1 {
       font-size: 28px;
       margin-bottom: 24px;
     }
+
 
     h2 {
       font-size: 21px;
       margin-top: 0;
     }
 
+
     label {
       display: block;
+
       font-size: 16px;
       font-weight: 600;
+
       margin-top: 14px;
       margin-bottom: 6px;
     }
 
+
     input,
     select,
     textarea {
+
       width: 100%;
       min-height: 52px;
+
       padding: 12px;
+
       border: 1px solid #bbb;
       border-radius: 10px;
+
       font-size: 17px;
+
       background: white;
     }
+
 
     textarea {
       min-height: 100px;
       resize: vertical;
     }
 
+
     button {
+
       width: 100%;
       min-height: 58px;
+
       border: none;
       border-radius: 12px;
+
       font-size: 18px;
       font-weight: 600;
+
       margin-top: 15px;
+
       cursor: pointer;
     }
+
 
     #scanButton {
       background: #1f5ea8;
       color: white;
     }
 
+
     #addButton {
       background: #2e7d32;
       color: white;
     }
+
 
     #confirmButton {
       background: #2e7d32;
@@ -101,78 +138,131 @@
       display: none;
     }
 
+
     #preview {
+
       display: none;
+
       width: 100%;
+
       border-radius: 12px;
+
       margin-top: 15px;
     }
+
 
     #status,
     #result,
     #newForm,
     #mappingWarning {
+
       display: none;
+
       background: white;
+
       padding: 18px;
+
       border-radius: 12px;
+
       margin-top: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
     }
+
 
     .success {
       color: #2e7d32;
       font-weight: 700;
     }
 
+
     .warning {
       color: #a15c00;
       font-weight: 700;
     }
+
 
     .error {
       color: #b00020;
       font-weight: 700;
     }
 
+
     .serial {
+
       font-size: 24px;
       font-weight: bold;
+
       margin: 12px 0;
     }
 
+
     .line {
+
       margin: 8px 0;
+
       font-size: 17px;
     }
 
-    .small {
-      font-size: 14px;
-      color: #666;
+
+    button:disabled {
+
+      opacity: 0.6;
+
+      cursor: default;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
+
 
   <h1>📦 Inventaire matériel</h1>
 
+
+  <!-- Message si les colonnes ne sont pas configurées -->
+
   <div id="mappingWarning">
-    <div class="warning">⚙️ Configuration requise</div>
+
+    <div class="warning">
+      ⚙️ Configuration des colonnes requise
+    </div>
+
     <p>
-      Il faut associer les colonnes du widget aux colonnes de ta table Grist.
+      Vérifie les associations de colonnes
+      dans les options du widget Grist.
     </p>
+
   </div>
 
-  <label for="serial">N° de série</label>
+
+
+  <!-- ===============================
+       NUMÉRO DE SÉRIE
+       =============================== -->
+
+
+  <label for="serial">
+    N° de série
+  </label>
+
 
   <input
     id="serial"
     type="text"
     placeholder="Scanner ou saisir le numéro"
   >
+
+
+
+  <!-- Champ utilisé pour lancer l'appareil photo -->
 
   <input
     id="barcodeImage"
@@ -182,73 +272,216 @@
     style="display:none;"
   >
 
+
+
   <button id="scanButton">
     📷 Scanner le code-barres
   </button>
 
-  <img id="preview" alt="Aperçu du code-barres">
+
+
+  <!-- Photo prise -->
+
+  <img
+    id="preview"
+    alt="Photo du code-barres"
+  >
+
+
+
+  <!-- État du scan -->
 
   <div id="status"></div>
 
+
+
+  <!-- Résultat de la recherche -->
+
   <div id="result"></div>
+
+
+
+  <!-- Confirmation matériel existant -->
 
   <button id="confirmButton">
     ✅ Confirmer l'inventaire
   </button>
 
+
+
+  <!-- ===============================
+       NOUVEAU MATÉRIEL
+       =============================== -->
+
+
   <div id="newForm">
 
-    <h2>➕ Nouveau matériel</h2>
 
-    <label>N° de série</label>
-    <input id="newNumeroSerie" type="text" readonly>
+    <h2>
+      ➕ Nouveau matériel
+    </h2>
 
-    <label>N° d'inventaire</label>
-    <input id="newNumeroInventaire" type="text">
 
-    <label>Type</label>
-    <input id="newType" type="text" placeholder="Ex : Point d'accès Wi-Fi">
+    <label>
+      N° de série
+    </label>
 
-    <label>Marque</label>
-    <input id="newMarque" type="text" placeholder="Ex : Aruba">
+    <input
+      id="newNumeroSerie"
+      type="text"
+      readonly
+    >
 
-    <label>Modèle</label>
-    <input id="newModele" type="text">
 
-    <label>Utilisateur</label>
-    <input id="newUtilisateur" type="text">
 
-    <label>Site</label>
-    <input id="newSite" type="text">
+    <label>
+      N° d'inventaire
+    </label>
 
-    <label>Localisation</label>
-    <input id="newLocalisation" type="text">
+    <input
+      id="newNumeroInventaire"
+      type="text"
+    >
 
-    <label>État</label>
+
+
+    <label>
+      Type
+    </label>
+
+    <input
+      id="newType"
+      type="text"
+      placeholder="Ex : Point d'accès Wi-Fi"
+    >
+
+
+
+    <label>
+      Marque
+    </label>
+
+    <input
+      id="newMarque"
+      type="text"
+      placeholder="Ex : Aruba"
+    >
+
+
+
+    <label>
+      Modèle
+    </label>
+
+    <input
+      id="newModele"
+      type="text"
+      placeholder="Ex : AP 635"
+    >
+
+
+
+    <label>
+      Utilisateur
+    </label>
+
+    <input
+      id="newUtilisateur"
+      type="text"
+    >
+
+
+
+    <label>
+      Site
+    </label>
+
+    <input
+      id="newSite"
+      type="text"
+    >
+
+
+
+    <label>
+      Localisation
+    </label>
+
+    <input
+      id="newLocalisation"
+      type="text"
+    >
+
+
+
+    <label>
+      État
+    </label>
+
     <select id="newEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
 
-    <label>Commentaire</label>
-    <textarea id="newCommentaire"></textarea>
+
+
+    <label>
+      Commentaire
+    </label>
+
+    <textarea
+      id="newCommentaire"
+    ></textarea>
+
+
 
     <button id="addButton">
       💾 Ajouter à l'inventaire
     </button>
 
+
   </div>
+
 
 </div>
 
+
+
 <script>
 
+
+/*
+==================================================
+VARIABLES
+==================================================
+*/
+
+
 let records = [];
+
 let currentRecordId = null;
+
 let columnMappings = null;
+
 
 
 /*
@@ -257,55 +490,70 @@ let columnMappings = null;
 ==================================================
 */
 
+
 const serialInput =
   document.getElementById("serial");
+
 
 const scanButton =
   document.getElementById("scanButton");
 
+
 const barcodeImage =
   document.getElementById("barcodeImage");
+
 
 const preview =
   document.getElementById("preview");
 
+
 const statusBox =
   document.getElementById("status");
+
 
 const resultBox =
   document.getElementById("result");
 
+
 const confirmButton =
   document.getElementById("confirmButton");
+
 
 const newForm =
   document.getElementById("newForm");
 
+
 const addButton =
   document.getElementById("addButton");
+
 
 const mappingWarning =
   document.getElementById("mappingWarning");
 
 
+
 /*
 ==================================================
-CONFIGURATION DES COLONNES ATTENDUES
+COLONNES ATTENDUES PAR LE WIDGET
 ==================================================
 */
 
+
 const columns = [
+
 
   {
     name: "NumeroSerie",
     title: "N° de série"
   },
 
+
   {
     name: "NumeroInventaire",
-    title: "N° d’inventaire",
+    title: "N° d'inventaire",
     optional: true
   },
+
 
   {
     name: "TypeMateriel",
@@ -313,11 +561,13 @@ const columns = [
     optional: true
   },
 
+
   {
     name: "Marque",
     title: "Marque",
     optional: true
   },
+
 
   {
     name: "Modele",
@@ -325,11 +575,13 @@ const columns = [
     optional: true
   },
 
+
   {
     name: "Utilisateur",
     title: "Utilisateur",
     optional: true
   },
+
 
   {
     name: "Site",
@@ -337,11 +589,13 @@ const columns = [
     optional: true
   },
 
+
   {
     name: "Localisation",
     title: "Localisation",
     optional: true
   },
+
 
   {
     name: "Etat",
@@ -349,11 +603,13 @@ const columns = [
     optional: true
   },
 
+
   {
     name: "DernierInventaire",
     title: "Dernier inventaire",
     optional: true
   },
+
 
   {
     name: "Commentaire",
@@ -361,7 +617,9 @@ const columns = [
     optional: true
   }
 
+
 ];
+
 
 
 /*
@@ -370,338 +628,694 @@ INITIALISATION GRIST
 ==================================================
 */
 
+
 grist.ready({
+
   requiredAccess: "full",
+
   columns: columns
+
 });
+
 
 
 /*
 ==================================================
-RÉCUPÉRATION DES DONNÉES + MAPPAGE
+LECTURE DES DONNÉES GRIST
 ==================================================
 */
+
 
 grist.onRecords(function(data, mappings) {
 
+
   columnMappings = mappings;
+
 
   if (!mappings) {
 
-    mappingWarning.style.display = "block";
     records = [];
+
+    mappingWarning.style.display =
+      "block";
+
     return;
 
   }
+
 
   const mappedRecords = [];
 
+
   for (const record of data || []) {
 
+
     const mapped =
-      grist.mapColumnNames(record, {
-        mappings: mappings
-      });
+      grist.mapColumnNames(
+
+        record,
+
+        {
+          mappings: mappings
+        }
+
+      );
+
 
     if (mapped) {
+
       mappedRecords.push(mapped);
+
     }
 
   }
 
-  records = mappedRecords;
 
-  mappingWarning.style.display = "none";
+  records =
+    mappedRecords;
+
+
+  mappingWarning.style.display =
+    "none";
+
 
 });
+
 
 
 /*
 ==================================================
-SCAN
+OUVERTURE DE L'APPAREIL PHOTO
 ==================================================
 */
 
-scanButton.addEventListener("click", function() {
 
-  barcodeImage.click();
+scanButton.addEventListener(
 
-});
+  "click",
+
+  function() {
 
 
-barcodeImage.addEventListener("change", async function() {
+    barcodeImage.click();
 
-  const file = this.files[0];
 
-  if (!file) {
-    return;
   }
 
-  resultBox.style.display = "none";
-  newForm.style.display = "none";
-  confirmButton.style.display = "none";
+);
 
-  statusBox.style.display = "block";
-  statusBox.innerHTML = "📸 Photo reçue…";
 
-  const imageUrl =
-    URL.createObjectURL(file);
 
-  preview.src = imageUrl;
-  preview.style.display = "block";
+/*
+==================================================
+TRAITEMENT DE LA PHOTO
+==================================================
+*/
 
-  preview.onload = async function() {
+
+barcodeImage.addEventListener(
+
+  "change",
+
+  async function() {
+
+
+    const file =
+      this.files[0];
+
+
+    if (!file) {
+
+      return;
+
+    }
+
+
+
+    resultBox.style.display =
+      "none";
+
+
+    newForm.style.display =
+      "none";
+
+
+    confirmButton.style.display =
+      "none";
+
+
+    statusBox.style.display =
+      "block";
+
 
     statusBox.innerHTML =
-      "🔎 Analyse du code-barres…";
+      "📸 Photo reçue…";
 
-    try {
 
-      const reader =
-        new ZXingBrowser.BrowserMultiFormatReader();
 
-      const result =
-        await reader.decodeFromImageElement(preview);
+    const imageUrl =
+      URL.createObjectURL(file);
 
-      const serial =
-        result.getText().trim();
 
-      serialInput.value =
-        serial;
 
-      statusBox.innerHTML = `
-        <span class="success">
-          ✅ Code-barres reconnu :
-          ${echapperHTML(serial)}
-        </span>
-      `;
+    preview.src =
+      imageUrl;
 
-      rechercherMateriel(serial);
 
-    }
+    preview.style.display =
+      "block";
 
-    catch(error) {
 
-      console.error(error);
 
-      statusBox.innerHTML = `
+    preview.onload =
+      async function() {
 
-        <div class="error">
-          ❌ Aucun code-barres reconnu
-        </div>
 
-        <p>
-          Essaie de reprendre la photo :
-        </p>
+        statusBox.innerHTML =
+          "🔎 Analyse du code-barres…";
 
-        <p>
-          • de plus près<br>
-          • avec une bonne lumière<br>
-          • sans reflet<br>
-          • avec le code bien net
-        </p>
 
-      `;
+        try {
 
-    }
 
-    finally {
+          const reader =
+            new ZXingBrowser.BrowserMultiFormatReader();
 
-      URL.revokeObjectURL(imageUrl);
 
-      barcodeImage.value = "";
 
-    }
+          const result =
+            await reader.decodeFromImageElement(
 
-  };
+              preview
 
-});
+            );
+
+
+
+          const serial =
+            result
+              .getText()
+              .trim();
+
+
+
+          serialInput.value =
+            serial;
+
+
+
+          statusBox.innerHTML = `
+
+            <span class="success">
+
+              ✅ Code-barres reconnu :
+              ${echapperHTML(serial)}
+
+            </span>
+
+          `;
+
+
+
+          rechercherMateriel(
+            serial
+          );
+
+
+        }
+
+
+        catch(error) {
+
+
+          console.error(error);
+
+
+          statusBox.innerHTML = `
+
+            <div class="error">
+
+              ❌ Aucun code-barres reconnu
+
+            </div>
+
+            <p>
+
+              Essaie de reprendre la photo :
+
+            </p>
+
+            <p>
+
+              • de plus près<br>
+              • avec une bonne lumière<br>
+              • sans reflet<br>
+              • avec le code bien net
+
+            </p>
+
+          `;
+
+
+        }
+
+
+        finally {
+
+
+          URL.revokeObjectURL(
+            imageUrl
+          );
+
+
+          barcodeImage.value =
+            "";
+
+
+        }
+
+
+      };
+
+
+  }
+
+);
+
 
 
 /*
 ==================================================
-RECHERCHE DU MATÉRIEL
+RECHERCHE DANS L'INVENTAIRE
 ==================================================
 */
 
+
 function rechercherMateriel(serial) {
+
 
   const serialNettoye =
     String(serial)
       .trim()
       .toUpperCase();
 
+
+
   const found =
-    records.find(function(record) {
+    records.find(
 
-      return (
+      function(record) {
 
-        String(record.NumeroSerie || "")
-          .trim()
-          .toUpperCase()
 
-        ===
+        return (
 
-        serialNettoye
+          String(
+            record.NumeroSerie || ""
+          )
+            .trim()
+            .toUpperCase()
 
-      );
+          ===
 
-    });
+          serialNettoye
 
-  resultBox.style.display = "block";
+        );
+
+
+      }
+
+    );
+
+
+
+  resultBox.style.display =
+    "block";
+
+
+
+  /*
+  ==================================================
+  MATÉRIEL EXISTANT
+  ==================================================
+  */
+
 
   if (found) {
 
-    currentRecordId = found.id;
 
-    newForm.style.display = "none";
+    currentRecordId =
+      found.id;
+
+
+
+    newForm.style.display =
+      "none";
+
+
 
     resultBox.innerHTML = `
 
+
       <div class="success">
+
         ✅ Matériel trouvé
+
       </div>
+
 
       <div class="serial">
-        ${echapperHTML(found.NumeroSerie || "")}
+
+        ${echapperHTML(
+          found.NumeroSerie || ""
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>N° inventaire :</strong>
-        ${echapperHTML(found.NumeroInventaire || "-")}
+
+        ${echapperHTML(
+          found.NumeroInventaire || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Type :</strong>
-        ${echapperHTML(found.TypeMateriel || "-")}
+
+        ${echapperHTML(
+          found.TypeMateriel || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Marque :</strong>
-        ${echapperHTML(found.Marque || "-")}
+
+        ${echapperHTML(
+          found.Marque || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Modèle :</strong>
-        ${echapperHTML(found.Modele || "-")}
+
+        ${echapperHTML(
+          found.Modele || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Utilisateur :</strong>
-        ${echapperHTML(found.Utilisateur || "-")}
+
+        ${echapperHTML(
+          found.Utilisateur || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Site :</strong>
-        ${echapperHTML(found.Site || "-")}
+
+        ${echapperHTML(
+          found.Site || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Localisation :</strong>
-        ${echapperHTML(found.Localisation || "-")}
+
+        ${echapperHTML(
+          found.Localisation || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>État :</strong>
-        ${echapperHTML(found.Etat || "-")}
+
+        ${echapperHTML(
+          found.Etat || "-"
+        )}
+
       </div>
 
+
       <div class="line">
+
         <strong>Commentaire :</strong>
-        ${echapperHTML(found.Commentaire || "-")}
+
+        ${echapperHTML(
+          found.Commentaire || "-"
+        )}
+
       </div>
+
 
     `;
+
+
 
     confirmButton.style.display =
       "block";
 
+
   }
+
+
+
+  /*
+  ==================================================
+  NOUVEAU MATÉRIEL
+  ==================================================
+  */
+
 
   else {
 
-    currentRecordId = null;
+
+    currentRecordId =
+      null;
+
+
 
     resultBox.innerHTML = `
 
+
       <div class="warning">
+
         🆕 Nouveau matériel
+
       </div>
 
+
       <p>
+
         Le numéro de série
+
         <strong>
           ${echapperHTML(serial)}
         </strong>
-        n'existe pas encore dans l'inventaire.
+
+        n'existe pas encore
+        dans l'inventaire.
+
       </p>
+
 
     `;
 
+
+
     confirmButton.style.display =
       "none";
+
+
 
     ouvrirFormulaireNouveauMateriel(
       serial
     );
 
+
   }
 
+
 }
+
 
 
 /*
 ==================================================
-OUVERTURE DU FORMULAIRE
+FORMULAIRE NOUVEAU MATÉRIEL
 ==================================================
 */
 
-function ouvrirFormulaireNouveauMateriel(serial) {
+
+function ouvrirFormulaireNouveauMateriel(
+  serial
+) {
+
 
   document.getElementById(
     "newNumeroSerie"
-  ).value = serial;
+  ).value =
+    serial;
+
+
 
   document.getElementById(
     "newNumeroInventaire"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newType"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newMarque"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newModele"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newUtilisateur"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newSite"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newLocalisation"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newEtat"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   document.getElementById(
     "newCommentaire"
-  ).value = "";
+  ).value =
+    "";
+
+
 
   newForm.style.display =
     "block";
 
+
 }
+
+
+
+/*
+==================================================
+FONCTION DE NETTOYAGE DES CHAMPS GRIST
+==================================================
+*/
+
+
+function nettoyerChampsGrist(fields) {
+
+
+  if (!fields) {
+
+    return {};
+
+  }
+
+
+
+  /*
+    Ces champs ne doivent jamais être
+    envoyés comme valeurs de colonnes.
+  */
+
+
+  delete fields.id;
+
+  delete fields.manualSort;
+
+
+
+  /*
+    Suppression de toute propriété
+    vide ou invalide.
+  */
+
+
+  for (
+    const key of Object.keys(fields)
+  ) {
+
+
+    if (
+      !key ||
+      key === "id" ||
+      key === "manualSort"
+    ) {
+
+
+      delete fields[key];
+
+
+    }
+
+
+  }
+
+
+
+  return fields;
+
+
+}
+
 
 
 /*
@@ -710,142 +1324,245 @@ AJOUT D'UN NOUVEAU MATÉRIEL
 ==================================================
 */
 
+
 addButton.addEventListener(
+
   "click",
+
   async function() {
+
 
     if (!columnMappings) {
 
+
       alert(
+
         "Les colonnes du widget ne sont pas encore configurées dans Grist."
+
       );
 
+
       return;
+
+
     }
 
 
+
     const numeroSerie =
+
       document.getElementById(
         "newNumeroSerie"
-      ).value.trim();
+      )
+        .value
+        .trim();
+
 
 
     if (!numeroSerie) {
 
+
       alert(
+
         "Le numéro de série est obligatoire."
+
       );
 
+
       return;
+
+
     }
 
 
-    addButton.disabled = true;
+
+    addButton.disabled =
+      true;
+
 
     addButton.textContent =
       "⏳ Enregistrement…";
 
 
+
     try {
 
+
+
       const table =
-        await grist.getTable();
+        grist.getTable();
+
 
 
       /*
-      ==================================================
-      DONNÉES AVEC LES NOMS LOGIQUES DU WIDGET
-      ==================================================
+      ================================================
+      VALEURS AVEC LES NOMS LOGIQUES DU WIDGET
+      ================================================
       */
 
+
       const widgetFields = {
+
 
         NumeroSerie:
           numeroSerie,
 
+
         NumeroInventaire:
+
           document.getElementById(
             "newNumeroInventaire"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         TypeMateriel:
+
           document.getElementById(
             "newType"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         Marque:
+
           document.getElementById(
             "newMarque"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         Modele:
+
           document.getElementById(
             "newModele"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         Utilisateur:
+
           document.getElementById(
             "newUtilisateur"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         Site:
+
           document.getElementById(
             "newSite"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         Localisation:
+
           document.getElementById(
             "newLocalisation"
-          ).value.trim(),
+          )
+            .value
+            .trim(),
+
 
         Etat:
+
           document.getElementById(
             "newEtat"
           ).value,
 
+
         DernierInventaire:
+
           Math.floor(
             Date.now() / 1000
           ),
 
+
         Commentaire:
+
           document.getElementById(
             "newCommentaire"
-          ).value.trim()
+          )
+            .value
+            .trim()
+
 
       };
 
 
+
       /*
-      ==================================================
-      CONVERSION VERS LES VRAIS NOMS DE COLONNES GRIST
-      ==================================================
+      ================================================
+      CONVERSION VERS LES COLONNES RÉELLES DE GRIST
+      ================================================
       */
 
-      const gristFields =
+
+      let gristFields =
+
         grist.mapColumnNamesBack(
+
           widgetFields,
+
           {
             mappings:
               columnMappings
           }
+
         );
 
 
-      if (!gristFields) {
+
+      /*
+      ================================================
+      SUPPRESSION id / manualSort
+      ================================================
+      */
+
+
+      gristFields =
+        nettoyerChampsGrist(
+          gristFields
+        );
+
+
+
+      /*
+      ================================================
+      CONTRÔLE DE SÉCURITÉ
+      ================================================
+      */
+
+
+      if (
+        Object.keys(gristFields).length === 0
+      ) {
+
 
         throw new Error(
-          "Impossible de convertir le mappage des colonnes."
+
+          "Aucune colonne Grist valide n'a été trouvée. Vérifie le mappage des colonnes."
+
         );
+
 
       }
 
 
+
       /*
-      ==================================================
+      ================================================
       CRÉATION DE LA LIGNE
-      ==================================================
+      ================================================
       */
+
 
       await table.create({
 
@@ -855,7 +1572,23 @@ addButton.addEventListener(
       });
 
 
+
+      /*
+      ================================================
+      SUCCÈS
+      ================================================
+      */
+
+
       newForm.style.display =
+        "none";
+
+
+      confirmButton.style.display =
+        "none";
+
+
+      statusBox.style.display =
         "none";
 
 
@@ -863,7 +1596,9 @@ addButton.addEventListener(
         "block";
 
 
+
       resultBox.innerHTML = `
+
 
         <div class="success">
 
@@ -871,195 +1606,304 @@ addButton.addEventListener(
 
         </div>
 
+
         <div class="serial">
 
-          ${echapperHTML(numeroSerie)}
+          ${echapperHTML(
+            numeroSerie
+          )}
 
         </div>
 
+
         <p>
 
-          La nouvelle ligne a été créée dans Grist.
+          La nouvelle ligne a bien été
+          créée dans Grist.
 
         </p>
+
 
       `;
 
 
-      statusBox.style.display =
-        "none";
-
-
-      /*
-        Le onRecords Grist se déclenchera ensuite
-        automatiquement et actualisera records.
-      */
 
     }
 
+
     catch(error) {
 
+
       console.error(error);
+
 
       alert(
 
         "Erreur lors de l'ajout dans Grist : "
         +
-        (error.message || error)
+        (
+          error.message
+          ||
+          String(error)
+        )
 
       );
 
+
     }
 
+
     finally {
+
 
       addButton.disabled =
         false;
 
+
       addButton.textContent =
         "💾 Ajouter à l'inventaire";
 
+
     }
 
+
   }
+
 );
+
 
 
 /*
 ==================================================
-CONFIRMER UN MATÉRIEL EXISTANT
+CONFIRMATION D'UN MATÉRIEL EXISTANT
 ==================================================
 */
 
+
 confirmButton.addEventListener(
+
   "click",
+
   async function() {
 
+
     if (!currentRecordId) {
+
       return;
+
     }
+
 
 
     if (!columnMappings) {
 
+
       alert(
+
         "Les colonnes du widget ne sont pas configurées."
+
       );
 
+
       return;
+
+
     }
+
 
 
     try {
 
+
+
       const table =
-        await grist.getTable();
+        grist.getTable();
+
 
 
       const widgetFields = {
 
+
         DernierInventaire:
+
           Math.floor(
             Date.now() / 1000
           )
 
+
       };
 
 
-      const gristFields =
+
+      let gristFields =
+
         grist.mapColumnNamesBack(
+
           widgetFields,
+
           {
             mappings:
               columnMappings
           }
+
         );
+
+
+
+      gristFields =
+        nettoyerChampsGrist(
+          gristFields
+        );
+
 
 
       await table.update({
 
+
         id:
           currentRecordId,
+
 
         fields:
           gristFields
 
+
       });
+
 
 
       resultBox.innerHTML += `
 
+
         <p class="success">
+
           ✅ Inventaire confirmé
+
         </p>
 
+
       `;
+
 
 
       confirmButton.style.display =
         "none";
 
+
     }
 
+
     catch(error) {
+
+
+      console.error(error);
+
 
       alert(
 
         "Erreur lors de la mise à jour : "
         +
-        (error.message || error)
+        (
+          error.message
+          ||
+          String(error)
+        )
 
       );
 
+
     }
 
+
   }
+
 );
+
 
 
 /*
 ==================================================
-SAISIE MANUELLE
+SAISIE MANUELLE DU NUMÉRO
 ==================================================
 */
 
+
 serialInput.addEventListener(
+
   "change",
+
   function() {
 
+
     const serial =
-      serialInput.value.trim();
+
+      serialInput
+        .value
+        .trim();
+
+
 
     if (serial) {
+
 
       rechercherMateriel(
         serial
       );
 
+
     }
 
+
   }
+
 );
+
 
 
 /*
 ==================================================
-SÉCURITÉ HTML
+PROTECTION HTML
 ==================================================
 */
 
+
 function echapperHTML(value) {
 
+
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
 
 }
 
+
 </script>
 
+
 </body>
+
 </html>
