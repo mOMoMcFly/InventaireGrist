@@ -2,7 +2,6 @@
 <html lang="fr">
 
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -12,19 +11,14 @@
 
   <title>Inventaire Grist</title>
 
-  <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-
-  <!-- ZXing pour lire les codes-barres -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
-
 
   <style>
 
     * {
       box-sizing: border-box;
     }
-
 
     html,
     body {
@@ -35,202 +29,146 @@
       -webkit-overflow-scrolling: touch;
     }
 
-
     body {
       padding: 20px;
-
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f5f6f8;
       color: #222;
     }
-
 
     .container {
       max-width: 520px;
       margin: auto;
     }
 
-
     h1 {
       font-size: 28px;
       margin-bottom: 24px;
     }
-
 
     h2 {
       font-size: 21px;
       margin-top: 0;
     }
 
-
     label {
       display: block;
-
       font-size: 16px;
       font-weight: 600;
-
       margin-top: 14px;
       margin-bottom: 6px;
     }
 
-
     input,
     select,
     textarea {
-
       width: 100%;
       min-height: 52px;
-
       padding: 12px;
-
       border: 1px solid #bbb;
       border-radius: 10px;
-
       font-size: 17px;
-
       background: white;
     }
 
+    input[readonly] {
+      background: #eeeeee;
+      color: #555;
+    }
 
     textarea {
       min-height: 100px;
       resize: vertical;
     }
 
-
     button {
-
       width: 100%;
       min-height: 58px;
-
       border: none;
       border-radius: 12px;
-
       font-size: 18px;
       font-weight: 600;
-
       margin-top: 15px;
-
       cursor: pointer;
     }
 
+    button:disabled {
+      opacity: 0.6;
+    }
 
     #scanButton {
       background: #1f5ea8;
       color: white;
     }
 
-
-    #addButton {
-      background: #2e7d32;
+    #addButton,
+    #saveButton {
+      background: #1f5ea8;
       color: white;
     }
-
 
     #confirmButton {
       background: #2e7d32;
       color: white;
-      display: none;
     }
-
 
     #preview {
-
       display: none;
-
       width: 100%;
-
       border-radius: 12px;
-
       margin-top: 15px;
     }
-
 
     #status,
     #result,
     #newForm,
+    #editForm,
     #mappingWarning {
-
       display: none;
-
       background: white;
-
       padding: 18px;
-
       border-radius: 12px;
-
       margin-top: 16px;
-
-      box-shadow:
-        0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-
 
     .success {
       color: #2e7d32;
       font-weight: 700;
     }
 
-
     .warning {
       color: #a15c00;
       font-weight: 700;
     }
-
 
     .error {
       color: #b00020;
       font-weight: 700;
     }
 
+    .info {
+      color: #1f5ea8;
+      font-weight: 700;
+    }
 
     .serial {
-
       font-size: 24px;
       font-weight: bold;
-
       margin: 12px 0;
     }
 
-
-    .line {
-
-      margin: 8px 0;
-
-      font-size: 17px;
-    }
-
-
-    button:disabled {
-
-      opacity: 0.6;
-
-      cursor: default;
-    }
-
   </style>
-
 </head>
 
 
 <body>
 
-
 <div class="container">
-
 
   <h1>📦 Inventaire matériel</h1>
 
-
-  <!-- Message si les colonnes ne sont pas configurées -->
-
   <div id="mappingWarning">
-
     <div class="warning">
       ⚙️ Configuration des colonnes requise
     </div>
@@ -239,30 +177,22 @@
       Vérifie les associations de colonnes
       dans les options du widget Grist.
     </p>
-
   </div>
 
 
-
-  <!-- ===============================
-       NUMÉRO DE SÉRIE
-       =============================== -->
-
+  <!-- =========================
+       SCANNER
+       ========================= -->
 
   <label for="serial">
     N° de série
   </label>
-
 
   <input
     id="serial"
     type="text"
     placeholder="Scanner ou saisir le numéro"
   >
-
-
-
-  <!-- Champ utilisé pour lancer l'appareil photo -->
 
   <input
     id="barcodeImage"
@@ -272,281 +202,229 @@
     style="display:none;"
   >
 
-
-
   <button id="scanButton">
     📷 Scanner le code-barres
   </button>
-
-
-
-  <!-- Photo prise -->
 
   <img
     id="preview"
     alt="Photo du code-barres"
   >
 
-
-
-  <!-- État du scan -->
-
   <div id="status"></div>
-
-
-
-  <!-- Résultat de la recherche -->
 
   <div id="result"></div>
 
 
+  <!-- =========================
+       MATÉRIEL EXISTANT
+       ========================= -->
 
-  <!-- Confirmation matériel existant -->
+  <div id="editForm">
 
-  <button id="confirmButton">
-    ✅ Confirmer l'inventaire
-  </button>
+    <h2>📝 Matériel existant</h2>
+
+    <label>N° de série 🔒</label>
+    <input
+      id="editNumeroSerie"
+      type="text"
+      readonly
+    >
+
+    <label>N° d'inventaire</label>
+    <input
+      id="editNumeroInventaire"
+      type="text"
+    >
+
+    <label>Type</label>
+    <input
+      id="editType"
+      type="text"
+    >
+
+    <label>Marque</label>
+    <input
+      id="editMarque"
+      type="text"
+    >
+
+    <label>Modèle</label>
+    <input
+      id="editModele"
+      type="text"
+    >
+
+    <label>Utilisateur</label>
+    <input
+      id="editUtilisateur"
+      type="text"
+    >
+
+    <label>Site</label>
+    <input
+      id="editSite"
+      type="text"
+    >
+
+    <label>Localisation</label>
+    <input
+      id="editLocalisation"
+      type="text"
+    >
+
+    <label>État</label>
+
+    <select id="editEtat">
+      <option value="">-- Choisir --</option>
+      <option value="En service">En service</option>
+      <option value="En stock">En stock</option>
+      <option value="En panne">En panne</option>
+      <option value="Réformé">Réformé</option>
+    </select>
+
+    <label>Commentaire</label>
+
+    <textarea id="editCommentaire"></textarea>
 
 
+    <button id="saveButton">
+      💾 Enregistrer les modifications
+    </button>
 
-  <!-- ===============================
+
+    <button id="confirmButton">
+      ✅ Confirmer l'inventaire
+    </button>
+
+  </div>
+
+
+  <!-- =========================
        NOUVEAU MATÉRIEL
-       =============================== -->
-
+       ========================= -->
 
   <div id="newForm">
 
+    <h2>➕ Nouveau matériel</h2>
 
-    <h2>
-      ➕ Nouveau matériel
-    </h2>
-
-
-    <label>
-      N° de série
-    </label>
-
+    <label>N° de série 🔒</label>
     <input
       id="newNumeroSerie"
       type="text"
       readonly
     >
 
-
-
-    <label>
-      N° d'inventaire
-    </label>
-
+    <label>N° d'inventaire</label>
     <input
       id="newNumeroInventaire"
       type="text"
     >
 
-
-
-    <label>
-      Type
-    </label>
-
+    <label>Type</label>
     <input
       id="newType"
       type="text"
       placeholder="Ex : Point d'accès Wi-Fi"
     >
 
-
-
-    <label>
-      Marque
-    </label>
-
+    <label>Marque</label>
     <input
       id="newMarque"
       type="text"
       placeholder="Ex : Aruba"
     >
 
-
-
-    <label>
-      Modèle
-    </label>
-
+    <label>Modèle</label>
     <input
       id="newModele"
       type="text"
       placeholder="Ex : AP 635"
     >
 
-
-
-    <label>
-      Utilisateur
-    </label>
-
+    <label>Utilisateur</label>
     <input
       id="newUtilisateur"
       type="text"
     >
 
-
-
-    <label>
-      Site
-    </label>
-
+    <label>Site</label>
     <input
       id="newSite"
       type="text"
     >
 
-
-
-    <label>
-      Localisation
-    </label>
-
+    <label>Localisation</label>
     <input
       id="newLocalisation"
       type="text"
     >
 
-
-
-    <label>
-      État
-    </label>
+    <label>État</label>
 
     <select id="newEtat">
-
-      <option value="">
-        -- Choisir --
-      </option>
-
-      <option value="En service">
-        En service
-      </option>
-
-      <option value="En stock">
-        En stock
-      </option>
-
-      <option value="En panne">
-        En panne
-      </option>
-
-      <option value="Réformé">
-        Réformé
-      </option>
-
+      <option value="">-- Choisir --</option>
+      <option value="En service">En service</option>
+      <option value="En stock">En stock</option>
+      <option value="En panne">En panne</option>
+      <option value="Réformé">Réformé</option>
     </select>
 
+    <label>Commentaire</label>
 
-
-    <label>
-      Commentaire
-    </label>
-
-    <textarea
-      id="newCommentaire"
-    ></textarea>
-
-
+    <textarea id="newCommentaire"></textarea>
 
     <button id="addButton">
       💾 Ajouter à l'inventaire
     </button>
 
-
   </div>
-
 
 </div>
 
 
-
 <script>
 
-
-/*
-==================================================
-VARIABLES
-==================================================
-*/
-
+/* ==================================================
+   VARIABLES
+================================================== */
 
 let records = [];
-
 let currentRecordId = null;
-
 let columnMappings = null;
 
 
+/* ==================================================
+   ÉLÉMENTS
+================================================== */
 
-/*
-==================================================
-ÉLÉMENTS HTML
-==================================================
-*/
+const serialInput = document.getElementById("serial");
+const scanButton = document.getElementById("scanButton");
+const barcodeImage = document.getElementById("barcodeImage");
+const preview = document.getElementById("preview");
+const statusBox = document.getElementById("status");
+const resultBox = document.getElementById("result");
 
+const newForm = document.getElementById("newForm");
+const editForm = document.getElementById("editForm");
 
-const serialInput =
-  document.getElementById("serial");
+const addButton = document.getElementById("addButton");
+const saveButton = document.getElementById("saveButton");
+const confirmButton = document.getElementById("confirmButton");
 
-
-const scanButton =
-  document.getElementById("scanButton");
-
-
-const barcodeImage =
-  document.getElementById("barcodeImage");
-
-
-const preview =
-  document.getElementById("preview");
+const mappingWarning = document.getElementById("mappingWarning");
 
 
-const statusBox =
-  document.getElementById("status");
-
-
-const resultBox =
-  document.getElementById("result");
-
-
-const confirmButton =
-  document.getElementById("confirmButton");
-
-
-const newForm =
-  document.getElementById("newForm");
-
-
-const addButton =
-  document.getElementById("addButton");
-
-
-const mappingWarning =
-  document.getElementById("mappingWarning");
-
-
-
-/*
-==================================================
-COLONNES ATTENDUES PAR LE WIDGET
-==================================================
-*/
-
+/* ==================================================
+   COLONNES GRIST
+================================================== */
 
 const columns = [
-
 
   {
     name: "NumeroSerie",
     title: "N° de série"
   },
-
 
   {
     name: "NumeroInventaire",
@@ -554,13 +432,11 @@ const columns = [
     optional: true
   },
 
-
   {
     name: "TypeMateriel",
     title: "Type",
     optional: true
   },
-
 
   {
     name: "Marque",
@@ -568,13 +444,11 @@ const columns = [
     optional: true
   },
 
-
   {
     name: "Modele",
     title: "Modèle",
     optional: true
   },
-
 
   {
     name: "Utilisateur",
@@ -582,13 +456,11 @@ const columns = [
     optional: true
   },
 
-
   {
     name: "Site",
     title: "Site",
     optional: true
   },
-
 
   {
     name: "Localisation",
@@ -596,13 +468,11 @@ const columns = [
     optional: true
   },
 
-
   {
     name: "Etat",
     title: "État",
     optional: true
   },
-
 
   {
     name: "DernierInventaire",
@@ -610,1300 +480,700 @@ const columns = [
     optional: true
   },
 
-
   {
     name: "Commentaire",
     title: "Commentaire",
     optional: true
   }
 
-
 ];
 
 
-
-/*
-==================================================
-INITIALISATION GRIST
-==================================================
-*/
-
+/* ==================================================
+   INITIALISATION GRIST
+================================================== */
 
 grist.ready({
-
   requiredAccess: "full",
-
   columns: columns
-
 });
 
 
-
-/*
-==================================================
-LECTURE DES DONNÉES GRIST
-==================================================
-*/
-
+/* ==================================================
+   LECTURE DES DONNÉES
+================================================== */
 
 grist.onRecords(function(data, mappings) {
 
-
   columnMappings = mappings;
-
 
   if (!mappings) {
 
     records = [];
 
-    mappingWarning.style.display =
-      "block";
+    mappingWarning.style.display = "block";
 
     return;
-
   }
-
 
   const mappedRecords = [];
 
-
   for (const record of data || []) {
 
-
-    const mapped =
-      grist.mapColumnNames(
-
-        record,
-
-        {
-          mappings: mappings
-        }
-
-      );
-
+    const mapped = grist.mapColumnNames(
+      record,
+      { mappings: mappings }
+    );
 
     if (mapped) {
-
       mappedRecords.push(mapped);
-
     }
-
   }
 
+  records = mappedRecords;
 
-  records =
-    mappedRecords;
-
-
-  mappingWarning.style.display =
-    "none";
-
+  mappingWarning.style.display = "none";
 
 });
 
 
+/* ==================================================
+   SCAN
+================================================== */
 
-/*
-==================================================
-OUVERTURE DE L'APPAREIL PHOTO
-==================================================
-*/
+scanButton.addEventListener("click", function() {
 
+  barcodeImage.click();
 
-scanButton.addEventListener(
-
-  "click",
-
-  function() {
+});
 
 
-    barcodeImage.click();
+barcodeImage.addEventListener("change", async function() {
 
+  const file = this.files[0];
 
+  if (!file) {
+    return;
   }
 
-);
+  masquerFormulaires();
 
+  statusBox.style.display = "block";
+  statusBox.innerHTML = "📸 Photo reçue…";
 
+  const imageUrl = URL.createObjectURL(file);
 
-/*
-==================================================
-TRAITEMENT DE LA PHOTO
-==================================================
-*/
+  preview.src = imageUrl;
+  preview.style.display = "block";
 
+  preview.onload = async function() {
 
-barcodeImage.addEventListener(
+    statusBox.innerHTML =
+      "🔎 Analyse du code-barres…";
 
-  "change",
+    try {
 
-  async function() {
+      const reader =
+        new ZXingBrowser.BrowserMultiFormatReader();
 
+      const result =
+        await reader.decodeFromImageElement(preview);
 
-    const file =
-      this.files[0];
+      const serial =
+        result.getText().trim();
 
+      serialInput.value = serial;
 
-    if (!file) {
+      statusBox.innerHTML = `
+        <span class="success">
+          ✅ Code-barres reconnu :
+          ${echapperHTML(serial)}
+        </span>
+      `;
 
-      return;
+      rechercherMateriel(serial);
 
     }
 
+    catch(error) {
 
+      console.error(error);
 
-    resultBox.style.display =
-      "none";
+      statusBox.innerHTML = `
+        <div class="error">
+          ❌ Aucun code-barres reconnu
+        </div>
 
+        <p>
+          Essaie de reprendre la photo
+          de plus près, sans reflet
+          et avec le code bien net.
+        </p>
+      `;
 
-    newForm.style.display =
-      "none";
+    }
 
+    finally {
 
-    confirmButton.style.display =
-      "none";
+      URL.revokeObjectURL(imageUrl);
 
+      barcodeImage.value = "";
 
-    statusBox.style.display =
-      "block";
+    }
 
+  };
 
-    statusBox.innerHTML =
-      "📸 Photo reçue…";
+});
 
 
-
-    const imageUrl =
-      URL.createObjectURL(file);
-
-
-
-    preview.src =
-      imageUrl;
-
-
-    preview.style.display =
-      "block";
-
-
-
-    preview.onload =
-      async function() {
-
-
-        statusBox.innerHTML =
-          "🔎 Analyse du code-barres…";
-
-
-        try {
-
-
-          const reader =
-            new ZXingBrowser.BrowserMultiFormatReader();
-
-
-
-          const result =
-            await reader.decodeFromImageElement(
-
-              preview
-
-            );
-
-
-
-          const serial =
-            result
-              .getText()
-              .trim();
-
-
-
-          serialInput.value =
-            serial;
-
-
-
-          statusBox.innerHTML = `
-
-            <span class="success">
-
-              ✅ Code-barres reconnu :
-              ${echapperHTML(serial)}
-
-            </span>
-
-          `;
-
-
-
-          rechercherMateriel(
-            serial
-          );
-
-
-        }
-
-
-        catch(error) {
-
-
-          console.error(error);
-
-
-          statusBox.innerHTML = `
-
-            <div class="error">
-
-              ❌ Aucun code-barres reconnu
-
-            </div>
-
-            <p>
-
-              Essaie de reprendre la photo :
-
-            </p>
-
-            <p>
-
-              • de plus près<br>
-              • avec une bonne lumière<br>
-              • sans reflet<br>
-              • avec le code bien net
-
-            </p>
-
-          `;
-
-
-        }
-
-
-        finally {
-
-
-          URL.revokeObjectURL(
-            imageUrl
-          );
-
-
-          barcodeImage.value =
-            "";
-
-
-        }
-
-
-      };
-
-
-  }
-
-);
-
-
-
-/*
-==================================================
-RECHERCHE DANS L'INVENTAIRE
-==================================================
-*/
-
+/* ==================================================
+   RECHERCHE
+================================================== */
 
 function rechercherMateriel(serial) {
-
 
   const serialNettoye =
     String(serial)
       .trim()
       .toUpperCase();
 
+  const found = records.find(function(record) {
 
-
-  const found =
-    records.find(
-
-      function(record) {
-
-
-        return (
-
-          String(
-            record.NumeroSerie || ""
-          )
-            .trim()
-            .toUpperCase()
-
-          ===
-
-          serialNettoye
-
-        );
-
-
-      }
-
+    return (
+      String(record.NumeroSerie || "")
+        .trim()
+        .toUpperCase()
+      === serialNettoye
     );
 
+  });
+
+  resultBox.style.display = "block";
 
 
-  resultBox.style.display =
-    "block";
-
-
-
-  /*
-  ==================================================
-  MATÉRIEL EXISTANT
-  ==================================================
-  */
-
+  /* ---------- MATÉRIEL EXISTANT ---------- */
 
   if (found) {
 
+    currentRecordId = found.id;
 
-    currentRecordId =
-      found.id;
-
-
-
-    newForm.style.display =
-      "none";
-
-
+    newForm.style.display = "none";
 
     resultBox.innerHTML = `
-
-
       <div class="success">
-
         ✅ Matériel trouvé
-
       </div>
-
 
       <div class="serial">
-
-        ${echapperHTML(
-          found.NumeroSerie || ""
-        )}
-
+        ${echapperHTML(found.NumeroSerie || "")}
       </div>
 
-
-      <div class="line">
-
-        <strong>N° inventaire :</strong>
-
-        ${echapperHTML(
-          found.NumeroInventaire || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Type :</strong>
-
-        ${echapperHTML(
-          found.TypeMateriel || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Marque :</strong>
-
-        ${echapperHTML(
-          found.Marque || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Modèle :</strong>
-
-        ${echapperHTML(
-          found.Modele || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Utilisateur :</strong>
-
-        ${echapperHTML(
-          found.Utilisateur || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Site :</strong>
-
-        ${echapperHTML(
-          found.Site || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Localisation :</strong>
-
-        ${echapperHTML(
-          found.Localisation || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>État :</strong>
-
-        ${echapperHTML(
-          found.Etat || "-"
-        )}
-
-      </div>
-
-
-      <div class="line">
-
-        <strong>Commentaire :</strong>
-
-        ${echapperHTML(
-          found.Commentaire || "-"
-        )}
-
-      </div>
-
-
+      <p>
+        Tu peux modifier les informations
+        ci-dessous ou simplement confirmer l'inventaire.
+      </p>
     `;
 
-
-
-    confirmButton.style.display =
-      "block";
-
+    remplirFormulaireEdition(found);
 
   }
 
 
-
-  /*
-  ==================================================
-  NOUVEAU MATÉRIEL
-  ==================================================
-  */
-
+  /* ---------- NOUVEAU MATÉRIEL ---------- */
 
   else {
 
+    currentRecordId = null;
 
-    currentRecordId =
-      null;
-
-
+    editForm.style.display = "none";
 
     resultBox.innerHTML = `
-
-
       <div class="warning">
-
         🆕 Nouveau matériel
-
       </div>
 
-
       <p>
-
         Le numéro de série
-
-        <strong>
-          ${echapperHTML(serial)}
-        </strong>
-
-        n'existe pas encore
-        dans l'inventaire.
-
+        <strong>${echapperHTML(serial)}</strong>
+        n'existe pas encore dans l'inventaire.
       </p>
-
-
     `;
 
-
-
-    confirmButton.style.display =
-      "none";
-
-
-
-    ouvrirFormulaireNouveauMateriel(
-      serial
-    );
-
+    remplirFormulaireCreation(serial);
 
   }
 
+}
+
+
+/* ==================================================
+   FORMULAIRE ÉDITION
+================================================== */
+
+function remplirFormulaireEdition(record) {
+
+  document.getElementById("editNumeroSerie").value =
+    record.NumeroSerie || "";
+
+  document.getElementById("editNumeroInventaire").value =
+    record.NumeroInventaire || "";
+
+  document.getElementById("editType").value =
+    record.TypeMateriel || "";
+
+  document.getElementById("editMarque").value =
+    record.Marque || "";
+
+  document.getElementById("editModele").value =
+    record.Modele || "";
+
+  document.getElementById("editUtilisateur").value =
+    record.Utilisateur || "";
+
+  document.getElementById("editSite").value =
+    record.Site || "";
+
+  document.getElementById("editLocalisation").value =
+    record.Localisation || "";
+
+  document.getElementById("editEtat").value =
+    record.Etat || "";
+
+  document.getElementById("editCommentaire").value =
+    record.Commentaire || "";
+
+  editForm.style.display = "block";
 
 }
 
 
+/* ==================================================
+   FORMULAIRE CRÉATION
+================================================== */
 
-/*
-==================================================
-FORMULAIRE NOUVEAU MATÉRIEL
-==================================================
-*/
+function remplirFormulaireCreation(serial) {
 
+  document.getElementById("newNumeroSerie").value = serial;
 
-function ouvrirFormulaireNouveauMateriel(
-  serial
-) {
+  document.getElementById("newNumeroInventaire").value = "";
+  document.getElementById("newType").value = "";
+  document.getElementById("newMarque").value = "";
+  document.getElementById("newModele").value = "";
+  document.getElementById("newUtilisateur").value = "";
+  document.getElementById("newSite").value = "";
+  document.getElementById("newLocalisation").value = "";
+  document.getElementById("newEtat").value = "";
+  document.getElementById("newCommentaire").value = "";
 
-
-  document.getElementById(
-    "newNumeroSerie"
-  ).value =
-    serial;
-
-
-
-  document.getElementById(
-    "newNumeroInventaire"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newType"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newMarque"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newModele"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newUtilisateur"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newSite"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newLocalisation"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newEtat"
-  ).value =
-    "";
-
-
-
-  document.getElementById(
-    "newCommentaire"
-  ).value =
-    "";
-
-
-
-  newForm.style.display =
-    "block";
-
+  newForm.style.display = "block";
 
 }
 
 
+/* ==================================================
+   MASQUAGE
+================================================== */
 
-/*
-==================================================
-FONCTION DE NETTOYAGE DES CHAMPS GRIST
-==================================================
-*/
+function masquerFormulaires() {
+
+  resultBox.style.display = "none";
+  newForm.style.display = "none";
+  editForm.style.display = "none";
+
+}
 
 
-function nettoyerChampsGrist(fields) {
+/* ==================================================
+   CONVERSION DES CHAMPS
+================================================== */
 
+function convertirChamps(widgetFields) {
+
+  let fields = grist.mapColumnNamesBack(
+    widgetFields,
+    { mappings: columnMappings }
+  );
 
   if (!fields) {
-
     return {};
-
   }
 
-
-
-  /*
-    Ces champs ne doivent jamais être
-    envoyés comme valeurs de colonnes.
-  */
-
-
   delete fields.id;
-
   delete fields.manualSort;
 
-
-
-  /*
-    Suppression de toute propriété
-    vide ou invalide.
-  */
-
-
-  for (
-    const key of Object.keys(fields)
-  ) {
-
+  for (const key of Object.keys(fields)) {
 
     if (
       !key ||
       key === "id" ||
       key === "manualSort"
     ) {
-
-
       delete fields[key];
-
-
     }
 
-
   }
-
-
 
   return fields;
 
-
 }
 
 
+/* ==================================================
+   CRÉATION D'UN MATÉRIEL
+================================================== */
 
-/*
-==================================================
-AJOUT D'UN NOUVEAU MATÉRIEL
-==================================================
-*/
+addButton.addEventListener("click", async function() {
 
+  if (!columnMappings) {
 
-addButton.addEventListener(
+    alert(
+      "Les colonnes ne sont pas configurées dans Grist."
+    );
 
-  "click",
+    return;
+  }
 
-  async function() {
+  const numeroSerie =
+    document.getElementById("newNumeroSerie")
+      .value
+      .trim();
 
+  if (!numeroSerie) {
 
-    if (!columnMappings) {
+    alert("Le numéro de série est obligatoire.");
 
+    return;
+  }
 
-      alert(
+  addButton.disabled = true;
+  addButton.textContent = "⏳ Enregistrement…";
 
-        "Les colonnes du widget ne sont pas encore configurées dans Grist."
+  try {
 
-      );
+    const table = grist.getTable();
 
+    const widgetFields = {
 
-      return;
+      NumeroSerie:
+        numeroSerie,
 
+      NumeroInventaire:
+        document.getElementById("newNumeroInventaire")
+          .value.trim(),
 
-    }
+      TypeMateriel:
+        document.getElementById("newType")
+          .value.trim(),
 
+      Marque:
+        document.getElementById("newMarque")
+          .value.trim(),
 
+      Modele:
+        document.getElementById("newModele")
+          .value.trim(),
 
-    const numeroSerie =
+      Utilisateur:
+        document.getElementById("newUtilisateur")
+          .value.trim(),
 
-      document.getElementById(
-        "newNumeroSerie"
-      )
-        .value
-        .trim();
+      Site:
+        document.getElementById("newSite")
+          .value.trim(),
 
+      Localisation:
+        document.getElementById("newLocalisation")
+          .value.trim(),
 
+      Etat:
+        document.getElementById("newEtat")
+          .value,
 
-    if (!numeroSerie) {
+      DernierInventaire:
+        Math.floor(Date.now() / 1000),
 
+      Commentaire:
+        document.getElementById("newCommentaire")
+          .value.trim()
 
-      alert(
+    };
 
-        "Le numéro de série est obligatoire."
+    const fields =
+      convertirChamps(widgetFields);
 
-      );
+    await table.create({
+      fields: fields
+    });
 
+    newForm.style.display = "none";
 
-      return;
+    resultBox.innerHTML = `
+      <div class="success">
+        ✅ Matériel ajouté à l'inventaire
+      </div>
 
+      <div class="serial">
+        ${echapperHTML(numeroSerie)}
+      </div>
+    `;
 
-    }
+  }
 
+  catch(error) {
 
+    console.error(error);
 
-    addButton.disabled =
-      true;
+    alert(
+      "Erreur lors de l'ajout : " +
+      (error.message || error)
+    );
 
+  }
+
+  finally {
+
+    addButton.disabled = false;
 
     addButton.textContent =
-      "⏳ Enregistrement…";
+      "💾 Ajouter à l'inventaire";
+
+  }
+
+});
 
 
+/* ==================================================
+   MODIFICATION D'UN MATÉRIEL EXISTANT
+================================================== */
 
-    try {
+saveButton.addEventListener("click", async function() {
+
+  if (!currentRecordId) {
+    return;
+  }
+
+  if (!columnMappings) {
+
+    alert(
+      "Les colonnes ne sont pas configurées dans Grist."
+    );
+
+    return;
+  }
+
+  saveButton.disabled = true;
+
+  saveButton.textContent =
+    "⏳ Enregistrement…";
+
+  try {
+
+    const table = grist.getTable();
+
+    const widgetFields = {
+
+      NumeroInventaire:
+        document.getElementById("editNumeroInventaire")
+          .value.trim(),
+
+      TypeMateriel:
+        document.getElementById("editType")
+          .value.trim(),
+
+      Marque:
+        document.getElementById("editMarque")
+          .value.trim(),
+
+      Modele:
+        document.getElementById("editModele")
+          .value.trim(),
+
+      Utilisateur:
+        document.getElementById("editUtilisateur")
+          .value.trim(),
+
+      Site:
+        document.getElementById("editSite")
+          .value.trim(),
+
+      Localisation:
+        document.getElementById("editLocalisation")
+          .value.trim(),
+
+      Etat:
+        document.getElementById("editEtat")
+          .value,
+
+      Commentaire:
+        document.getElementById("editCommentaire")
+          .value.trim()
+
+    };
+
+    const fields =
+      convertirChamps(widgetFields);
+
+    await table.update({
+
+      id: currentRecordId,
+
+      fields: fields
+
+    });
+
+    resultBox.style.display = "block";
+
+    resultBox.innerHTML = `
+      <div class="success">
+        ✅ Modifications enregistrées
+      </div>
+
+      <div class="serial">
+        ${echapperHTML(
+          document.getElementById("editNumeroSerie").value
+        )}
+      </div>
+    `;
+
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+    alert(
+      "Erreur lors de la modification : " +
+      (error.message || error)
+    );
+
+  }
+
+  finally {
+
+    saveButton.disabled = false;
+
+    saveButton.textContent =
+      "💾 Enregistrer les modifications";
+
+  }
+
+});
 
 
+/* ==================================================
+   CONFIRMATION DE L'INVENTAIRE
+================================================== */
 
-      const table =
-        grist.getTable();
+confirmButton.addEventListener("click", async function() {
 
+  if (!currentRecordId) {
+    return;
+  }
 
+  if (!columnMappings) {
 
-      /*
-      ================================================
-      VALEURS AVEC LES NOMS LOGIQUES DU WIDGET
-      ================================================
-      */
+    alert(
+      "Les colonnes ne sont pas configurées."
+    );
 
+    return;
+  }
 
-      const widgetFields = {
+  confirmButton.disabled = true;
 
+  confirmButton.textContent =
+    "⏳ Confirmation…";
 
-        NumeroSerie:
-          numeroSerie,
+  try {
 
+    const table = grist.getTable();
 
-        NumeroInventaire:
-
-          document.getElementById(
-            "newNumeroInventaire"
-          )
-            .value
-            .trim(),
-
-
-        TypeMateriel:
-
-          document.getElementById(
-            "newType"
-          )
-            .value
-            .trim(),
-
-
-        Marque:
-
-          document.getElementById(
-            "newMarque"
-          )
-            .value
-            .trim(),
-
-
-        Modele:
-
-          document.getElementById(
-            "newModele"
-          )
-            .value
-            .trim(),
-
-
-        Utilisateur:
-
-          document.getElementById(
-            "newUtilisateur"
-          )
-            .value
-            .trim(),
-
-
-        Site:
-
-          document.getElementById(
-            "newSite"
-          )
-            .value
-            .trim(),
-
-
-        Localisation:
-
-          document.getElementById(
-            "newLocalisation"
-          )
-            .value
-            .trim(),
-
-
-        Etat:
-
-          document.getElementById(
-            "newEtat"
-          ).value,
-
+    const fields =
+      convertirChamps({
 
         DernierInventaire:
-
-          Math.floor(
-            Date.now() / 1000
-          ),
-
-
-        Commentaire:
-
-          document.getElementById(
-            "newCommentaire"
-          )
-            .value
-            .trim()
-
-
-      };
-
-
-
-      /*
-      ================================================
-      CONVERSION VERS LES COLONNES RÉELLES DE GRIST
-      ================================================
-      */
-
-
-      let gristFields =
-
-        grist.mapColumnNamesBack(
-
-          widgetFields,
-
-          {
-            mappings:
-              columnMappings
-          }
-
-        );
-
-
-
-      /*
-      ================================================
-      SUPPRESSION id / manualSort
-      ================================================
-      */
-
-
-      gristFields =
-        nettoyerChampsGrist(
-          gristFields
-        );
-
-
-
-      /*
-      ================================================
-      CONTRÔLE DE SÉCURITÉ
-      ================================================
-      */
-
-
-      if (
-        Object.keys(gristFields).length === 0
-      ) {
-
-
-        throw new Error(
-
-          "Aucune colonne Grist valide n'a été trouvée. Vérifie le mappage des colonnes."
-
-        );
-
-
-      }
-
-
-
-      /*
-      ================================================
-      CRÉATION DE LA LIGNE
-      ================================================
-      */
-
-
-      await table.create({
-
-        fields:
-          gristFields
+          Math.floor(Date.now() / 1000)
 
       });
 
+    await table.update({
 
+      id: currentRecordId,
 
-      /*
-      ================================================
-      SUCCÈS
-      ================================================
-      */
+      fields: fields
 
+    });
 
-      newForm.style.display =
-        "none";
+    resultBox.style.display = "block";
 
+    resultBox.innerHTML = `
+      <div class="success">
+        ✅ Inventaire confirmé
+      </div>
 
-      confirmButton.style.display =
-        "none";
-
-
-      statusBox.style.display =
-        "none";
-
-
-      resultBox.style.display =
-        "block";
-
-
-
-      resultBox.innerHTML = `
-
-
-        <div class="success">
-
-          ✅ Matériel ajouté à l'inventaire
-
-        </div>
-
-
-        <div class="serial">
-
-          ${echapperHTML(
-            numeroSerie
-          )}
-
-        </div>
-
-
-        <p>
-
-          La nouvelle ligne a bien été
-          créée dans Grist.
-
-        </p>
-
-
-      `;
-
-
-
-    }
-
-
-    catch(error) {
-
-
-      console.error(error);
-
-
-      alert(
-
-        "Erreur lors de l'ajout dans Grist : "
-        +
-        (
-          error.message
-          ||
-          String(error)
-        )
-
-      );
-
-
-    }
-
-
-    finally {
-
-
-      addButton.disabled =
-        false;
-
-
-      addButton.textContent =
-        "💾 Ajouter à l'inventaire";
-
-
-    }
-
+      <p>
+        La date du dernier inventaire
+        vient d'être mise à jour.
+      </p>
+    `;
 
   }
 
-);
+  catch(error) {
 
+    console.error(error);
 
-
-/*
-==================================================
-CONFIRMATION D'UN MATÉRIEL EXISTANT
-==================================================
-*/
-
-
-confirmButton.addEventListener(
-
-  "click",
-
-  async function() {
-
-
-    if (!currentRecordId) {
-
-      return;
-
-    }
-
-
-
-    if (!columnMappings) {
-
-
-      alert(
-
-        "Les colonnes du widget ne sont pas configurées."
-
-      );
-
-
-      return;
-
-
-    }
-
-
-
-    try {
-
-
-
-      const table =
-        grist.getTable();
-
-
-
-      const widgetFields = {
-
-
-        DernierInventaire:
-
-          Math.floor(
-            Date.now() / 1000
-          )
-
-
-      };
-
-
-
-      let gristFields =
-
-        grist.mapColumnNamesBack(
-
-          widgetFields,
-
-          {
-            mappings:
-              columnMappings
-          }
-
-        );
-
-
-
-      gristFields =
-        nettoyerChampsGrist(
-          gristFields
-        );
-
-
-
-      await table.update({
-
-
-        id:
-          currentRecordId,
-
-
-        fields:
-          gristFields
-
-
-      });
-
-
-
-      resultBox.innerHTML += `
-
-
-        <p class="success">
-
-          ✅ Inventaire confirmé
-
-        </p>
-
-
-      `;
-
-
-
-      confirmButton.style.display =
-        "none";
-
-
-    }
-
-
-    catch(error) {
-
-
-      console.error(error);
-
-
-      alert(
-
-        "Erreur lors de la mise à jour : "
-        +
-        (
-          error.message
-          ||
-          String(error)
-        )
-
-      );
-
-
-    }
-
+    alert(
+      "Erreur lors de la confirmation : " +
+      (error.message || error)
+    );
 
   }
 
-);
+  finally {
 
+    confirmButton.disabled = false;
 
-
-/*
-==================================================
-SAISIE MANUELLE DU NUMÉRO
-==================================================
-*/
-
-
-serialInput.addEventListener(
-
-  "change",
-
-  function() {
-
-
-    const serial =
-
-      serialInput
-        .value
-        .trim();
-
-
-
-    if (serial) {
-
-
-      rechercherMateriel(
-        serial
-      );
-
-
-    }
-
+    confirmButton.textContent =
+      "✅ Confirmer l'inventaire";
 
   }
 
-);
+});
 
 
+/* ==================================================
+   SAISIE MANUELLE
+================================================== */
 
-/*
-==================================================
-PROTECTION HTML
-==================================================
-*/
+serialInput.addEventListener("change", function() {
 
+  const serial =
+    serialInput.value.trim();
+
+  if (serial) {
+    rechercherMateriel(serial);
+  }
+
+});
+
+
+/* ==================================================
+   SÉCURITÉ HTML
+================================================== */
 
 function echapperHTML(value) {
 
-
   return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
-
 </script>
 
-
 </body>
-
 </html>
