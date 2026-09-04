@@ -15,8 +15,9 @@
   <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
 
-  <!-- ZXing pour lire les codes-barres -->
+  <!-- ZXing -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
+
 
   <style>
 
@@ -72,8 +73,10 @@
     input,
     select,
     textarea {
+
       width: 100%;
       min-height: 52px;
+
       padding: 12px;
 
       border: 1px solid #bbb;
@@ -82,10 +85,6 @@
       font-size: 17px;
 
       background: white;
-    }
-
-    select {
-      appearance: auto;
     }
 
     input[readonly] {
@@ -99,6 +98,7 @@
     }
 
     button {
+
       width: 100%;
       min-height: 58px;
 
@@ -146,6 +146,7 @@
     #newForm,
     #editForm,
     #mappingWarning {
+
       display: none;
 
       background: white;
@@ -172,6 +173,11 @@
 
     .error {
       color: #b00020;
+      font-weight: 700;
+    }
+
+    .info {
+      color: #1f5ea8;
       font-weight: 700;
     }
 
@@ -524,16 +530,11 @@ let currentRecordId = null;
 
 let columnMappings = null;
 
+let referencesChargees = false;
+
 
 /*
-  Listes de références.
-
-  Chaque élément sera de la forme :
-
-  {
-    id: 12,
-    label: "Garibaldi"
-  }
+  Listes de références
 */
 
 let listeSites = [];
@@ -543,31 +544,29 @@ let listeModeles = [];
 
 
 /* ==================================================
-   CONFIGURATION DES TABLES DE RÉFÉRENCE
-
-   NOM TABLE : NOM COLONNE LIBELLÉ
+   NOMS LOGIQUES DES TABLES
 ================================================== */
 
-const REF_CONFIG = {
+const CONFIG_REFERENCES = {
 
   Site: {
-    table: "Site",
-    labelColumn: "Site"
+    tableRecherchee: "Site",
+    colonneRecherchee: "Site"
   },
 
   TypeMateriel: {
-    table: "Type",
-    labelColumn: "Type"
+    tableRecherchee: "Type",
+    colonneRecherchee: "Type"
   },
 
   Marque: {
-    table: "Marque",
-    labelColumn: "Marque"
+    tableRecherchee: "Marque",
+    colonneRecherchee: "Marque"
   },
 
   Modele: {
-    table: "Modèle",
-    labelColumn: "Modèle"
+    tableRecherchee: "Modèle",
+    colonneRecherchee: "Modèle"
   }
 
 };
@@ -615,7 +614,7 @@ const mappingWarning =
 
 
 /* ==================================================
-   COLONNES ATTENDUES PAR LE WIDGET
+   COLONNES DU WIDGET
 ================================================== */
 
 const columns = [
@@ -702,65 +701,218 @@ grist.ready({
 
 
 /* ==================================================
-   CONVERSION D'UNE TABLE GRIST
-   DU FORMAT COLONNES VERS LIGNES
+   NORMALISATION D'UN NOM
 
-   fetchTable() renvoie notamment :
+   "Modèle" -> "modele"
+   "N° Site" -> "nosite"
 
-   {
-     id: [1,2,3],
-     Site: ["A","B","C"]
-   }
-
-   On transforme cela en :
-
-   [
-     {id:1, Site:"A"},
-     {id:2, Site:"B"},
-     {id:3, Site:"C"}
-   ]
+   Cela permet de comparer les noms
+   même si Grist retire les accents.
 ================================================== */
 
-function tableColonnesVersLignes(tableData) {
+function normaliserNom(valeur) {
 
-  if (
-    !tableData ||
-    !Array.isArray(tableData.id)
-  ) {
-    return [];
+  return String(valeur || "")
+
+    .normalize("NFD")
+
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+
+    .replace(
+      /[^a-zA-Z0-9]/g,
+      ""
+    )
+
+    .toLowerCase();
+
+}
+
+
+/* ==================================================
+   TROUVER AUTOMATIQUEMENT L'ID D'UNE TABLE
+
+   Exemple :
+   "Modèle" pourra correspondre à "Modele".
+================================================== */
+
+async function trouverTableId(
+  nomRecherche
+) {
+
+  const tables =
+    await grist.docApi.listTables();
+
+  const cible =
+    normaliserNom(
+      nomRecherche
+    );
+
+  const trouve =
+    tables.find(
+      function(tableId) {
+
+        return (
+          normaliserNom(tableId)
+          ===
+          cible
+        );
+
+      }
+    );
+
+  if (!trouve) {
+
+    throw new Error(
+
+      'Table introuvable : "' +
+      nomRecherche +
+      '". Tables disponibles : ' +
+      tables.join(", ")
+
+    );
+
   }
 
-  const lignes = [];
+  return trouve;
 
-  for (
-    let i = 0;
-    i < tableData.id.length;
-    i++
+}
+
+
+/* ==================================================
+   CONVERTIR LE RÉSULTAT FETCHTABLE EN LIGNES
+
+   Cette fonction accepte :
+   - le format tableau de lignes
+   - un éventuel format colonne
+================================================== */
+
+function convertirFetchTableEnLignes(
+  data
+) {
+
+  /*
+    FORMAT NORMAL GRIST :
+    [
+      {id:1, Site:"Garibaldi"},
+      {id:2, Site:"Préfecture"}
+    ]
+  */
+
+  if (
+    Array.isArray(data)
   ) {
 
-    const ligne = {};
+    return data;
+
+  }
+
+
+  /*
+    FORMAT COLONNES
+    par sécurité / compatibilité
+  */
+
+  if (
+    data &&
+    Array.isArray(data.id)
+  ) {
+
+    const lignes = [];
 
     for (
-      const colonne
-      of Object.keys(tableData)
+      let i = 0;
+      i < data.id.length;
+      i++
     ) {
 
-      if (
-        Array.isArray(tableData[colonne])
+      const ligne = {};
+
+      for (
+        const key
+        of Object.keys(data)
       ) {
 
-        ligne[colonne] =
-          tableData[colonne][i];
+        if (
+          Array.isArray(
+            data[key]
+          )
+        ) {
+
+          ligne[key] =
+            data[key][i];
+
+        }
 
       }
 
+      lignes.push(
+        ligne
+      );
+
     }
 
-    lignes.push(ligne);
+    return lignes;
 
   }
 
-  return lignes;
+
+  return [];
+
+}
+
+
+/* ==================================================
+   TROUVER LA COLONNE LIBELLÉ
+
+   Exemple :
+   "Modèle" pourra correspondre à "Modele".
+================================================== */
+
+function trouverColonneDansLignes(
+  lignes,
+  colonneRecherchee
+) {
+
+  if (
+    !lignes ||
+    lignes.length === 0
+  ) {
+
+    return null;
+
+  }
+
+  const premiereLigne =
+    lignes[0];
+
+  const cles =
+    Object.keys(
+      premiereLigne
+    );
+
+  const cible =
+    normaliserNom(
+      colonneRecherchee
+    );
+
+  return (
+    cles.find(
+      function(cle) {
+
+        return (
+          normaliserNom(cle)
+          ===
+          cible
+        );
+
+      }
+    )
+    ||
+    null
+  );
 
 }
 
@@ -770,66 +922,144 @@ function tableColonnesVersLignes(tableData) {
 ================================================== */
 
 async function chargerReference(
-  tableId,
-  labelColumn
+  nomTable,
+  nomColonne
 ) {
 
-  const tableData =
+  /*
+    1 - trouver le véritable ID Grist
+  */
+
+  const tableId =
+    await trouverTableId(
+      nomTable
+    );
+
+
+  /*
+    2 - charger la table
+  */
+
+  const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
+  /*
+    3 - transformer en lignes
+  */
+
   const lignes =
-    tableColonnesVersLignes(
-      tableData
+    convertirFetchTableEnLignes(
+      raw
     );
+
+
+  if (
+    lignes.length === 0
+  ) {
+
+    return [];
+
+  }
+
+
+  /*
+    4 - détecter automatiquement
+        la colonne du libellé
+  */
+
+  const colonneId =
+    trouverColonneDansLignes(
+      lignes,
+      nomColonne
+    );
+
+
+  if (!colonneId) {
+
+    throw new Error(
+
+      'Colonne "' +
+      nomColonne +
+      '" introuvable dans la table "' +
+      tableId +
+      '". Colonnes disponibles : ' +
+      Object.keys(
+        lignes[0]
+      ).join(", ")
+
+    );
+
+  }
+
+
+  /*
+    5 - créer la liste
+  */
 
   const valeurs =
     lignes
-      .filter(function(ligne) {
 
-        return (
-          ligne.id &&
-          ligne[labelColumn] !== null &&
-          ligne[labelColumn] !== undefined &&
-          String(
-            ligne[labelColumn]
-          ).trim() !== ""
-        );
+      .filter(
+        function(ligne) {
 
-      })
-      .map(function(ligne) {
+          return (
 
-        return {
+            ligne.id !== null &&
+            ligne.id !== undefined &&
 
-          id:
-            Number(ligne.id),
+            ligne[colonneId] !== null &&
+            ligne[colonneId] !== undefined &&
 
-          label:
             String(
-              ligne[labelColumn]
-            )
+              ligne[colonneId]
+            ).trim() !== ""
 
-        };
+          );
 
-      });
+        }
+      )
+
+      .map(
+        function(ligne) {
+
+          return {
+
+            id:
+              Number(
+                ligne.id
+              ),
+
+            label:
+              String(
+                ligne[colonneId]
+              )
+
+          };
+
+        }
+      );
 
 
   /*
     Tri alphabétique
   */
 
-  valeurs.sort(function(a, b) {
+  valeurs.sort(
+    function(a, b) {
 
-    return a.label.localeCompare(
-      b.label,
-      "fr",
-      {
-        sensitivity: "base"
-      }
-    );
+      return a.label.localeCompare(
+        b.label,
+        "fr",
+        {
+          sensitivity: "base"
+        }
+      );
 
-  });
+    }
+  );
 
 
   return valeurs;
@@ -838,12 +1068,27 @@ async function chargerReference(
 
 
 /* ==================================================
-   CHARGEMENT DE TOUTES LES RÉFÉRENCES
+   CHARGER LES 4 LISTES
 ================================================== */
 
 async function chargerListesReferences() {
 
+  if (
+    referencesChargees
+  ) {
+
+    return;
+
+  }
+
   try {
+
+    statusBox.style.display =
+      "block";
+
+    statusBox.innerHTML =
+      "⏳ Chargement des listes…";
+
 
     const [
       sites,
@@ -852,39 +1097,73 @@ async function chargerListesReferences() {
       modeles
     ] = await Promise.all([
 
-      chargerReference(
-        REF_CONFIG.Site.table,
-        REF_CONFIG.Site.labelColumn
-      ),
 
       chargerReference(
-        REF_CONFIG.TypeMateriel.table,
-        REF_CONFIG.TypeMateriel.labelColumn
+
+        CONFIG_REFERENCES
+          .Site
+          .tableRecherchee,
+
+        CONFIG_REFERENCES
+          .Site
+          .colonneRecherchee
+
       ),
 
-      chargerReference(
-        REF_CONFIG.Marque.table,
-        REF_CONFIG.Marque.labelColumn
-      ),
 
       chargerReference(
-        REF_CONFIG.Modele.table,
-        REF_CONFIG.Modele.labelColumn
+
+        CONFIG_REFERENCES
+          .TypeMateriel
+          .tableRecherchee,
+
+        CONFIG_REFERENCES
+          .TypeMateriel
+          .colonneRecherchee
+
+      ),
+
+
+      chargerReference(
+
+        CONFIG_REFERENCES
+          .Marque
+          .tableRecherchee,
+
+        CONFIG_REFERENCES
+          .Marque
+          .colonneRecherchee
+
+      ),
+
+
+      chargerReference(
+
+        CONFIG_REFERENCES
+          .Modele
+          .tableRecherchee,
+
+        CONFIG_REFERENCES
+          .Modele
+          .colonneRecherchee
+
       )
 
     ]);
 
 
-    listeSites = sites;
-    listeTypes = types;
-    listeMarques = marques;
-    listeModeles = modeles;
+    listeSites =
+      sites;
 
+    listeTypes =
+      types;
 
-    /*
-      Remplissage des listes
-      création + modification
-    */
+    listeMarques =
+      marques;
+
+    listeModeles =
+      modeles;
+
 
     remplirSelect(
       "newSite",
@@ -929,17 +1208,26 @@ async function chargerListesReferences() {
       listeModeles
     );
 
+
+    referencesChargees =
+      true;
+
+
+    statusBox.style.display =
+      "none";
+
   }
 
   catch(error) {
 
     console.error(
-      "Erreur chargement références :",
       error
     );
 
+
     statusBox.style.display =
       "block";
+
 
     statusBox.innerHTML = `
 
@@ -952,8 +1240,10 @@ async function chargerListesReferences() {
 
       <p>
 
-        Vérifie les noms des tables :
-        Site, Type, Marque et Modèle.
+        ${echapperHTML(
+          error.message ||
+          String(error)
+        )}
 
       </p>
 
@@ -965,7 +1255,7 @@ async function chargerListesReferences() {
 
 
 /* ==================================================
-   REMPLISSAGE D'UNE LISTE DÉROULANTE
+   REMPLIR UNE LISTE DÉROULANTE
 ================================================== */
 
 function remplirSelect(
@@ -978,12 +1268,14 @@ function remplirSelect(
       selectId
     );
 
+
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
 
 
   for (
-    const element of liste
+    const element
+    of liste
   ) {
 
     const option =
@@ -991,17 +1283,16 @@ function remplirSelect(
         "option"
       );
 
-    /*
-      IMPORTANT :
-
-      La valeur est l'ID de ligne Grist.
-    */
 
     option.value =
-      String(element.id);
+      String(
+        element.id
+      );
+
 
     option.textContent =
       element.label;
+
 
     select.appendChild(
       option
@@ -1013,7 +1304,7 @@ function remplirSelect(
 
 
 /* ==================================================
-   RÉCUPÉRATION DES DONNÉES PRINCIPALES
+   DONNÉES DE LA TABLE INVENTAIRE
 ================================================== */
 
 grist.onRecords(
@@ -1021,6 +1312,7 @@ grist.onRecords(
 
     columnMappings =
       mappings;
+
 
     if (!mappings) {
 
@@ -1037,6 +1329,7 @@ grist.onRecords(
     const mappedRecords =
       [];
 
+
     for (
       const record
       of data || []
@@ -1044,12 +1337,16 @@ grist.onRecords(
 
       const mapped =
         grist.mapColumnNames(
+
           record,
+
           {
             mappings:
               mappings
           }
+
         );
+
 
       if (mapped) {
 
@@ -1071,17 +1368,12 @@ grist.onRecords(
 
 
     /*
-      Chargement des listes de référence.
-
-      On le fait après que Grist
-      ait initialisé le widget.
+      Chargement des tables Site / Type /
+      Marque / Modèle
     */
 
     if (
-      listeSites.length === 0 &&
-      listeTypes.length === 0 &&
-      listeMarques.length === 0 &&
-      listeModeles.length === 0
+      !referencesChargees
     ) {
 
       await chargerListesReferences();
@@ -1093,7 +1385,7 @@ grist.onRecords(
 
 
 /* ==================================================
-   COLONNE GRIST RÉELLE
+   OBTENIR UNE COLONNE GRIST
 ================================================== */
 
 function obtenirColonneGrist(
@@ -1106,14 +1398,19 @@ function obtenirColonneGrist(
 
   }
 
+
   const mapping =
-    columnMappings[nomLogique];
+    columnMappings[
+      nomLogique
+    ];
+
 
   if (!mapping) {
 
     return null;
 
   }
+
 
   if (
     Array.isArray(mapping)
@@ -1127,9 +1424,11 @@ function obtenirColonneGrist(
 
     }
 
+
     return mapping[0];
 
   }
+
 
   return mapping;
 
@@ -1144,7 +1443,9 @@ function construireChampsGrist(
   champsLogiques
 ) {
 
-  const fields = {};
+  const fields =
+    {};
+
 
   for (
     const [
@@ -1161,18 +1462,22 @@ function construireChampsGrist(
         nomLogique
       );
 
+
     if (
       vraieColonne &&
       vraieColonne !== "id" &&
       vraieColonne !== "manualSort"
     ) {
 
-      fields[vraieColonne] =
+      fields[
+        vraieColonne
+      ] =
         valeur;
 
     }
 
   }
+
 
   return fields;
 
@@ -1180,7 +1485,7 @@ function construireChampsGrist(
 
 
 /* ==================================================
-   VÉRIFICATION DES CHAMPS
+   VÉRIFICATION
 ================================================== */
 
 function verifierChamps(
@@ -1204,36 +1509,143 @@ function verifierChamps(
 
 
 /* ==================================================
-   VALEUR NUMÉRIQUE D'UN SELECT DE RÉFÉRENCE
+   VALEUR D'UNE RÉFÉRENCE
 ================================================== */
 
 function valeurReference(
   selectId
 ) {
 
-  const valeur =
+  const value =
     document
       .getElementById(
         selectId
       )
       .value;
 
+
   if (
-    valeur === ""
+    value === ""
   ) {
 
     /*
-      0 = référence vide
-      dans une colonne Ref Grist.
+      Référence vide dans Grist
     */
 
     return 0;
 
   }
 
+
   return Number(
-    valeur
+    value
   );
+
+}
+
+
+/* ==================================================
+   SÉLECTIONNER UNE RÉFÉRENCE
+================================================== */
+
+function selectionnerReference(
+  selectId,
+  valeur
+) {
+
+  const select =
+    document.getElementById(
+      selectId
+    );
+
+
+  if (
+    valeur === null ||
+    valeur === undefined ||
+    valeur === ""
+  ) {
+
+    select.value =
+      "";
+
+    return;
+
+  }
+
+
+  /*
+    Référence Grist classique :
+    rowId numérique
+  */
+
+  if (
+    typeof valeur === "number"
+  ) {
+
+    select.value =
+      String(
+        valeur
+      );
+
+    return;
+
+  }
+
+
+  /*
+    Valeur numérique sous forme texte
+  */
+
+  if (
+    !isNaN(
+      Number(valeur)
+    )
+  ) {
+
+    select.value =
+      String(
+        Number(valeur)
+      );
+
+    return;
+
+  }
+
+
+  /*
+    Cas d'une valeur encapsulée
+  */
+
+  if (
+    Array.isArray(valeur)
+  ) {
+
+    for (
+      let i = valeur.length - 1;
+      i >= 0;
+      i--
+    ) {
+
+      if (
+        typeof valeur[i] === "number"
+      ) {
+
+        select.value =
+          String(
+            valeur[i]
+          );
+
+        return;
+
+      }
+
+    }
+
+  }
+
+
+  select.value =
+    "";
 
 }
 
@@ -1262,6 +1674,7 @@ barcodeImage.addEventListener(
 
     const file =
       this.files[0];
+
 
     if (!file) {
 
@@ -1300,6 +1713,7 @@ barcodeImage.addEventListener(
 
         statusBox.innerHTML =
           "🔎 Analyse du code-barres…";
+
 
         try {
 
@@ -1376,6 +1790,7 @@ barcodeImage.addEventListener(
             imageUrl
           );
 
+
           barcodeImage.value =
             "";
 
@@ -1427,10 +1842,6 @@ function rechercherMateriel(
     "block";
 
 
-  /*
-    MATÉRIEL EXISTANT
-  */
-
   if (found) {
 
     currentRecordId =
@@ -1475,10 +1886,6 @@ function rechercherMateriel(
   }
 
 
-  /*
-    NOUVEAU
-  */
-
   else {
 
     currentRecordId =
@@ -1505,7 +1912,8 @@ function rechercherMateriel(
           ${echapperHTML(serial)}
         </strong>
 
-        n'existe pas encore dans l'inventaire.
+        n'existe pas encore
+        dans l'inventaire.
 
       </p>
 
@@ -1540,10 +1948,6 @@ function remplirFormulaireEdition(
   ).value =
     record.NumeroInventaire || "";
 
-
-  /*
-    Les références sont des IDs numériques.
-  */
 
   selectionnerReference(
     "editType",
@@ -1595,77 +1999,6 @@ function remplirFormulaireEdition(
 
   editForm.style.display =
     "block";
-
-}
-
-
-/* ==================================================
-   SÉLECTION D'UNE RÉFÉRENCE EXISTANTE
-================================================== */
-
-function selectionnerReference(
-  selectId,
-  valeur
-) {
-
-  const select =
-    document.getElementById(
-      selectId
-    );
-
-
-  /*
-    Cas classique :
-    la valeur est directement un rowId.
-  */
-
-  if (
-    typeof valeur === "number"
-  ) {
-
-    select.value =
-      String(valeur);
-
-    return;
-
-  }
-
-
-  /*
-    Certains formats Grist peuvent
-    encapsuler une référence.
-
-    Exemple potentiel :
-    ["R", "Site", 3]
-  */
-
-  if (
-    Array.isArray(valeur)
-  ) {
-
-    const dernierElement =
-      valeur[
-        valeur.length - 1
-      ];
-
-    if (
-      typeof dernierElement === "number"
-    ) {
-
-      select.value =
-        String(
-          dernierElement
-        );
-
-      return;
-
-    }
-
-  }
-
-
-  select.value =
-    "";
 
 }
 
@@ -1830,11 +2163,6 @@ addButton.addEventListener(
               "newNumeroInventaire"
             ).value.trim(),
 
-
-          /*
-            Les quatre champs suivants
-            contiennent des rowIds Grist.
-          */
 
           TypeMateriel:
             valeurReference(
@@ -2081,7 +2409,7 @@ saveButton.addEventListener(
 
       /*
         N° série et DernierInventaire
-        ne sont pas envoyés.
+        ne sont PAS envoyés.
       */
 
       await table.update({
@@ -2198,11 +2526,6 @@ confirmButton.addEventListener(
       const table =
         grist.getTable();
 
-
-      /*
-        UNE SEULE COLONNE :
-        DernierInventaire
-      */
 
       const fields =
         construireChampsGrist({
