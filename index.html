@@ -11,7 +11,10 @@
 
   <title>Inventaire Grist</title>
 
+  <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+
+  <!-- ZXing pour lire les codes-barres -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
 
   <style>
@@ -31,7 +34,11 @@
 
     body {
       padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
       background: #f5f6f8;
       color: #222;
     }
@@ -94,6 +101,7 @@
 
     button:disabled {
       opacity: 0.6;
+      cursor: default;
     }
 
     #scanButton {
@@ -147,11 +155,6 @@
       font-weight: 700;
     }
 
-    .info {
-      color: #1f5ea8;
-      font-weight: 700;
-    }
-
     .serial {
       font-size: 24px;
       font-weight: bold;
@@ -159,8 +162,8 @@
     }
 
   </style>
-</head>
 
+</head>
 
 <body>
 
@@ -168,7 +171,13 @@
 
   <h1>📦 Inventaire matériel</h1>
 
+
+  <!-- ==============================
+       AVERTISSEMENT MAPPING
+       ============================== -->
+
   <div id="mappingWarning">
+
     <div class="warning">
       ⚙️ Configuration des colonnes requise
     </div>
@@ -177,12 +186,13 @@
       Vérifie les associations de colonnes
       dans les options du widget Grist.
     </p>
+
   </div>
 
 
-  <!-- =========================
+  <!-- ==============================
        SCANNER
-       ========================= -->
+       ============================== -->
 
   <label for="serial">
     N° de série
@@ -216,76 +226,132 @@
   <div id="result"></div>
 
 
-  <!-- =========================
+  <!-- ==============================
        MATÉRIEL EXISTANT
-       ========================= -->
+       ============================== -->
 
   <div id="editForm">
 
     <h2>📝 Matériel existant</h2>
 
-    <label>N° de série 🔒</label>
+
+    <label>
+      N° de série 🔒
+    </label>
+
     <input
       id="editNumeroSerie"
       type="text"
       readonly
     >
 
-    <label>N° d'inventaire</label>
+
+    <label>
+      N° d'inventaire
+    </label>
+
     <input
       id="editNumeroInventaire"
       type="text"
     >
 
-    <label>Type</label>
+
+    <label>
+      Type
+    </label>
+
     <input
       id="editType"
       type="text"
     >
 
-    <label>Marque</label>
+
+    <label>
+      Marque
+    </label>
+
     <input
       id="editMarque"
       type="text"
     >
 
-    <label>Modèle</label>
+
+    <label>
+      Modèle
+    </label>
+
     <input
       id="editModele"
       type="text"
     >
 
-    <label>Utilisateur</label>
+
+    <label>
+      Utilisateur
+    </label>
+
     <input
       id="editUtilisateur"
       type="text"
     >
 
-    <label>Site</label>
+
+    <label>
+      Site
+    </label>
+
     <input
       id="editSite"
       type="text"
     >
 
-    <label>Localisation</label>
+
+    <label>
+      Localisation
+    </label>
+
     <input
       id="editLocalisation"
       type="text"
     >
 
-    <label>État</label>
+
+    <label>
+      État
+    </label>
 
     <select id="editEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
 
-    <label>Commentaire</label>
 
-    <textarea id="editCommentaire"></textarea>
+    <label>
+      Commentaire
+    </label>
+
+    <textarea
+      id="editCommentaire"
+    ></textarea>
 
 
     <button id="saveButton">
@@ -300,85 +366,143 @@
   </div>
 
 
-  <!-- =========================
+  <!-- ==============================
        NOUVEAU MATÉRIEL
-       ========================= -->
+       ============================== -->
 
   <div id="newForm">
 
     <h2>➕ Nouveau matériel</h2>
 
-    <label>N° de série 🔒</label>
+
+    <label>
+      N° de série 🔒
+    </label>
+
     <input
       id="newNumeroSerie"
       type="text"
       readonly
     >
 
-    <label>N° d'inventaire</label>
+
+    <label>
+      N° d'inventaire
+    </label>
+
     <input
       id="newNumeroInventaire"
       type="text"
     >
 
-    <label>Type</label>
+
+    <label>
+      Type
+    </label>
+
     <input
       id="newType"
       type="text"
       placeholder="Ex : Point d'accès Wi-Fi"
     >
 
-    <label>Marque</label>
+
+    <label>
+      Marque
+    </label>
+
     <input
       id="newMarque"
       type="text"
       placeholder="Ex : Aruba"
     >
 
-    <label>Modèle</label>
+
+    <label>
+      Modèle
+    </label>
+
     <input
       id="newModele"
       type="text"
       placeholder="Ex : AP 635"
     >
 
-    <label>Utilisateur</label>
+
+    <label>
+      Utilisateur
+    </label>
+
     <input
       id="newUtilisateur"
       type="text"
     >
 
-    <label>Site</label>
+
+    <label>
+      Site
+    </label>
+
     <input
       id="newSite"
       type="text"
     >
 
-    <label>Localisation</label>
+
+    <label>
+      Localisation
+    </label>
+
     <input
       id="newLocalisation"
       type="text"
     >
 
-    <label>État</label>
+
+    <label>
+      État
+    </label>
 
     <select id="newEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
 
-    <label>Commentaire</label>
 
-    <textarea id="newCommentaire"></textarea>
+    <label>
+      Commentaire
+    </label>
+
+    <textarea
+      id="newCommentaire"
+    ></textarea>
+
 
     <button id="addButton">
       💾 Ajouter à l'inventaire
     </button>
 
   </div>
+
 
 </div>
 
@@ -390,33 +514,55 @@
 ================================================== */
 
 let records = [];
+
 let currentRecordId = null;
+
 let columnMappings = null;
 
 
 /* ==================================================
-   ÉLÉMENTS
+   ÉLÉMENTS HTML
 ================================================== */
 
-const serialInput = document.getElementById("serial");
-const scanButton = document.getElementById("scanButton");
-const barcodeImage = document.getElementById("barcodeImage");
-const preview = document.getElementById("preview");
-const statusBox = document.getElementById("status");
-const resultBox = document.getElementById("result");
+const serialInput =
+  document.getElementById("serial");
 
-const newForm = document.getElementById("newForm");
-const editForm = document.getElementById("editForm");
+const scanButton =
+  document.getElementById("scanButton");
 
-const addButton = document.getElementById("addButton");
-const saveButton = document.getElementById("saveButton");
-const confirmButton = document.getElementById("confirmButton");
+const barcodeImage =
+  document.getElementById("barcodeImage");
 
-const mappingWarning = document.getElementById("mappingWarning");
+const preview =
+  document.getElementById("preview");
+
+const statusBox =
+  document.getElementById("status");
+
+const resultBox =
+  document.getElementById("result");
+
+const newForm =
+  document.getElementById("newForm");
+
+const editForm =
+  document.getElementById("editForm");
+
+const addButton =
+  document.getElementById("addButton");
+
+const saveButton =
+  document.getElementById("saveButton");
+
+const confirmButton =
+  document.getElementById("confirmButton");
+
+const mappingWarning =
+  document.getElementById("mappingWarning");
 
 
 /* ==================================================
-   COLONNES GRIST
+   COLONNES ATTENDUES
 ================================================== */
 
 const columns = [
@@ -494,13 +640,16 @@ const columns = [
 ================================================== */
 
 grist.ready({
+
   requiredAccess: "full",
+
   columns: columns
+
 });
 
 
 /* ==================================================
-   LECTURE DES DONNÉES
+   LECTURE DES ENREGISTREMENTS
 ================================================== */
 
 grist.onRecords(function(data, mappings) {
@@ -511,7 +660,8 @@ grist.onRecords(function(data, mappings) {
 
     records = [];
 
-    mappingWarning.style.display = "block";
+    mappingWarning.style.display =
+      "block";
 
     return;
   }
@@ -520,114 +670,196 @@ grist.onRecords(function(data, mappings) {
 
   for (const record of data || []) {
 
-    const mapped = grist.mapColumnNames(
-      record,
-      { mappings: mappings }
-    );
+    const mapped =
+      grist.mapColumnNames(
+        record,
+        {
+          mappings: mappings
+        }
+      );
 
     if (mapped) {
       mappedRecords.push(mapped);
     }
+
   }
 
   records = mappedRecords;
 
-  mappingWarning.style.display = "none";
+  mappingWarning.style.display =
+    "none";
 
 });
 
 
 /* ==================================================
-   SCAN
+   CONVERSION VERS LES VRAIES COLONNES GRIST
+
+   IMPORTANT :
+   seules les colonnes fournies à cette fonction
+   seront envoyées à Grist.
 ================================================== */
 
-scanButton.addEventListener("click", function() {
+function convertirChamps(widgetFields) {
 
-  barcodeImage.click();
+  const fields = {};
 
-});
-
-
-barcodeImage.addEventListener("change", async function() {
-
-  const file = this.files[0];
-
-  if (!file) {
-    return;
+  if (!columnMappings) {
+    return fields;
   }
 
-  masquerFormulaires();
+  for (
+    const [nomLogique, valeur]
+    of Object.entries(widgetFields)
+  ) {
 
-  statusBox.style.display = "block";
-  statusBox.innerHTML = "📸 Photo reçue…";
+    const vraieColonne =
+      columnMappings[nomLogique];
 
-  const imageUrl = URL.createObjectURL(file);
+    if (
+      vraieColonne &&
+      vraieColonne !== "id" &&
+      vraieColonne !== "manualSort"
+    ) {
 
-  preview.src = imageUrl;
-  preview.style.display = "block";
-
-  preview.onload = async function() {
-
-    statusBox.innerHTML =
-      "🔎 Analyse du code-barres…";
-
-    try {
-
-      const reader =
-        new ZXingBrowser.BrowserMultiFormatReader();
-
-      const result =
-        await reader.decodeFromImageElement(preview);
-
-      const serial =
-        result.getText().trim();
-
-      serialInput.value = serial;
-
-      statusBox.innerHTML = `
-        <span class="success">
-          ✅ Code-barres reconnu :
-          ${echapperHTML(serial)}
-        </span>
-      `;
-
-      rechercherMateriel(serial);
+      fields[vraieColonne] =
+        valeur;
 
     }
 
-    catch(error) {
+  }
 
-      console.error(error);
+  return fields;
 
-      statusBox.innerHTML = `
-        <div class="error">
-          ❌ Aucun code-barres reconnu
-        </div>
-
-        <p>
-          Essaie de reprendre la photo
-          de plus près, sans reflet
-          et avec le code bien net.
-        </p>
-      `;
-
-    }
-
-    finally {
-
-      URL.revokeObjectURL(imageUrl);
-
-      barcodeImage.value = "";
-
-    }
-
-  };
-
-});
+}
 
 
 /* ==================================================
-   RECHERCHE
+   SCANNER
+================================================== */
+
+scanButton.addEventListener(
+  "click",
+  function() {
+
+    barcodeImage.click();
+
+  }
+);
+
+
+barcodeImage.addEventListener(
+  "change",
+  async function() {
+
+    const file =
+      this.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    masquerFormulaires();
+
+    statusBox.style.display =
+      "block";
+
+    statusBox.innerHTML =
+      "📸 Photo reçue…";
+
+    const imageUrl =
+      URL.createObjectURL(file);
+
+    preview.src =
+      imageUrl;
+
+    preview.style.display =
+      "block";
+
+    preview.onload =
+      async function() {
+
+        statusBox.innerHTML =
+          "🔎 Analyse du code-barres…";
+
+        try {
+
+          const reader =
+            new ZXingBrowser.BrowserMultiFormatReader();
+
+          const result =
+            await reader.decodeFromImageElement(
+              preview
+            );
+
+          const serial =
+            result
+              .getText()
+              .trim();
+
+          serialInput.value =
+            serial;
+
+          statusBox.innerHTML = `
+
+            <span class="success">
+
+              ✅ Code-barres reconnu :
+              ${echapperHTML(serial)}
+
+            </span>
+
+          `;
+
+          rechercherMateriel(
+            serial
+          );
+
+        }
+
+        catch(error) {
+
+          console.error(error);
+
+          statusBox.innerHTML = `
+
+            <div class="error">
+
+              ❌ Aucun code-barres reconnu
+
+            </div>
+
+            <p>
+
+              Essaie de reprendre la photo
+              de plus près, sans reflet
+              et avec le code bien net.
+
+            </p>
+
+          `;
+
+        }
+
+        finally {
+
+          URL.revokeObjectURL(
+            imageUrl
+          );
+
+          barcodeImage.value =
+            "";
+
+        }
+
+      };
+
+  }
+);
+
+
+/* ==================================================
+   RECHERCHE DU MATÉRIEL
 ================================================== */
 
 function rechercherMateriel(serial) {
@@ -637,69 +869,113 @@ function rechercherMateriel(serial) {
       .trim()
       .toUpperCase();
 
-  const found = records.find(function(record) {
+  const found =
+    records.find(
+      function(record) {
 
-    return (
-      String(record.NumeroSerie || "")
-        .trim()
-        .toUpperCase()
-      === serialNettoye
+        return (
+
+          String(
+            record.NumeroSerie || ""
+          )
+            .trim()
+            .toUpperCase()
+
+          ===
+
+          serialNettoye
+
+        );
+
+      }
     );
 
-  });
+  resultBox.style.display =
+    "block";
 
-  resultBox.style.display = "block";
 
-
-  /* ---------- MATÉRIEL EXISTANT ---------- */
+  /* ================================================
+     MATÉRIEL EXISTANT
+  ================================================ */
 
   if (found) {
 
-    currentRecordId = found.id;
+    currentRecordId =
+      found.id;
 
-    newForm.style.display = "none";
+    newForm.style.display =
+      "none";
 
     resultBox.innerHTML = `
+
       <div class="success">
+
         ✅ Matériel trouvé
+
       </div>
 
       <div class="serial">
-        ${echapperHTML(found.NumeroSerie || "")}
+
+        ${echapperHTML(
+          found.NumeroSerie || ""
+        )}
+
       </div>
 
       <p>
+
         Tu peux modifier les informations
-        ci-dessous ou simplement confirmer l'inventaire.
+        ci-dessous ou simplement confirmer
+        l'inventaire.
+
       </p>
+
     `;
 
-    remplirFormulaireEdition(found);
+    remplirFormulaireEdition(
+      found
+    );
 
   }
 
 
-  /* ---------- NOUVEAU MATÉRIEL ---------- */
+  /* ================================================
+     NOUVEAU MATÉRIEL
+  ================================================ */
 
   else {
 
-    currentRecordId = null;
+    currentRecordId =
+      null;
 
-    editForm.style.display = "none";
+    editForm.style.display =
+      "none";
 
     resultBox.innerHTML = `
+
       <div class="warning">
+
         🆕 Nouveau matériel
+
       </div>
 
       <p>
+
         Le numéro de série
-        <strong>${echapperHTML(serial)}</strong>
+
+        <strong>
+          ${echapperHTML(serial)}
+        </strong>
+
         n'existe pas encore dans l'inventaire.
+
       </p>
+
     `;
 
-    remplirFormulaireCreation(serial);
+    remplirFormulaireCreation(
+      serial
+    );
 
   }
 
@@ -712,37 +988,58 @@ function rechercherMateriel(serial) {
 
 function remplirFormulaireEdition(record) {
 
-  document.getElementById("editNumeroSerie").value =
+  document.getElementById(
+    "editNumeroSerie"
+  ).value =
     record.NumeroSerie || "";
 
-  document.getElementById("editNumeroInventaire").value =
+  document.getElementById(
+    "editNumeroInventaire"
+  ).value =
     record.NumeroInventaire || "";
 
-  document.getElementById("editType").value =
+  document.getElementById(
+    "editType"
+  ).value =
     record.TypeMateriel || "";
 
-  document.getElementById("editMarque").value =
+  document.getElementById(
+    "editMarque"
+  ).value =
     record.Marque || "";
 
-  document.getElementById("editModele").value =
+  document.getElementById(
+    "editModele"
+  ).value =
     record.Modele || "";
 
-  document.getElementById("editUtilisateur").value =
+  document.getElementById(
+    "editUtilisateur"
+  ).value =
     record.Utilisateur || "";
 
-  document.getElementById("editSite").value =
+  document.getElementById(
+    "editSite"
+  ).value =
     record.Site || "";
 
-  document.getElementById("editLocalisation").value =
+  document.getElementById(
+    "editLocalisation"
+  ).value =
     record.Localisation || "";
 
-  document.getElementById("editEtat").value =
+  document.getElementById(
+    "editEtat"
+  ).value =
     record.Etat || "";
 
-  document.getElementById("editCommentaire").value =
+  document.getElementById(
+    "editCommentaire"
+  ).value =
     record.Commentaire || "";
 
-  editForm.style.display = "block";
+  editForm.style.display =
+    "block";
 
 }
 
@@ -753,427 +1050,583 @@ function remplirFormulaireEdition(record) {
 
 function remplirFormulaireCreation(serial) {
 
-  document.getElementById("newNumeroSerie").value = serial;
+  document.getElementById(
+    "newNumeroSerie"
+  ).value =
+    serial;
 
-  document.getElementById("newNumeroInventaire").value = "";
-  document.getElementById("newType").value = "";
-  document.getElementById("newMarque").value = "";
-  document.getElementById("newModele").value = "";
-  document.getElementById("newUtilisateur").value = "";
-  document.getElementById("newSite").value = "";
-  document.getElementById("newLocalisation").value = "";
-  document.getElementById("newEtat").value = "";
-  document.getElementById("newCommentaire").value = "";
+  document.getElementById(
+    "newNumeroInventaire"
+  ).value =
+    "";
 
-  newForm.style.display = "block";
+  document.getElementById(
+    "newType"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newMarque"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newModele"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newUtilisateur"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newSite"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newLocalisation"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newEtat"
+  ).value =
+    "";
+
+  document.getElementById(
+    "newCommentaire"
+  ).value =
+    "";
+
+  newForm.style.display =
+    "block";
 
 }
 
 
 /* ==================================================
-   MASQUAGE
+   MASQUER LES FORMULAIRES
 ================================================== */
 
 function masquerFormulaires() {
 
-  resultBox.style.display = "none";
-  newForm.style.display = "none";
-  editForm.style.display = "none";
+  resultBox.style.display =
+    "none";
+
+  newForm.style.display =
+    "none";
+
+  editForm.style.display =
+    "none";
 
 }
 
 
 /* ==================================================
-   CONVERSION DES CHAMPS
+   CRÉATION D'UN NOUVEAU MATÉRIEL
 ================================================== */
 
-function convertirChamps(widgetFields) {
+addButton.addEventListener(
+  "click",
+  async function() {
 
-  let fields = grist.mapColumnNamesBack(
-    widgetFields,
-    { mappings: columnMappings }
-  );
+    if (!columnMappings) {
 
-  if (!fields) {
-    return {};
-  }
+      alert(
+        "Les colonnes ne sont pas configurées dans Grist."
+      );
 
-  delete fields.id;
-  delete fields.manualSort;
+      return;
+    }
 
-  for (const key of Object.keys(fields)) {
+    const numeroSerie =
+      document.getElementById(
+        "newNumeroSerie"
+      )
+        .value
+        .trim();
 
-    if (
-      !key ||
-      key === "id" ||
-      key === "manualSort"
-    ) {
-      delete fields[key];
+    if (!numeroSerie) {
+
+      alert(
+        "Le numéro de série est obligatoire."
+      );
+
+      return;
+    }
+
+    addButton.disabled =
+      true;
+
+    addButton.textContent =
+      "⏳ Enregistrement…";
+
+    try {
+
+      const table =
+        grist.getTable();
+
+      const fields =
+        convertirChamps({
+
+          NumeroSerie:
+            numeroSerie,
+
+          NumeroInventaire:
+            document.getElementById(
+              "newNumeroInventaire"
+            ).value.trim(),
+
+          TypeMateriel:
+            document.getElementById(
+              "newType"
+            ).value.trim(),
+
+          Marque:
+            document.getElementById(
+              "newMarque"
+            ).value.trim(),
+
+          Modele:
+            document.getElementById(
+              "newModele"
+            ).value.trim(),
+
+          Utilisateur:
+            document.getElementById(
+              "newUtilisateur"
+            ).value.trim(),
+
+          Site:
+            document.getElementById(
+              "newSite"
+            ).value.trim(),
+
+          Localisation:
+            document.getElementById(
+              "newLocalisation"
+            ).value.trim(),
+
+          Etat:
+            document.getElementById(
+              "newEtat"
+            ).value,
+
+          DernierInventaire:
+            Math.floor(
+              Date.now() / 1000
+            ),
+
+          Commentaire:
+            document.getElementById(
+              "newCommentaire"
+            ).value.trim()
+
+        });
+
+      await table.create({
+
+        fields:
+          fields
+
+      });
+
+      newForm.style.display =
+        "none";
+
+      statusBox.style.display =
+        "none";
+
+      resultBox.style.display =
+        "block";
+
+      resultBox.innerHTML = `
+
+        <div class="success">
+
+          ✅ Matériel ajouté à l'inventaire
+
+        </div>
+
+        <div class="serial">
+
+          ${echapperHTML(
+            numeroSerie
+          )}
+
+        </div>
+
+      `;
+
+    }
+
+    catch(error) {
+
+      console.error(error);
+
+      alert(
+
+        "Erreur lors de l'ajout : "
+        +
+        (
+          error.message
+          ||
+          error
+        )
+
+      );
+
+    }
+
+    finally {
+
+      addButton.disabled =
+        false;
+
+      addButton.textContent =
+        "💾 Ajouter à l'inventaire";
+
     }
 
   }
-
-  return fields;
-
-}
-
-
-/* ==================================================
-   CRÉATION D'UN MATÉRIEL
-================================================== */
-
-addButton.addEventListener("click", async function() {
-
-  if (!columnMappings) {
-
-    alert(
-      "Les colonnes ne sont pas configurées dans Grist."
-    );
-
-    return;
-  }
-
-  const numeroSerie =
-    document.getElementById("newNumeroSerie")
-      .value
-      .trim();
-
-  if (!numeroSerie) {
-
-    alert("Le numéro de série est obligatoire.");
-
-    return;
-  }
-
-  addButton.disabled = true;
-  addButton.textContent = "⏳ Enregistrement…";
-
-  try {
-
-    const table = grist.getTable();
-
-    const widgetFields = {
-
-      NumeroSerie:
-        numeroSerie,
-
-      NumeroInventaire:
-        document.getElementById("newNumeroInventaire")
-          .value.trim(),
-
-      TypeMateriel:
-        document.getElementById("newType")
-          .value.trim(),
-
-      Marque:
-        document.getElementById("newMarque")
-          .value.trim(),
-
-      Modele:
-        document.getElementById("newModele")
-          .value.trim(),
-
-      Utilisateur:
-        document.getElementById("newUtilisateur")
-          .value.trim(),
-
-      Site:
-        document.getElementById("newSite")
-          .value.trim(),
-
-      Localisation:
-        document.getElementById("newLocalisation")
-          .value.trim(),
-
-      Etat:
-        document.getElementById("newEtat")
-          .value,
-
-      DernierInventaire:
-        Math.floor(Date.now() / 1000),
-
-      Commentaire:
-        document.getElementById("newCommentaire")
-          .value.trim()
-
-    };
-
-    const fields =
-      convertirChamps(widgetFields);
-
-    await table.create({
-      fields: fields
-    });
-
-    newForm.style.display = "none";
-
-    resultBox.innerHTML = `
-      <div class="success">
-        ✅ Matériel ajouté à l'inventaire
-      </div>
-
-      <div class="serial">
-        ${echapperHTML(numeroSerie)}
-      </div>
-    `;
-
-  }
-
-  catch(error) {
-
-    console.error(error);
-
-    alert(
-      "Erreur lors de l'ajout : " +
-      (error.message || error)
-    );
-
-  }
-
-  finally {
-
-    addButton.disabled = false;
-
-    addButton.textContent =
-      "💾 Ajouter à l'inventaire";
-
-  }
-
-});
+);
 
 
 /* ==================================================
    MODIFICATION D'UN MATÉRIEL EXISTANT
 ================================================== */
 
-saveButton.addEventListener("click", async function() {
+saveButton.addEventListener(
+  "click",
+  async function() {
 
-  if (!currentRecordId) {
-    return;
-  }
+    if (!currentRecordId) {
+      return;
+    }
 
-  if (!columnMappings) {
+    if (!columnMappings) {
 
-    alert(
-      "Les colonnes ne sont pas configurées dans Grist."
-    );
+      alert(
+        "Les colonnes ne sont pas configurées."
+      );
 
-    return;
-  }
+      return;
+    }
 
-  saveButton.disabled = true;
-
-  saveButton.textContent =
-    "⏳ Enregistrement…";
-
-  try {
-
-    const table = grist.getTable();
-
-    const widgetFields = {
-
-      NumeroInventaire:
-        document.getElementById("editNumeroInventaire")
-          .value.trim(),
-
-      TypeMateriel:
-        document.getElementById("editType")
-          .value.trim(),
-
-      Marque:
-        document.getElementById("editMarque")
-          .value.trim(),
-
-      Modele:
-        document.getElementById("editModele")
-          .value.trim(),
-
-      Utilisateur:
-        document.getElementById("editUtilisateur")
-          .value.trim(),
-
-      Site:
-        document.getElementById("editSite")
-          .value.trim(),
-
-      Localisation:
-        document.getElementById("editLocalisation")
-          .value.trim(),
-
-      Etat:
-        document.getElementById("editEtat")
-          .value,
-
-      Commentaire:
-        document.getElementById("editCommentaire")
-          .value.trim()
-
-    };
-
-    const fields =
-      convertirChamps(widgetFields);
-
-    await table.update({
-
-      id: currentRecordId,
-
-      fields: fields
-
-    });
-
-    resultBox.style.display = "block";
-
-    resultBox.innerHTML = `
-      <div class="success">
-        ✅ Modifications enregistrées
-      </div>
-
-      <div class="serial">
-        ${echapperHTML(
-          document.getElementById("editNumeroSerie").value
-        )}
-      </div>
-    `;
-
-  }
-
-  catch(error) {
-
-    console.error(error);
-
-    alert(
-      "Erreur lors de la modification : " +
-      (error.message || error)
-    );
-
-  }
-
-  finally {
-
-    saveButton.disabled = false;
+    saveButton.disabled =
+      true;
 
     saveButton.textContent =
-      "💾 Enregistrer les modifications";
+      "⏳ Enregistrement…";
 
-  }
+    try {
 
-});
+      const table =
+        grist.getTable();
 
+      const fields =
+        convertirChamps({
 
-/* ==================================================
-   CONFIRMATION DE L'INVENTAIRE
-================================================== */
+          NumeroInventaire:
+            document.getElementById(
+              "editNumeroInventaire"
+            ).value.trim(),
 
-confirmButton.addEventListener("click", async function() {
+          TypeMateriel:
+            document.getElementById(
+              "editType"
+            ).value.trim(),
 
-  if (!currentRecordId) {
-    return;
-  }
+          Marque:
+            document.getElementById(
+              "editMarque"
+            ).value.trim(),
 
-  if (!columnMappings) {
+          Modele:
+            document.getElementById(
+              "editModele"
+            ).value.trim(),
 
-    alert(
-      "Les colonnes ne sont pas configurées."
-    );
+          Utilisateur:
+            document.getElementById(
+              "editUtilisateur"
+            ).value.trim(),
 
-    return;
-  }
+          Site:
+            document.getElementById(
+              "editSite"
+            ).value.trim(),
 
-  confirmButton.disabled = true;
+          Localisation:
+            document.getElementById(
+              "editLocalisation"
+            ).value.trim(),
 
-  confirmButton.textContent =
-    "⏳ Confirmation…";
+          Etat:
+            document.getElementById(
+              "editEtat"
+            ).value,
 
-  try {
+          Commentaire:
+            document.getElementById(
+              "editCommentaire"
+            ).value.trim()
 
-    const table = grist.getTable();
+        });
 
-    const fields =
-      convertirChamps({
+      await table.update({
 
-        DernierInventaire:
-          Math.floor(Date.now() / 1000)
+        id:
+          currentRecordId,
+
+        fields:
+          fields
 
       });
 
-    await table.update({
+      resultBox.style.display =
+        "block";
 
-      id: currentRecordId,
+      resultBox.innerHTML = `
 
-      fields: fields
+        <div class="success">
 
-    });
+          ✅ Modifications enregistrées
 
-    resultBox.style.display = "block";
+        </div>
 
-    resultBox.innerHTML = `
-      <div class="success">
-        ✅ Inventaire confirmé
-      </div>
+        <div class="serial">
 
-      <p>
-        La date du dernier inventaire
-        vient d'être mise à jour.
-      </p>
-    `;
+          ${echapperHTML(
+            document.getElementById(
+              "editNumeroSerie"
+            ).value
+          )}
+
+        </div>
+
+      `;
+
+    }
+
+    catch(error) {
+
+      console.error(error);
+
+      alert(
+
+        "Erreur lors de la modification : "
+        +
+        (
+          error.message
+          ||
+          error
+        )
+
+      );
+
+    }
+
+    finally {
+
+      saveButton.disabled =
+        false;
+
+      saveButton.textContent =
+        "💾 Enregistrer les modifications";
+
+    }
 
   }
+);
 
-  catch(error) {
 
-    console.error(error);
+/* ==================================================
+   CONFIRMER L'INVENTAIRE
 
-    alert(
-      "Erreur lors de la confirmation : " +
-      (error.message || error)
-    );
+   IMPORTANT :
+   ici UNE SEULE COLONNE est envoyée à Grist.
+================================================== */
 
-  }
+confirmButton.addEventListener(
+  "click",
+  async function() {
 
-  finally {
+    if (!currentRecordId) {
+      return;
+    }
 
-    confirmButton.disabled = false;
+    if (!columnMappings) {
+
+      alert(
+        "Les colonnes ne sont pas configurées."
+      );
+
+      return;
+    }
+
+    confirmButton.disabled =
+      true;
 
     confirmButton.textContent =
-      "✅ Confirmer l'inventaire";
+      "⏳ Confirmation…";
+
+    try {
+
+      const table =
+        grist.getTable();
+
+
+      /*
+        Seule la colonne DernierInventaire
+        est transmise.
+      */
+
+      const fields =
+        convertirChamps({
+
+          DernierInventaire:
+            Math.floor(
+              Date.now() / 1000
+            )
+
+        });
+
+
+      /*
+        Les autres colonnes ne sont PAS
+        présentes dans fields.
+      */
+
+      await table.update({
+
+        id:
+          currentRecordId,
+
+        fields:
+          fields
+
+      });
+
+
+      resultBox.style.display =
+        "block";
+
+      resultBox.innerHTML = `
+
+        <div class="success">
+
+          ✅ Inventaire confirmé
+
+        </div>
+
+        <p>
+
+          La date du dernier inventaire
+          vient d'être mise à jour.
+
+        </p>
+
+      `;
+
+    }
+
+    catch(error) {
+
+      console.error(error);
+
+      alert(
+
+        "Erreur lors de la confirmation : "
+        +
+        (
+          error.message
+          ||
+          error
+        )
+
+      );
+
+    }
+
+    finally {
+
+      confirmButton.disabled =
+        false;
+
+      confirmButton.textContent =
+        "✅ Confirmer l'inventaire";
+
+    }
 
   }
-
-});
+);
 
 
 /* ==================================================
    SAISIE MANUELLE
 ================================================== */
 
-serialInput.addEventListener("change", function() {
+serialInput.addEventListener(
+  "change",
+  function() {
 
-  const serial =
-    serialInput.value.trim();
+    const serial =
+      serialInput
+        .value
+        .trim();
 
-  if (serial) {
-    rechercherMateriel(serial);
+    if (serial) {
+
+      rechercherMateriel(
+        serial
+      );
+
+    }
+
   }
-
-});
+);
 
 
 /* ==================================================
-   SÉCURITÉ HTML
+   PROTECTION HTML
 ================================================== */
 
 function echapperHTML(value) {
 
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
 </script>
 
 </body>
+
 </html>
