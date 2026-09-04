@@ -12,10 +12,7 @@
 
   <title>Inventaire Grist</title>
 
-  <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-
-  <!-- ZXing -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
 
 
@@ -73,17 +70,14 @@
     input,
     select,
     textarea {
-
       width: 100%;
       min-height: 52px;
-
       padding: 12px;
 
       border: 1px solid #bbb;
       border-radius: 10px;
 
       font-size: 17px;
-
       background: white;
     }
 
@@ -98,7 +92,6 @@
     }
 
     button {
-
       width: 100%;
       min-height: 58px;
 
@@ -109,7 +102,6 @@
       font-weight: 600;
 
       margin-top: 15px;
-
       cursor: pointer;
     }
 
@@ -146,15 +138,12 @@
     #newForm,
     #editForm,
     #mappingWarning {
-
       display: none;
 
       background: white;
-
       padding: 18px;
 
       border-radius: 12px;
-
       margin-top: 16px;
 
       box-shadow:
@@ -187,6 +176,12 @@
       margin: 12px 0;
     }
 
+    .hint {
+      margin-top: 5px;
+      font-size: 13px;
+      color: #666;
+    }
+
   </style>
 
 </head>
@@ -198,10 +193,6 @@
 
   <h1>📦 Inventaire matériel</h1>
 
-
-  <!-- ==========================================
-       MAPPING
-       ========================================== -->
 
   <div id="mappingWarning">
 
@@ -217,9 +208,7 @@
   </div>
 
 
-  <!-- ==========================================
-       SCANNER
-       ========================================== -->
+  <!-- SCANNER -->
 
   <label for="serial">
     N° de série
@@ -253,9 +242,9 @@
   <div id="result"></div>
 
 
-  <!-- ==========================================
+  <!-- ==================================================
        MATÉRIEL EXISTANT
-       ========================================== -->
+       ================================================== -->
 
   <div id="editForm">
 
@@ -308,6 +297,10 @@
     <select id="editModele">
       <option value="">-- Choisir --</option>
     </select>
+
+    <div class="hint">
+      La liste des modèles est filtrée selon la marque choisie.
+    </div>
 
 
     <label>
@@ -387,9 +380,9 @@
   </div>
 
 
-  <!-- ==========================================
+  <!-- ==================================================
        NOUVEAU MATÉRIEL
-       ========================================== -->
+       ================================================== -->
 
   <div id="newForm">
 
@@ -442,6 +435,10 @@
     <select id="newModele">
       <option value="">-- Choisir --</option>
     </select>
+
+    <div class="hint">
+      La liste des modèles est filtrée selon la marque choisie.
+    </div>
 
 
     <label>
@@ -538,42 +535,72 @@ let referencesChargees = false;
 */
 
 let listeSites = [];
+
 let listeTypes = [];
+
 let listeMarques = [];
+
+/*
+  Un modèle contient maintenant :
+
+  {
+    id: 1,
+    label: "AP 635",
+    marqueId: 4,
+    typeId: 2
+  }
+*/
+
 let listeModeles = [];
 
 
 /* ==================================================
-   NOMS LOGIQUES DES TABLES
+   CONFIGURATION
 ================================================== */
 
 const CONFIG_REFERENCES = {
 
   Site: {
-    tableRecherchee: "Site",
-    colonneRecherchee: "Site"
+    table: "Site",
+    libelle: "Site"
   },
 
   TypeMateriel: {
-    tableRecherchee: "Type",
-    colonneRecherchee: "Type"
+    table: "Type",
+    libelle: "Type"
   },
 
   Marque: {
-    tableRecherchee: "Marque",
-    colonneRecherchee: "Marque"
+    table: "Marque",
+    libelle: "Marque"
   },
 
   Modele: {
-    tableRecherchee: "Modèle",
-    colonneRecherchee: "Modèle"
+    table: "Modèle",
+    libelle: "Modèle",
+
+    /*
+      Dans la table Modèle,
+      le widget recherchera automatiquement
+      une colonne nommée Marque.
+    */
+
+    marque: "Marque",
+
+    /*
+      Si une colonne Type existe également
+      dans Modèle, elle sera utilisée
+      pour affiner encore le filtre.
+    */
+
+    type: "Type"
   }
 
 };
 
 
 /* ==================================================
-   ÉLÉMENTS HTML
+   ÉLÉMENTS
 ================================================== */
 
 const serialInput =
@@ -614,7 +641,7 @@ const mappingWarning =
 
 
 /* ==================================================
-   COLONNES DU WIDGET
+   COLONNES PRINCIPALES
 ================================================== */
 
 const columns = [
@@ -633,19 +660,22 @@ const columns = [
   {
     name: "TypeMateriel",
     title: "Type",
-    optional: true
+    optional: true,
+    type: "Ref"
   },
 
   {
     name: "Marque",
     title: "Marque",
-    optional: true
+    optional: true,
+    type: "Ref"
   },
 
   {
     name: "Modele",
     title: "Modèle",
-    optional: true
+    optional: true,
+    type: "Ref"
   },
 
   {
@@ -657,7 +687,8 @@ const columns = [
   {
     name: "Site",
     title: "Site",
-    optional: true
+    optional: true,
+    type: "Ref"
   },
 
   {
@@ -688,7 +719,7 @@ const columns = [
 
 
 /* ==================================================
-   INITIALISATION GRIST
+   INITIALISATION
 ================================================== */
 
 grist.ready({
@@ -701,13 +732,7 @@ grist.ready({
 
 
 /* ==================================================
-   NORMALISATION D'UN NOM
-
-   "Modèle" -> "modele"
-   "N° Site" -> "nosite"
-
-   Cela permet de comparer les noms
-   même si Grist retire les accents.
+   NORMALISATION DES NOMS
 ================================================== */
 
 function normaliserNom(valeur) {
@@ -732,15 +757,10 @@ function normaliserNom(valeur) {
 
 
 /* ==================================================
-   TROUVER AUTOMATIQUEMENT L'ID D'UNE TABLE
-
-   Exemple :
-   "Modèle" pourra correspondre à "Modele".
+   TROUVER UNE TABLE GRIST
 ================================================== */
 
-async function trouverTableId(
-  nomRecherche
-) {
+async function trouverTableId(nomRecherche) {
 
   const tables =
     await grist.docApi.listTables();
@@ -750,7 +770,7 @@ async function trouverTableId(
       nomRecherche
     );
 
-  const trouve =
+  const tableTrouvee =
     tables.find(
       function(tableId) {
 
@@ -763,7 +783,7 @@ async function trouverTableId(
       }
     );
 
-  if (!trouve) {
+  if (!tableTrouvee) {
 
     throw new Error(
 
@@ -776,51 +796,30 @@ async function trouverTableId(
 
   }
 
-  return trouve;
+  return tableTrouvee;
 
 }
 
 
 /* ==================================================
-   CONVERTIR LE RÉSULTAT FETCHTABLE EN LIGNES
-
-   Cette fonction accepte :
-   - le format tableau de lignes
-   - un éventuel format colonne
+   FETCH TABLE -> LIGNES
 ================================================== */
 
-function convertirFetchTableEnLignes(
-  data
-) {
+function convertirFetchTableEnLignes(data) {
 
-  /*
-    FORMAT NORMAL GRIST :
-    [
-      {id:1, Site:"Garibaldi"},
-      {id:2, Site:"Préfecture"}
-    ]
-  */
-
-  if (
-    Array.isArray(data)
-  ) {
+  if (Array.isArray(data)) {
 
     return data;
 
   }
-
-
-  /*
-    FORMAT COLONNES
-    par sécurité / compatibilité
-  */
 
   if (
     data &&
     Array.isArray(data.id)
   ) {
 
-    const lignes = [];
+    const lignes =
+      [];
 
     for (
       let i = 0;
@@ -828,7 +827,8 @@ function convertirFetchTableEnLignes(
       i++
     ) {
 
-      const ligne = {};
+      const ligne =
+        {};
 
       for (
         const key
@@ -858,22 +858,18 @@ function convertirFetchTableEnLignes(
 
   }
 
-
   return [];
 
 }
 
 
 /* ==================================================
-   TROUVER LA COLONNE LIBELLÉ
-
-   Exemple :
-   "Modèle" pourra correspondre à "Modele".
+   TROUVER UNE COLONNE
 ================================================== */
 
-function trouverColonneDansLignes(
+function trouverColonne(
   lignes,
-  colonneRecherchee
+  nomRecherche
 ) {
 
   if (
@@ -885,25 +881,22 @@ function trouverColonneDansLignes(
 
   }
 
-  const premiereLigne =
-    lignes[0];
-
-  const cles =
-    Object.keys(
-      premiereLigne
-    );
-
   const cible =
     normaliserNom(
-      colonneRecherchee
+      nomRecherche
+    );
+
+  const colonnes =
+    Object.keys(
+      lignes[0]
     );
 
   return (
-    cles.find(
-      function(cle) {
+    colonnes.find(
+      function(colonne) {
 
         return (
-          normaliserNom(cle)
+          normaliserNom(colonne)
           ===
           cible
         );
@@ -918,43 +911,28 @@ function trouverColonneDansLignes(
 
 
 /* ==================================================
-   CHARGEMENT D'UNE TABLE DE RÉFÉRENCE
+   CHARGER UNE RÉFÉRENCE SIMPLE
 ================================================== */
 
-async function chargerReference(
+async function chargerReferenceSimple(
   nomTable,
   nomColonne
 ) {
-
-  /*
-    1 - trouver le véritable ID Grist
-  */
 
   const tableId =
     await trouverTableId(
       nomTable
     );
 
-
-  /*
-    2 - charger la table
-  */
-
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
-
-  /*
-    3 - transformer en lignes
-  */
-
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
-
 
   if (
     lignes.length === 0
@@ -964,40 +942,25 @@ async function chargerReference(
 
   }
 
-
-  /*
-    4 - détecter automatiquement
-        la colonne du libellé
-  */
-
-  const colonneId =
-    trouverColonneDansLignes(
+  const colonneLibelle =
+    trouverColonne(
       lignes,
       nomColonne
     );
 
-
-  if (!colonneId) {
+  if (!colonneLibelle) {
 
     throw new Error(
 
       'Colonne "' +
       nomColonne +
-      '" introuvable dans la table "' +
+      '" introuvable dans "' +
       tableId +
-      '". Colonnes disponibles : ' +
-      Object.keys(
-        lignes[0]
-      ).join(", ")
+      '".'
 
     );
 
   }
-
-
-  /*
-    5 - créer la liste
-  */
 
   const valeurs =
     lignes
@@ -1010,11 +973,11 @@ async function chargerReference(
             ligne.id !== null &&
             ligne.id !== undefined &&
 
-            ligne[colonneId] !== null &&
-            ligne[colonneId] !== undefined &&
+            ligne[colonneLibelle] !== null &&
+            ligne[colonneLibelle] !== undefined &&
 
             String(
-              ligne[colonneId]
+              ligne[colonneLibelle]
             ).trim() !== ""
 
           );
@@ -1034,7 +997,7 @@ async function chargerReference(
 
             label:
               String(
-                ligne[colonneId]
+                ligne[colonneLibelle]
               )
 
           };
@@ -1042,10 +1005,170 @@ async function chargerReference(
         }
       );
 
+  valeurs.sort(
+    function(a, b) {
+
+      return a.label.localeCompare(
+        b.label,
+        "fr",
+        {
+          sensitivity: "base"
+        }
+      );
+
+    }
+  );
+
+  return valeurs;
+
+}
+
+
+/* ==================================================
+   CHARGER LES MODÈLES AVEC MARQUE / TYPE
+================================================== */
+
+async function chargerModeles() {
+
+  const tableId =
+    await trouverTableId(
+      CONFIG_REFERENCES
+        .Modele
+        .table
+    );
+
+  const raw =
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
+  const lignes =
+    convertirFetchTableEnLignes(
+      raw
+    );
+
+  if (
+    lignes.length === 0
+  ) {
+
+    return [];
+
+  }
+
+  const colonneModele =
+    trouverColonne(
+      lignes,
+      CONFIG_REFERENCES
+        .Modele
+        .libelle
+    );
+
+
+  const colonneMarque =
+    trouverColonne(
+      lignes,
+      CONFIG_REFERENCES
+        .Modele
+        .marque
+    );
+
+
+  const colonneType =
+    trouverColonne(
+      lignes,
+      CONFIG_REFERENCES
+        .Modele
+        .type
+    );
+
+
+  if (!colonneModele) {
+
+    throw new Error(
+      "Impossible de trouver la colonne Modèle."
+    );
+
+  }
+
 
   /*
-    Tri alphabétique
+    La colonne Marque est nécessaire
+    pour avoir le filtre demandé.
   */
+
+  if (!colonneMarque) {
+
+    throw new Error(
+
+      'La table Modèle ne contient pas de colonne "Marque".'
+
+    );
+
+  }
+
+
+  const valeurs =
+    lignes
+
+      .filter(
+        function(ligne) {
+
+          return (
+
+            ligne.id !== null &&
+            ligne.id !== undefined &&
+
+            ligne[colonneModele] !== null &&
+            ligne[colonneModele] !== undefined &&
+
+            String(
+              ligne[colonneModele]
+            ).trim() !== ""
+
+          );
+
+        }
+      )
+
+      .map(
+        function(ligne) {
+
+          return {
+
+            id:
+              Number(
+                ligne.id
+              ),
+
+            label:
+              String(
+                ligne[colonneModele]
+              ),
+
+            /*
+              fetchTable renvoie pour une Ref
+              le row ID de la ligne référencée.
+            */
+
+            marqueId:
+              extraireRowId(
+                ligne[colonneMarque]
+              ),
+
+            typeId:
+              colonneType
+                ?
+                extraireRowId(
+                  ligne[colonneType]
+                )
+                :
+                null
+
+          };
+
+        }
+      );
+
 
   valeurs.sort(
     function(a, b) {
@@ -1068,7 +1191,75 @@ async function chargerReference(
 
 
 /* ==================================================
-   CHARGER LES 4 LISTES
+   EXTRAIRE UN ROW ID
+================================================== */
+
+function extraireRowId(valeur) {
+
+  if (
+    valeur === null ||
+    valeur === undefined ||
+    valeur === ""
+  ) {
+
+    return null;
+
+  }
+
+
+  if (
+    typeof valeur === "number"
+  ) {
+
+    return valeur;
+
+  }
+
+
+  if (
+    typeof valeur === "string" &&
+    !isNaN(
+      Number(valeur)
+    )
+  ) {
+
+    return Number(
+      valeur
+    );
+
+  }
+
+
+  if (
+    Array.isArray(valeur)
+  ) {
+
+    for (
+      let i = valeur.length - 1;
+      i >= 0;
+      i--
+    ) {
+
+      if (
+        typeof valeur[i] === "number"
+      ) {
+
+        return valeur[i];
+
+      }
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/* ==================================================
+   CHARGER TOUTES LES LISTES
 ================================================== */
 
 async function chargerListesReferences() {
@@ -1098,56 +1289,25 @@ async function chargerListesReferences() {
     ] = await Promise.all([
 
 
-      chargerReference(
-
-        CONFIG_REFERENCES
-          .Site
-          .tableRecherchee,
-
-        CONFIG_REFERENCES
-          .Site
-          .colonneRecherchee
-
+      chargerReferenceSimple(
+        CONFIG_REFERENCES.Site.table,
+        CONFIG_REFERENCES.Site.libelle
       ),
 
 
-      chargerReference(
-
-        CONFIG_REFERENCES
-          .TypeMateriel
-          .tableRecherchee,
-
-        CONFIG_REFERENCES
-          .TypeMateriel
-          .colonneRecherchee
-
+      chargerReferenceSimple(
+        CONFIG_REFERENCES.TypeMateriel.table,
+        CONFIG_REFERENCES.TypeMateriel.libelle
       ),
 
 
-      chargerReference(
-
-        CONFIG_REFERENCES
-          .Marque
-          .tableRecherchee,
-
-        CONFIG_REFERENCES
-          .Marque
-          .colonneRecherchee
-
+      chargerReferenceSimple(
+        CONFIG_REFERENCES.Marque.table,
+        CONFIG_REFERENCES.Marque.libelle
       ),
 
 
-      chargerReference(
-
-        CONFIG_REFERENCES
-          .Modele
-          .tableRecherchee,
-
-        CONFIG_REFERENCES
-          .Modele
-          .colonneRecherchee
-
-      )
+      chargerModeles()
 
     ]);
 
@@ -1165,47 +1325,50 @@ async function chargerListesReferences() {
       modeles;
 
 
-    remplirSelect(
+    remplirSelectSimple(
       "newSite",
       listeSites
     );
 
-    remplirSelect(
+    remplirSelectSimple(
       "editSite",
       listeSites
     );
 
 
-    remplirSelect(
+    remplirSelectSimple(
       "newType",
       listeTypes
     );
 
-    remplirSelect(
+    remplirSelectSimple(
       "editType",
       listeTypes
     );
 
 
-    remplirSelect(
+    remplirSelectSimple(
       "newMarque",
       listeMarques
     );
 
-    remplirSelect(
+    remplirSelectSimple(
       "editMarque",
       listeMarques
     );
 
 
-    remplirSelect(
-      "newModele",
-      listeModeles
+    /*
+      Modèle est rempli dynamiquement
+      selon Marque / Type.
+    */
+
+    mettreAJourModeles(
+      "new"
     );
 
-    remplirSelect(
-      "editModele",
-      listeModeles
+    mettreAJourModeles(
+      "edit"
     );
 
 
@@ -1239,12 +1402,10 @@ async function chargerListesReferences() {
       </div>
 
       <p>
-
         ${echapperHTML(
           error.message ||
           String(error)
         )}
-
       </p>
 
     `;
@@ -1255,10 +1416,10 @@ async function chargerListesReferences() {
 
 
 /* ==================================================
-   REMPLIR UNE LISTE DÉROULANTE
+   REMPLIR UN SELECT SIMPLE
 ================================================== */
 
-function remplirSelect(
+function remplirSelectSimple(
   selectId,
   liste
 ) {
@@ -1267,7 +1428,6 @@ function remplirSelect(
     document.getElementById(
       selectId
     );
-
 
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
@@ -1283,16 +1443,13 @@ function remplirSelect(
         "option"
       );
 
-
     option.value =
       String(
         element.id
       );
 
-
     option.textContent =
       element.label;
-
 
     select.appendChild(
       option
@@ -1304,7 +1461,227 @@ function remplirSelect(
 
 
 /* ==================================================
-   DONNÉES DE LA TABLE INVENTAIRE
+   MODÈLES CONDITIONNELS
+================================================== */
+
+function mettreAJourModeles(
+  prefixe,
+  valeurModeleAConserver = null
+) {
+
+  const marqueSelect =
+    document.getElementById(
+      prefixe + "Marque"
+    );
+
+  const typeSelect =
+    document.getElementById(
+      prefixe + "Type"
+    );
+
+  const modeleSelect =
+    document.getElementById(
+      prefixe + "Modele"
+    );
+
+
+  const marqueId =
+    marqueSelect.value
+      ?
+      Number(
+        marqueSelect.value
+      )
+      :
+      null;
+
+
+  const typeId =
+    typeSelect.value
+      ?
+      Number(
+        typeSelect.value
+      )
+      :
+      null;
+
+
+  /*
+    Si aucune marque n'est choisie,
+    on ne propose aucun modèle.
+
+    Cela évite d'avoir une immense liste.
+  */
+
+  let modelesFiltres =
+    [];
+
+
+  if (
+    marqueId !== null
+  ) {
+
+    modelesFiltres =
+      listeModeles.filter(
+        function(modele) {
+
+          /*
+            Marque obligatoire
+          */
+
+          if (
+            modele.marqueId !== marqueId
+          ) {
+
+            return false;
+
+          }
+
+
+          /*
+            Si Modèle possède aussi
+            une référence Type ET qu'un Type
+            est sélectionné, on filtre également.
+          */
+
+          if (
+            modele.typeId !== null &&
+            typeId !== null &&
+            modele.typeId !== typeId
+          ) {
+
+            return false;
+
+          }
+
+
+          return true;
+
+        }
+      );
+
+  }
+
+
+  modeleSelect.innerHTML =
+    '<option value="">-- Choisir --</option>';
+
+
+  for (
+    const modele
+    of modelesFiltres
+  ) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      String(
+        modele.id
+      );
+
+    option.textContent =
+      modele.label;
+
+    modeleSelect.appendChild(
+      option
+    );
+
+  }
+
+
+  /*
+    Restauration éventuelle
+    du modèle déjà présent dans Grist.
+  */
+
+  if (
+    valeurModeleAConserver !== null &&
+    valeurModeleAConserver !== undefined
+  ) {
+
+    selectionnerReferenceOuLibelle(
+      modeleSelect,
+      valeurModeleAConserver,
+      listeModeles
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   CHANGEMENT MARQUE / TYPE
+================================================== */
+
+document
+  .getElementById(
+    "newMarque"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourModeles(
+        "new"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "newType"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourModeles(
+        "new"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "editMarque"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourModeles(
+        "edit"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "editType"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      mettreAJourModeles(
+        "edit"
+      );
+
+    }
+  );
+
+
+/* ==================================================
+   DONNÉES DE LA TABLE PRINCIPALE
 ================================================== */
 
 grist.onRecords(
@@ -1367,11 +1744,6 @@ grist.onRecords(
       "none";
 
 
-    /*
-      Chargement des tables Site / Type /
-      Marque / Modèle
-    */
-
     if (
       !referencesChargees
     ) {
@@ -1385,7 +1757,7 @@ grist.onRecords(
 
 
 /* ==================================================
-   OBTENIR UNE COLONNE GRIST
+   TROUVER UNE COLONNE GRIST
 ================================================== */
 
 function obtenirColonneGrist(
@@ -1424,7 +1796,6 @@ function obtenirColonneGrist(
 
     }
 
-
     return mapping[0];
 
   }
@@ -1436,7 +1807,7 @@ function obtenirColonneGrist(
 
 
 /* ==================================================
-   CONSTRUCTION SÉCURISÉE DES CHAMPS
+   CHAMPS À ÉCRIRE
 ================================================== */
 
 function construireChampsGrist(
@@ -1528,10 +1899,6 @@ function valeurReference(
     value === ""
   ) {
 
-    /*
-      Référence vide dans Grist
-    */
-
     return 0;
 
   }
@@ -1545,19 +1912,22 @@ function valeurReference(
 
 
 /* ==================================================
-   SÉLECTIONNER UNE RÉFÉRENCE
+   SÉLECTION D'UNE RÉFÉRENCE EXISTANTE
+
+   Cette version sait retrouver une valeur
+   soit par ID, soit par LIBELLÉ.
+
+   C'est ce qui corrige ton problème :
+   "Aruba" / "Garibaldi" / "AP 635"
+   peuvent maintenant sélectionner
+   automatiquement la bonne option.
 ================================================== */
 
-function selectionnerReference(
-  selectId,
-  valeur
+function selectionnerReferenceOuLibelle(
+  select,
+  valeur,
+  liste
 ) {
-
-  const select =
-    document.getElementById(
-      selectId
-    );
-
 
   if (
     valeur === null ||
@@ -1574,46 +1944,75 @@ function selectionnerReference(
 
 
   /*
-    Référence Grist classique :
-    rowId numérique
+    1 - Valeur numérique = row ID
   */
 
+  const rowId =
+    extraireRowId(
+      valeur
+    );
+
+
   if (
-    typeof valeur === "number"
+    rowId !== null
   ) {
 
-    select.value =
-      String(
-        valeur
+    const existe =
+      Array.from(
+        select.options
+      )
+      .some(
+        function(option) {
+
+          return (
+            option.value
+            ===
+            String(rowId)
+          );
+
+        }
       );
 
-    return;
+
+    if (existe) {
+
+      select.value =
+        String(rowId);
+
+      return;
+
+    }
 
   }
 
 
   /*
-    Valeur numérique sous forme texte
+    2 - Grist peut nous transmettre
+        le libellé affiché de la Ref.
+
+        Ex :
+        "Aruba"
+        "AP 635"
+        "Garibaldi"
   */
 
+  let texte =
+    null;
+
+
   if (
-    !isNaN(
-      Number(valeur)
-    )
+    typeof valeur === "string"
   ) {
 
-    select.value =
-      String(
-        Number(valeur)
-      );
-
-    return;
+    texte =
+      valeur;
 
   }
 
 
   /*
-    Cas d'une valeur encapsulée
+    Certaines valeurs de référence
+    peuvent être encodées.
   */
 
   if (
@@ -1621,18 +2020,77 @@ function selectionnerReference(
   ) {
 
     for (
-      let i = valeur.length - 1;
-      i >= 0;
-      i--
+      const element
+      of valeur
     ) {
 
       if (
-        typeof valeur[i] === "number"
+        typeof element === "string" &&
+        element !== "R"
       ) {
+
+        texte =
+          element;
+
+      }
+
+    }
+
+  }
+
+
+  if (
+    texte !== null
+  ) {
+
+    const cible =
+      normaliserNom(
+        texte
+      );
+
+
+    const elementTrouve =
+      liste.find(
+        function(element) {
+
+          return (
+            normaliserNom(
+              element.label
+            )
+            ===
+            cible
+          );
+
+        }
+      );
+
+
+    if (elementTrouve) {
+
+      const existe =
+        Array.from(
+          select.options
+        )
+        .some(
+          function(option) {
+
+            return (
+              option.value
+              ===
+              String(
+                elementTrouve.id
+              )
+            );
+
+          }
+        );
+
+
+      if (existe) {
 
         select.value =
           String(
-            valeur[i]
+            elementTrouve.id
           );
 
         return;
@@ -1949,20 +2407,49 @@ function remplirFormulaireEdition(
     record.NumeroInventaire || "";
 
 
-  selectionnerReference(
-    "editType",
-    record.TypeMateriel
+  /*
+    TYPE
+  */
+
+  selectionnerReferenceOuLibelle(
+
+    document.getElementById(
+      "editType"
+    ),
+
+    record.TypeMateriel,
+
+    listeTypes
+
   );
 
 
-  selectionnerReference(
-    "editMarque",
-    record.Marque
+  /*
+    MARQUE
+  */
+
+  selectionnerReferenceOuLibelle(
+
+    document.getElementById(
+      "editMarque"
+    ),
+
+    record.Marque,
+
+    listeMarques
+
   );
 
 
-  selectionnerReference(
-    "editModele",
+  /*
+    Maintenant que la marque est connue,
+    on fabrique la liste des modèles
+    correspondants puis on sélectionne
+    le modèle existant.
+  */
+
+  mettreAJourModeles(
+    "edit",
     record.Modele
   );
 
@@ -1973,9 +2460,20 @@ function remplirFormulaireEdition(
     record.Utilisateur || "";
 
 
-  selectionnerReference(
-    "editSite",
-    record.Site
+  /*
+    SITE
+  */
+
+  selectionnerReferenceOuLibelle(
+
+    document.getElementById(
+      "editSite"
+    ),
+
+    record.Site,
+
+    listeSites
+
   );
 
 
@@ -2035,10 +2533,9 @@ function remplirFormulaireCreation(
     "";
 
 
-  document.getElementById(
-    "newModele"
-  ).value =
-    "";
+  mettreAJourModeles(
+    "new"
+  );
 
 
   document.getElementById(
@@ -2106,9 +2603,7 @@ addButton.addEventListener(
     if (!columnMappings) {
 
       alert(
-
         "Les colonnes ne sont pas configurées dans Grist."
-
       );
 
       return;
@@ -2127,9 +2622,7 @@ addButton.addEventListener(
     if (!numeroSerie) {
 
       alert(
-
         "Le numéro de série est obligatoire."
-
       );
 
       return;
@@ -2319,9 +2812,7 @@ saveButton.addEventListener(
     if (!columnMappings) {
 
       alert(
-
         "Les colonnes ne sont pas configurées."
-
       );
 
       return;
@@ -2408,8 +2899,8 @@ saveButton.addEventListener(
 
 
       /*
-        N° série et DernierInventaire
-        ne sont PAS envoyés.
+        N° série et Dernier inventaire
+        ne sont PAS modifiés.
       */
 
       await table.update({
@@ -2503,9 +2994,7 @@ confirmButton.addEventListener(
     if (!columnMappings) {
 
       alert(
-
         "Les colonnes ne sont pas configurées."
-
       );
 
       return;
