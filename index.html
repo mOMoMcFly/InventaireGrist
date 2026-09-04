@@ -10,10 +10,7 @@
 
   <title>Inventaire Grist</title>
 
-  <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-
-  <!-- ZXing -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
 
   <style>
@@ -30,7 +27,7 @@
     }
 
     .container {
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
     }
 
@@ -39,22 +36,34 @@
       margin-bottom: 24px;
     }
 
-    label {
-      display: block;
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 8px;
+    h2 {
+      font-size: 21px;
+      margin-top: 0;
     }
 
-    input[type="text"] {
+    label {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select,
+    textarea {
       width: 100%;
-      min-height: 56px;
-      padding: 14px;
+      min-height: 52px;
+      padding: 12px;
       border: 1px solid #bbb;
-      border-radius: 12px;
-      font-size: 20px;
-      margin-bottom: 15px;
+      border-radius: 10px;
+      font-size: 17px;
       background: white;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
     }
 
     button {
@@ -64,12 +73,17 @@
       border-radius: 12px;
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 15px;
+      margin-top: 15px;
       cursor: pointer;
     }
 
     #scanButton {
       background: #1f5ea8;
+      color: white;
+    }
+
+    #addButton {
+      background: #2e7d32;
       color: white;
     }
 
@@ -83,26 +97,17 @@
       display: none;
       width: 100%;
       border-radius: 12px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-    }
-
-    #status {
-      display: none;
-      margin-top: 10px;
-      margin-bottom: 15px;
-      padding: 14px;
-      border-radius: 12px;
-      background: white;
-      font-size: 16px;
-    }
-
-    #result {
-      display: none;
       margin-top: 15px;
-      padding: 18px;
+    }
+
+    #status,
+    #result,
+    #newForm {
+      display: none;
       background: white;
+      padding: 18px;
       border-radius: 12px;
+      margin-top: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
@@ -160,10 +165,7 @@
     📷 Scanner le code-barres
   </button>
 
-  <img
-    id="preview"
-    alt="Aperçu du code-barres"
-  >
+  <img id="preview">
 
   <div id="status"></div>
 
@@ -173,281 +175,513 @@
     ✅ Confirmer l'inventaire
   </button>
 
+  <div id="newForm">
+
+    <h2>➕ Nouveau matériel</h2>
+
+    <label>N° de série</label>
+    <input id="newNumeroSerie" type="text" readonly>
+
+    <label>N° d'inventaire</label>
+    <input id="newNumeroInventaire" type="text">
+
+    <label>Type</label>
+    <input id="newType" type="text" placeholder="Ex : PC portable">
+
+    <label>Marque</label>
+    <input id="newMarque" type="text" placeholder="Ex : Lenovo">
+
+    <label>Modèle</label>
+    <input id="newModele" type="text">
+
+    <label>Utilisateur</label>
+    <input id="newUtilisateur" type="text">
+
+    <label>Site</label>
+    <input id="newSite" type="text">
+
+    <label>Localisation</label>
+    <input id="newLocalisation" type="text">
+
+    <label>État</label>
+    <select id="newEtat">
+      <option value="">-- Choisir --</option>
+      <option value="En service">En service</option>
+      <option value="En stock">En stock</option>
+      <option value="En panne">En panne</option>
+      <option value="Réformé">Réformé</option>
+    </select>
+
+    <label>Commentaire</label>
+    <textarea id="newCommentaire"></textarea>
+
+    <button id="addButton">
+      💾 Ajouter à l'inventaire
+    </button>
+
+  </div>
+
 </div>
 
 <script>
 
-  let records = [];
-  let currentRecordId = null;
+let records = [];
+let currentRecordId = null;
 
-  const serialInput = document.getElementById("serial");
-  const scanButton = document.getElementById("scanButton");
-  const barcodeImage = document.getElementById("barcodeImage");
-  const preview = document.getElementById("preview");
-  const statusBox = document.getElementById("status");
-  const resultBox = document.getElementById("result");
-  const confirmButton = document.getElementById("confirmButton");
+const serialInput = document.getElementById("serial");
+const scanButton = document.getElementById("scanButton");
+const barcodeImage = document.getElementById("barcodeImage");
+const preview = document.getElementById("preview");
+const statusBox = document.getElementById("status");
+const resultBox = document.getElementById("result");
+const confirmButton = document.getElementById("confirmButton");
+const newForm = document.getElementById("newForm");
+const addButton = document.getElementById("addButton");
 
-  grist.ready({
-    requiredAccess: "full"
-  });
 
-  grist.onRecords(function(data) {
-    records = data || [];
-  });
+/*
+==================================================
+INITIALISATION GRIST
+==================================================
+*/
 
-  scanButton.addEventListener("click", function() {
-    barcodeImage.click();
-  });
+grist.ready({
+  requiredAccess: "full"
+});
 
-  barcodeImage.addEventListener("change", async function() {
 
-    const file = this.files[0];
+grist.onRecords(function(data) {
+  records = data || [];
+});
 
-    if (!file) {
-      return;
+
+/*
+==================================================
+SCAN
+==================================================
+*/
+
+scanButton.addEventListener("click", function() {
+  barcodeImage.click();
+});
+
+
+barcodeImage.addEventListener("change", async function() {
+
+  const file = this.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  resultBox.style.display = "none";
+  newForm.style.display = "none";
+  confirmButton.style.display = "none";
+
+  statusBox.style.display = "block";
+  statusBox.innerHTML = "📸 Photo reçue…";
+
+  const imageUrl = URL.createObjectURL(file);
+
+  preview.src = imageUrl;
+  preview.style.display = "block";
+
+  preview.onload = async function() {
+
+    statusBox.innerHTML = "🔎 Analyse du code-barres…";
+
+    try {
+
+      const reader =
+        new ZXingBrowser.BrowserMultiFormatReader();
+
+      const result =
+        await reader.decodeFromImageElement(preview);
+
+      const serial =
+        result.getText().trim();
+
+      serialInput.value = serial;
+
+      statusBox.innerHTML =
+        `<span class="success">
+          ✅ Code-barres reconnu : ${echapperHTML(serial)}
+        </span>`;
+
+      rechercherMateriel(serial);
+
     }
 
-    resultBox.style.display = "none";
-    confirmButton.style.display = "none";
+    catch(error) {
 
-    statusBox.style.display = "block";
-    statusBox.innerHTML = "📸 Photo reçue. Préparation de l’analyse…";
-
-    const imageUrl = URL.createObjectURL(file);
-
-    preview.src = imageUrl;
-    preview.style.display = "block";
-
-    preview.onload = async function() {
-
-      statusBox.innerHTML = "🔎 Analyse du code-barres en cours…";
-
-      try {
-
-        const reader = new ZXingBrowser.BrowserMultiFormatReader();
-
-        const result =
-          await reader.decodeFromImageElement(preview);
-
-        const serial =
-          result.getText().trim();
-
-        serialInput.value = serial;
-
-        statusBox.innerHTML =
-          `<span class="success">✅ Code-barres reconnu : ${echapperHTML(serial)}</span>`;
-
-        rechercherMateriel(serial);
-
-      }
-
-      catch(error) {
-
-        console.error(error);
-
-        statusBox.innerHTML = `
-          <div class="error">
-            ❌ Aucun code-barres reconnu
-          </div>
-
-          <p>
-            Essaie de reprendre la photo :
-          </p>
-
-          <p>
-            • de plus près<br>
-            • avec une bonne lumière<br>
-            • sans reflet<br>
-            • avec le code-barres bien net<br>
-            • en cadrant uniquement l’étiquette
-          </p>
-
-          <p style="font-size:14px;color:#666;">
-            Détail technique :
-            ${echapperHTML(error?.message || error?.name || "Erreur inconnue")}
-          </p>
-        `;
-
-      }
-
-      finally {
-
-        URL.revokeObjectURL(imageUrl);
-
-        barcodeImage.value = "";
-
-      }
-
-    };
-
-  });
-
-  function rechercherMateriel(serial) {
-
-    const serialNettoye =
-      String(serial)
-        .trim()
-        .toUpperCase();
-
-    const found =
-      records.find(function(record) {
-
-        return (
-          String(record.NumeroSerie || "")
-            .trim()
-            .toUpperCase()
-          ===
-          serialNettoye
-        );
-
-      });
-
-    resultBox.style.display = "block";
-
-    if (found) {
-
-      currentRecordId = found.id;
-
-      resultBox.innerHTML = `
-
-        <div class="success">
-          ✅ Matériel trouvé
-        </div>
-
-        <div class="serial">
-          ${echapperHTML(found.NumeroSerie || "")}
-        </div>
-
-        <div class="line">
-          <strong>Type :</strong>
-          ${echapperHTML(found.TypeMateriel || "-")}
-        </div>
-
-        <div class="line">
-          <strong>Marque :</strong>
-          ${echapperHTML(found.Marque || "-")}
-        </div>
-
-        <div class="line">
-          <strong>Modèle :</strong>
-          ${echapperHTML(found.Modele || "-")}
-        </div>
-
-        <div class="line">
-          <strong>Utilisateur :</strong>
-          ${echapperHTML(found.Utilisateur || "-")}
-        </div>
-
-        <div class="line">
-          <strong>Site :</strong>
-          ${echapperHTML(found.Site || "-")}
-        </div>
-
-        <div class="line">
-          <strong>Localisation :</strong>
-          ${echapperHTML(found.Localisation || "-")}
-        </div>
-
-        <div class="line">
-          <strong>État :</strong>
-          ${echapperHTML(found.Etat || "-")}
-        </div>
-      `;
-
-      confirmButton.style.display = "block";
-
-    } else {
-
-      currentRecordId = null;
-
-      resultBox.innerHTML = `
-
-        <div class="warning">
-          🆕 Nouveau matériel
+      statusBox.innerHTML = `
+        <div class="error">
+          ❌ Aucun code-barres reconnu
         </div>
 
         <p>
-          Le numéro de série
-          <strong>${echapperHTML(serial)}</strong>
-          n'existe pas encore dans l'inventaire.
+          Essaie de reprendre la photo de plus près,
+          avec une bonne lumière et sans reflet.
         </p>
       `;
 
-      confirmButton.style.display = "none";
+    }
+
+    finally {
+
+      URL.revokeObjectURL(imageUrl);
+      barcodeImage.value = "";
+
+    }
+
+  };
+
+});
+
+
+/*
+==================================================
+RECHERCHE DU MATÉRIEL
+==================================================
+*/
+
+function rechercherMateriel(serial) {
+
+  const serialNettoye =
+    String(serial).trim().toUpperCase();
+
+  const found =
+    records.find(function(record) {
+
+      return (
+        String(record.NumeroSerie || "")
+          .trim()
+          .toUpperCase()
+        === serialNettoye
+      );
+
+    });
+
+  resultBox.style.display = "block";
+
+  if (found) {
+
+    currentRecordId = found.id;
+    newForm.style.display = "none";
+
+    resultBox.innerHTML = `
+
+      <div class="success">
+        ✅ Matériel trouvé
+      </div>
+
+      <div class="serial">
+        ${echapperHTML(found.NumeroSerie || "")}
+      </div>
+
+      <div class="line">
+        <strong>N° inventaire :</strong>
+        ${echapperHTML(found.NumeroInventaire || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Type :</strong>
+        ${echapperHTML(found.Type || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Marque :</strong>
+        ${echapperHTML(found.Marque || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Modèle :</strong>
+        ${echapperHTML(found.Modele || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Utilisateur :</strong>
+        ${echapperHTML(found.Utilisateur || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Site :</strong>
+        ${echapperHTML(found.Site || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Localisation :</strong>
+        ${echapperHTML(found.Localisation || "-")}
+      </div>
+
+      <div class="line">
+        <strong>État :</strong>
+        ${echapperHTML(found.Etat || "-")}
+      </div>
+
+      <div class="line">
+        <strong>Commentaire :</strong>
+        ${echapperHTML(found.Commentaire || "-")}
+      </div>
+    `;
+
+    confirmButton.style.display = "block";
+
+  }
+
+  else {
+
+    currentRecordId = null;
+
+    resultBox.innerHTML = `
+
+      <div class="warning">
+        🆕 Nouveau matériel
+      </div>
+
+      <p>
+        Le numéro de série
+        <strong>${echapperHTML(serial)}</strong>
+        n'existe pas encore dans l'inventaire.
+      </p>
+    `;
+
+    confirmButton.style.display = "none";
+
+    ouvrirFormulaireNouveauMateriel(serial);
+
+  }
+
+}
+
+
+/*
+==================================================
+FORMULAIRE NOUVEAU MATÉRIEL
+==================================================
+*/
+
+function ouvrirFormulaireNouveauMateriel(serial) {
+
+  document.getElementById("newNumeroSerie").value = serial;
+  document.getElementById("newNumeroInventaire").value = "";
+  document.getElementById("newType").value = "";
+  document.getElementById("newMarque").value = "";
+  document.getElementById("newModele").value = "";
+  document.getElementById("newUtilisateur").value = "";
+  document.getElementById("newSite").value = "";
+  document.getElementById("newLocalisation").value = "";
+  document.getElementById("newEtat").value = "";
+  document.getElementById("newCommentaire").value = "";
+
+  newForm.style.display = "block";
+
+}
+
+
+/*
+==================================================
+AJOUT DANS GRIST
+==================================================
+*/
+
+addButton.addEventListener("click", async function() {
+
+  const numeroSerie =
+    document.getElementById("newNumeroSerie").value.trim();
+
+  if (!numeroSerie) {
+
+    alert("Le numéro de série est obligatoire.");
+    return;
+
+  }
+
+  addButton.disabled = true;
+  addButton.textContent = "⏳ Enregistrement…";
+
+  try {
+
+    const table =
+      await grist.getTable();
+
+    await table.create({
+
+      fields: {
+
+        NumeroSerie:
+          numeroSerie,
+
+        NumeroInventaire:
+          document.getElementById("newNumeroInventaire").value.trim(),
+
+        Type:
+          document.getElementById("newType").value.trim(),
+
+        Marque:
+          document.getElementById("newMarque").value.trim(),
+
+        Modele:
+          document.getElementById("newModele").value.trim(),
+
+        Utilisateur:
+          document.getElementById("newUtilisateur").value.trim(),
+
+        Site:
+          document.getElementById("newSite").value.trim(),
+
+        Localisation:
+          document.getElementById("newLocalisation").value.trim(),
+
+        Etat:
+          document.getElementById("newEtat").value,
+
+        DernierInventaire:
+          Math.floor(Date.now() / 1000),
+
+        Commentaire:
+          document.getElementById("newCommentaire").value.trim()
+
+      }
+
+    });
+
+
+    newForm.style.display = "none";
+
+    resultBox.style.display = "block";
+
+    resultBox.innerHTML = `
+
+      <div class="success">
+        ✅ Matériel ajouté à l'inventaire
+      </div>
+
+      <div class="serial">
+        ${echapperHTML(numeroSerie)}
+      </div>
+
+    `;
+
+  }
+
+  catch(error) {
+
+    alert(
+      "Erreur lors de l'ajout dans Grist : "
+      + error.message
+    );
+
+  }
+
+  finally {
+
+    addButton.disabled = false;
+    addButton.textContent =
+      "💾 Ajouter à l'inventaire";
+
+  }
+
+});
+
+
+/*
+==================================================
+CONFIRMER UN MATÉRIEL EXISTANT
+==================================================
+*/
+
+confirmButton.addEventListener(
+  "click",
+  async function() {
+
+    if (!currentRecordId) {
+      return;
+    }
+
+    try {
+
+      const table =
+        await grist.getTable();
+
+      await table.update({
+
+        id:
+          currentRecordId,
+
+        fields: {
+
+          DernierInventaire:
+            Math.floor(Date.now() / 1000)
+
+        }
+
+      });
+
+
+      resultBox.innerHTML += `
+
+        <p class="success">
+          ✅ Inventaire confirmé
+        </p>
+
+      `;
+
+      confirmButton.style.display =
+        "none";
+
+    }
+
+    catch(error) {
+
+      alert(
+        "Erreur lors de la mise à jour : "
+        + error.message
+      );
 
     }
 
   }
+);
 
-  confirmButton.addEventListener(
-    "click",
-    async function() {
 
-      if (!currentRecordId) {
-        return;
-      }
+/*
+==================================================
+SAISIE MANUELLE
+==================================================
+*/
 
-      try {
+serialInput.addEventListener(
+  "change",
+  function() {
 
-        const table = await grist.getTable();
+    const serial =
+      serialInput.value.trim();
 
-        await table.update({
-          id: currentRecordId,
-          fields: {
-            DernierInventaire:
-              Math.floor(Date.now() / 1000)
-          }
-        });
-
-        resultBox.innerHTML += `
-          <p class="success">
-            ✅ Inventaire confirmé
-          </p>
-        `;
-
-        confirmButton.style.display = "none";
-
-      }
-
-      catch(error) {
-
-        alert(
-          "Erreur lors de la mise à jour : "
-          + error.message
-        );
-
-      }
-
+    if (serial) {
+      rechercherMateriel(serial);
     }
-  );
-
-  serialInput.addEventListener(
-    "change",
-    function() {
-
-      const serial =
-        serialInput
-          .value
-          .trim();
-
-      if (serial) {
-        rechercherMateriel(serial);
-      }
-
-    }
-  );
-
-  function echapperHTML(value) {
-
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
 
   }
+);
+
+
+/*
+==================================================
+PROTECTION HTML
+==================================================
+*/
+
+function echapperHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
 
 </script>
 
