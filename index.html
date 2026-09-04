@@ -2,6 +2,7 @@
 <html lang="fr">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -34,11 +35,13 @@
 
     body {
       padding: 20px;
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
+
       background: #f5f6f8;
       color: #222;
     }
@@ -72,10 +75,17 @@
       width: 100%;
       min-height: 52px;
       padding: 12px;
+
       border: 1px solid #bbb;
       border-radius: 10px;
+
       font-size: 17px;
+
       background: white;
+    }
+
+    select {
+      appearance: auto;
     }
 
     input[readonly] {
@@ -91,11 +101,15 @@
     button {
       width: 100%;
       min-height: 58px;
+
       border: none;
       border-radius: 12px;
+
       font-size: 18px;
       font-weight: 600;
+
       margin-top: 15px;
+
       cursor: pointer;
     }
 
@@ -133,11 +147,17 @@
     #editForm,
     #mappingWarning {
       display: none;
+
       background: white;
+
       padding: 18px;
+
       border-radius: 12px;
+
       margin-top: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
     }
 
     .success {
@@ -164,6 +184,7 @@
   </style>
 
 </head>
+
 
 <body>
 
@@ -260,30 +281,27 @@
       Type
     </label>
 
-    <input
-      id="editType"
-      type="text"
-    >
+    <select id="editType">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
       Marque
     </label>
 
-    <input
-      id="editMarque"
-      type="text"
-    >
+    <select id="editMarque">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
       Modèle
     </label>
 
-    <input
-      id="editModele"
-      type="text"
-    >
+    <select id="editModele">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
@@ -300,10 +318,9 @@
       Site
     </label>
 
-    <input
-      id="editSite"
-      type="text"
-    >
+    <select id="editSite">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
@@ -398,33 +415,27 @@
       Type
     </label>
 
-    <input
-      id="newType"
-      type="text"
-      placeholder="Ex : Point d'accès Wi-Fi"
-    >
+    <select id="newType">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
       Marque
     </label>
 
-    <input
-      id="newMarque"
-      type="text"
-      placeholder="Ex : Aruba"
-    >
+    <select id="newMarque">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
       Modèle
     </label>
 
-    <input
-      id="newModele"
-      type="text"
-      placeholder="Ex : AP 635"
-    >
+    <select id="newModele">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
@@ -441,10 +452,9 @@
       Site
     </label>
 
-    <input
-      id="newSite"
-      type="text"
-    >
+    <select id="newSite">
+      <option value="">-- Choisir --</option>
+    </select>
 
 
     <label>
@@ -513,6 +523,54 @@ let records = [];
 let currentRecordId = null;
 
 let columnMappings = null;
+
+
+/*
+  Listes de références.
+
+  Chaque élément sera de la forme :
+
+  {
+    id: 12,
+    label: "Garibaldi"
+  }
+*/
+
+let listeSites = [];
+let listeTypes = [];
+let listeMarques = [];
+let listeModeles = [];
+
+
+/* ==================================================
+   CONFIGURATION DES TABLES DE RÉFÉRENCE
+
+   NOM TABLE : NOM COLONNE LIBELLÉ
+================================================== */
+
+const REF_CONFIG = {
+
+  Site: {
+    table: "Site",
+    labelColumn: "Site"
+  },
+
+  TypeMateriel: {
+    table: "Type",
+    labelColumn: "Type"
+  },
+
+  Marque: {
+    table: "Marque",
+    labelColumn: "Marque"
+  },
+
+  Modele: {
+    table: "Modèle",
+    labelColumn: "Modèle"
+  }
+
+};
 
 
 /* ==================================================
@@ -644,68 +702,403 @@ grist.ready({
 
 
 /* ==================================================
-   LECTURE DES ENREGISTREMENTS
+   CONVERSION D'UNE TABLE GRIST
+   DU FORMAT COLONNES VERS LIGNES
+
+   fetchTable() renvoie notamment :
+
+   {
+     id: [1,2,3],
+     Site: ["A","B","C"]
+   }
+
+   On transforme cela en :
+
+   [
+     {id:1, Site:"A"},
+     {id:2, Site:"B"},
+     {id:3, Site:"C"}
+   ]
 ================================================== */
 
-grist.onRecords(function(data, mappings) {
+function tableColonnesVersLignes(tableData) {
 
-  columnMappings =
-    mappings;
-
-  if (!mappings) {
-
-    records = [];
-
-    mappingWarning.style.display =
-      "block";
-
-    return;
+  if (
+    !tableData ||
+    !Array.isArray(tableData.id)
+  ) {
+    return [];
   }
 
-  const mappedRecords =
-    [];
+  const lignes = [];
 
-  for (const record of data || []) {
+  for (
+    let i = 0;
+    i < tableData.id.length;
+    i++
+  ) {
 
-    const mapped =
-      grist.mapColumnNames(
-        record,
-        {
-          mappings: mappings
-        }
+    const ligne = {};
+
+    for (
+      const colonne
+      of Object.keys(tableData)
+    ) {
+
+      if (
+        Array.isArray(tableData[colonne])
+      ) {
+
+        ligne[colonne] =
+          tableData[colonne][i];
+
+      }
+
+    }
+
+    lignes.push(ligne);
+
+  }
+
+  return lignes;
+
+}
+
+
+/* ==================================================
+   CHARGEMENT D'UNE TABLE DE RÉFÉRENCE
+================================================== */
+
+async function chargerReference(
+  tableId,
+  labelColumn
+) {
+
+  const tableData =
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
+  const lignes =
+    tableColonnesVersLignes(
+      tableData
+    );
+
+  const valeurs =
+    lignes
+      .filter(function(ligne) {
+
+        return (
+          ligne.id &&
+          ligne[labelColumn] !== null &&
+          ligne[labelColumn] !== undefined &&
+          String(
+            ligne[labelColumn]
+          ).trim() !== ""
+        );
+
+      })
+      .map(function(ligne) {
+
+        return {
+
+          id:
+            Number(ligne.id),
+
+          label:
+            String(
+              ligne[labelColumn]
+            )
+
+        };
+
+      });
+
+
+  /*
+    Tri alphabétique
+  */
+
+  valeurs.sort(function(a, b) {
+
+    return a.label.localeCompare(
+      b.label,
+      "fr",
+      {
+        sensitivity: "base"
+      }
+    );
+
+  });
+
+
+  return valeurs;
+
+}
+
+
+/* ==================================================
+   CHARGEMENT DE TOUTES LES RÉFÉRENCES
+================================================== */
+
+async function chargerListesReferences() {
+
+  try {
+
+    const [
+      sites,
+      types,
+      marques,
+      modeles
+    ] = await Promise.all([
+
+      chargerReference(
+        REF_CONFIG.Site.table,
+        REF_CONFIG.Site.labelColumn
+      ),
+
+      chargerReference(
+        REF_CONFIG.TypeMateriel.table,
+        REF_CONFIG.TypeMateriel.labelColumn
+      ),
+
+      chargerReference(
+        REF_CONFIG.Marque.table,
+        REF_CONFIG.Marque.labelColumn
+      ),
+
+      chargerReference(
+        REF_CONFIG.Modele.table,
+        REF_CONFIG.Modele.labelColumn
+      )
+
+    ]);
+
+
+    listeSites = sites;
+    listeTypes = types;
+    listeMarques = marques;
+    listeModeles = modeles;
+
+
+    /*
+      Remplissage des listes
+      création + modification
+    */
+
+    remplirSelect(
+      "newSite",
+      listeSites
+    );
+
+    remplirSelect(
+      "editSite",
+      listeSites
+    );
+
+
+    remplirSelect(
+      "newType",
+      listeTypes
+    );
+
+    remplirSelect(
+      "editType",
+      listeTypes
+    );
+
+
+    remplirSelect(
+      "newMarque",
+      listeMarques
+    );
+
+    remplirSelect(
+      "editMarque",
+      listeMarques
+    );
+
+
+    remplirSelect(
+      "newModele",
+      listeModeles
+    );
+
+    remplirSelect(
+      "editModele",
+      listeModeles
+    );
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "Erreur chargement références :",
+      error
+    );
+
+    statusBox.style.display =
+      "block";
+
+    statusBox.innerHTML = `
+
+      <div class="error">
+
+        ⚠️ Impossible de charger
+        les listes de référence.
+
+      </div>
+
+      <p>
+
+        Vérifie les noms des tables :
+        Site, Type, Marque et Modèle.
+
+      </p>
+
+    `;
+
+  }
+
+}
+
+
+/* ==================================================
+   REMPLISSAGE D'UNE LISTE DÉROULANTE
+================================================== */
+
+function remplirSelect(
+  selectId,
+  liste
+) {
+
+  const select =
+    document.getElementById(
+      selectId
+    );
+
+  select.innerHTML =
+    '<option value="">-- Choisir --</option>';
+
+
+  for (
+    const element of liste
+  ) {
+
+    const option =
+      document.createElement(
+        "option"
       );
 
-    if (mapped) {
+    /*
+      IMPORTANT :
 
-      mappedRecords.push(
-        mapped
-      );
+      La valeur est l'ID de ligne Grist.
+    */
+
+    option.value =
+      String(element.id);
+
+    option.textContent =
+      element.label;
+
+    select.appendChild(
+      option
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   RÉCUPÉRATION DES DONNÉES PRINCIPALES
+================================================== */
+
+grist.onRecords(
+  async function(data, mappings) {
+
+    columnMappings =
+      mappings;
+
+    if (!mappings) {
+
+      records = [];
+
+      mappingWarning.style.display =
+        "block";
+
+      return;
+
+    }
+
+
+    const mappedRecords =
+      [];
+
+    for (
+      const record
+      of data || []
+    ) {
+
+      const mapped =
+        grist.mapColumnNames(
+          record,
+          {
+            mappings:
+              mappings
+          }
+        );
+
+      if (mapped) {
+
+        mappedRecords.push(
+          mapped
+        );
+
+      }
+
+    }
+
+
+    records =
+      mappedRecords;
+
+
+    mappingWarning.style.display =
+      "none";
+
+
+    /*
+      Chargement des listes de référence.
+
+      On le fait après que Grist
+      ait initialisé le widget.
+    */
+
+    if (
+      listeSites.length === 0 &&
+      listeTypes.length === 0 &&
+      listeMarques.length === 0 &&
+      listeModeles.length === 0
+    ) {
+
+      await chargerListesReferences();
 
     }
 
   }
-
-  records =
-    mappedRecords;
-
-  mappingWarning.style.display =
-    "none";
-
-});
+);
 
 
 /* ==================================================
-   RÉCUPÉRATION D'UNE COLONNE GRIST RÉELLE
-
-   Le mapping Grist associe par exemple :
-
-   NumeroSerie -> vraie colonne de la table
-   Etat        -> vraie colonne de la table
-
-   Cette fonction n'autorise qu'une colonne unique.
+   COLONNE GRIST RÉELLE
 ================================================== */
 
-function obtenirColonneGrist(nomLogique) {
+function obtenirColonneGrist(
+  nomLogique
+) {
 
   if (!columnMappings) {
 
@@ -722,17 +1115,13 @@ function obtenirColonneGrist(nomLogique) {
 
   }
 
-  /*
-    Les champs de ce widget ne permettent
-    pas de sélectionner plusieurs colonnes.
+  if (
+    Array.isArray(mapping)
+  ) {
 
-    Par sécurité, si Grist renvoie malgré tout
-    un tableau, on prend la première colonne.
-  */
-
-  if (Array.isArray(mapping)) {
-
-    if (mapping.length === 0) {
+    if (
+      mapping.length === 0
+    ) {
 
       return null;
 
@@ -748,25 +1137,23 @@ function obtenirColonneGrist(nomLogique) {
 
 
 /* ==================================================
-   CONSTRUCTION SÉCURISÉE D'UN OBJET FIELDS
-
-   IMPORTANT :
-
-   Cette fonction ajoute UNIQUEMENT les champs
-   qu'on lui transmet.
-
-   Elle ne complète jamais les autres colonnes
-   avec des valeurs vides.
+   CONSTRUCTION SÉCURISÉE DES CHAMPS
 ================================================== */
 
-function construireChampsGrist(champsLogiques) {
+function construireChampsGrist(
+  champsLogiques
+) {
 
-  const fields =
-    {};
+  const fields = {};
 
   for (
-    const [nomLogique, valeur]
-    of Object.entries(champsLogiques)
+    const [
+      nomLogique,
+      valeur
+    ]
+    of Object.entries(
+      champsLogiques
+    )
   ) {
 
     const vraieColonne =
@@ -793,10 +1180,12 @@ function construireChampsGrist(champsLogiques) {
 
 
 /* ==================================================
-   VÉRIFICATION AVANT ÉCRITURE
+   VÉRIFICATION DES CHAMPS
 ================================================== */
 
-function verifierChamps(fields) {
+function verifierChamps(
+  fields
+) {
 
   if (
     !fields ||
@@ -804,7 +1193,9 @@ function verifierChamps(fields) {
   ) {
 
     throw new Error(
-      "Aucune colonne valide n'a été trouvée. Vérifie le mappage du widget."
+
+      "Aucune colonne valide trouvée. Vérifie le mappage du widget."
+
     );
 
   }
@@ -813,7 +1204,42 @@ function verifierChamps(fields) {
 
 
 /* ==================================================
-   OUVERTURE DU SCANNER
+   VALEUR NUMÉRIQUE D'UN SELECT DE RÉFÉRENCE
+================================================== */
+
+function valeurReference(
+  selectId
+) {
+
+  const valeur =
+    document
+      .getElementById(
+        selectId
+      )
+      .value;
+
+  if (
+    valeur === ""
+  ) {
+
+    /*
+      0 = référence vide
+      dans une colonne Ref Grist.
+    */
+
+    return 0;
+
+  }
+
+  return Number(
+    valeur
+  );
+
+}
+
+
+/* ==================================================
+   SCAN
 ================================================== */
 
 scanButton.addEventListener(
@@ -827,7 +1253,7 @@ scanButton.addEventListener(
 
 
 /* ==================================================
-   TRAITEMENT DE LA PHOTO
+   PHOTO
 ================================================== */
 
 barcodeImage.addEventListener(
@@ -843,24 +1269,31 @@ barcodeImage.addEventListener(
 
     }
 
+
     masquerFormulaires();
+
 
     statusBox.style.display =
       "block";
 
+
     statusBox.innerHTML =
       "📸 Photo reçue…";
+
 
     const imageUrl =
       URL.createObjectURL(
         file
       );
 
+
     preview.src =
       imageUrl;
 
+
     preview.style.display =
       "block";
+
 
     preview.onload =
       async function() {
@@ -871,20 +1304,26 @@ barcodeImage.addEventListener(
         try {
 
           const reader =
-            new ZXingBrowser.BrowserMultiFormatReader();
+            new ZXingBrowser
+              .BrowserMultiFormatReader();
+
 
           const result =
-            await reader.decodeFromImageElement(
-              preview
-            );
+            await reader
+              .decodeFromImageElement(
+                preview
+              );
+
 
           const serial =
             result
               .getText()
               .trim();
 
+
           serialInput.value =
             serial;
+
 
           statusBox.innerHTML = `
 
@@ -897,6 +1336,7 @@ barcodeImage.addEventListener(
 
           `;
 
+
           rechercherMateriel(
             serial
           );
@@ -908,6 +1348,7 @@ barcodeImage.addEventListener(
           console.error(
             error
           );
+
 
           statusBox.innerHTML = `
 
@@ -947,15 +1388,18 @@ barcodeImage.addEventListener(
 
 
 /* ==================================================
-   RECHERCHE DU MATÉRIEL
+   RECHERCHE
 ================================================== */
 
-function rechercherMateriel(serial) {
+function rechercherMateriel(
+  serial
+) {
 
   const serialNettoye =
     String(serial)
       .trim()
       .toUpperCase();
+
 
   const found =
     records.find(
@@ -978,26 +1422,24 @@ function rechercherMateriel(serial) {
       }
     );
 
+
   resultBox.style.display =
     "block";
 
 
-  /* ================================================
-     MATÉRIEL EXISTANT
-  ================================================ */
+  /*
+    MATÉRIEL EXISTANT
+  */
 
   if (found) {
-
-    /*
-      L'id sert uniquement à identifier
-      la ligne Grist à modifier.
-    */
 
     currentRecordId =
       found.id;
 
+
     newForm.style.display =
       "none";
+
 
     resultBox.innerHTML = `
 
@@ -1025,6 +1467,7 @@ function rechercherMateriel(serial) {
 
     `;
 
+
     remplirFormulaireEdition(
       found
     );
@@ -1032,17 +1475,19 @@ function rechercherMateriel(serial) {
   }
 
 
-  /* ================================================
-     NOUVEAU MATÉRIEL
-  ================================================ */
+  /*
+    NOUVEAU
+  */
 
   else {
 
     currentRecordId =
       null;
 
+
     editForm.style.display =
       "none";
+
 
     resultBox.innerHTML = `
 
@@ -1066,6 +1511,7 @@ function rechercherMateriel(serial) {
 
     `;
 
+
     remplirFormulaireCreation(
       serial
     );
@@ -1076,60 +1522,76 @@ function rechercherMateriel(serial) {
 
 
 /* ==================================================
-   REMPLISSAGE DU FORMULAIRE D'ÉDITION
+   FORMULAIRE ÉDITION
 ================================================== */
 
-function remplirFormulaireEdition(record) {
+function remplirFormulaireEdition(
+  record
+) {
 
   document.getElementById(
     "editNumeroSerie"
   ).value =
     record.NumeroSerie || "";
 
+
   document.getElementById(
     "editNumeroInventaire"
   ).value =
     record.NumeroInventaire || "";
 
-  document.getElementById(
-    "editType"
-  ).value =
-    record.TypeMateriel || "";
 
-  document.getElementById(
-    "editMarque"
-  ).value =
-    record.Marque || "";
+  /*
+    Les références sont des IDs numériques.
+  */
 
-  document.getElementById(
-    "editModele"
-  ).value =
-    record.Modele || "";
+  selectionnerReference(
+    "editType",
+    record.TypeMateriel
+  );
+
+
+  selectionnerReference(
+    "editMarque",
+    record.Marque
+  );
+
+
+  selectionnerReference(
+    "editModele",
+    record.Modele
+  );
+
 
   document.getElementById(
     "editUtilisateur"
   ).value =
     record.Utilisateur || "";
 
-  document.getElementById(
-    "editSite"
-  ).value =
-    record.Site || "";
+
+  selectionnerReference(
+    "editSite",
+    record.Site
+  );
+
 
   document.getElementById(
     "editLocalisation"
   ).value =
     record.Localisation || "";
 
+
   document.getElementById(
     "editEtat"
   ).value =
     record.Etat || "";
 
+
   document.getElementById(
     "editCommentaire"
   ).value =
     record.Commentaire || "";
+
 
   editForm.style.display =
     "block";
@@ -1138,60 +1600,143 @@ function remplirFormulaireEdition(record) {
 
 
 /* ==================================================
-   REMPLISSAGE DU FORMULAIRE DE CRÉATION
+   SÉLECTION D'UNE RÉFÉRENCE EXISTANTE
 ================================================== */
 
-function remplirFormulaireCreation(serial) {
+function selectionnerReference(
+  selectId,
+  valeur
+) {
+
+  const select =
+    document.getElementById(
+      selectId
+    );
+
+
+  /*
+    Cas classique :
+    la valeur est directement un rowId.
+  */
+
+  if (
+    typeof valeur === "number"
+  ) {
+
+    select.value =
+      String(valeur);
+
+    return;
+
+  }
+
+
+  /*
+    Certains formats Grist peuvent
+    encapsuler une référence.
+
+    Exemple potentiel :
+    ["R", "Site", 3]
+  */
+
+  if (
+    Array.isArray(valeur)
+  ) {
+
+    const dernierElement =
+      valeur[
+        valeur.length - 1
+      ];
+
+    if (
+      typeof dernierElement === "number"
+    ) {
+
+      select.value =
+        String(
+          dernierElement
+        );
+
+      return;
+
+    }
+
+  }
+
+
+  select.value =
+    "";
+
+}
+
+
+/* ==================================================
+   FORMULAIRE CRÉATION
+================================================== */
+
+function remplirFormulaireCreation(
+  serial
+) {
 
   document.getElementById(
     "newNumeroSerie"
   ).value =
     serial;
 
+
   document.getElementById(
     "newNumeroInventaire"
   ).value =
     "";
+
 
   document.getElementById(
     "newType"
   ).value =
     "";
 
+
   document.getElementById(
     "newMarque"
   ).value =
     "";
+
 
   document.getElementById(
     "newModele"
   ).value =
     "";
 
+
   document.getElementById(
     "newUtilisateur"
   ).value =
     "";
+
 
   document.getElementById(
     "newSite"
   ).value =
     "";
 
+
   document.getElementById(
     "newLocalisation"
   ).value =
     "";
+
 
   document.getElementById(
     "newEtat"
   ).value =
     "";
 
+
   document.getElementById(
     "newCommentaire"
   ).value =
     "";
+
 
   newForm.style.display =
     "block";
@@ -1200,7 +1745,7 @@ function remplirFormulaireCreation(serial) {
 
 
 /* ==================================================
-   MASQUAGE DES FORMULAIRES
+   MASQUAGE
 ================================================== */
 
 function masquerFormulaires() {
@@ -1218,7 +1763,7 @@ function masquerFormulaires() {
 
 
 /* ==================================================
-   CRÉATION D'UN NOUVEAU MATÉRIEL
+   CRÉATION
 ================================================== */
 
 addButton.addEventListener(
@@ -1228,12 +1773,15 @@ addButton.addEventListener(
     if (!columnMappings) {
 
       alert(
+
         "Les colonnes ne sont pas configurées dans Grist."
+
       );
 
       return;
 
     }
+
 
     const numeroSerie =
       document.getElementById(
@@ -1242,21 +1790,27 @@ addButton.addEventListener(
         .value
         .trim();
 
+
     if (!numeroSerie) {
 
       alert(
+
         "Le numéro de série est obligatoire."
+
       );
 
       return;
 
     }
 
+
     addButton.disabled =
       true;
 
+
     addButton.textContent =
       "⏳ Enregistrement…";
+
 
     try {
 
@@ -1264,64 +1818,71 @@ addButton.addEventListener(
         grist.getTable();
 
 
-      /*
-        Pour une CRÉATION, nous voulons
-        bien renseigner tous ces champs.
-
-        DernierInventaire est initialisé
-        à la date du scan.
-      */
-
       const fields =
         construireChampsGrist({
 
           NumeroSerie:
             numeroSerie,
 
+
           NumeroInventaire:
             document.getElementById(
               "newNumeroInventaire"
             ).value.trim(),
 
+
+          /*
+            Les quatre champs suivants
+            contiennent des rowIds Grist.
+          */
+
           TypeMateriel:
-            document.getElementById(
+            valeurReference(
               "newType"
-            ).value.trim(),
+            ),
+
 
           Marque:
-            document.getElementById(
+            valeurReference(
               "newMarque"
-            ).value.trim(),
+            ),
+
 
           Modele:
-            document.getElementById(
+            valeurReference(
               "newModele"
-            ).value.trim(),
+            ),
+
 
           Utilisateur:
             document.getElementById(
               "newUtilisateur"
             ).value.trim(),
 
+
           Site:
-            document.getElementById(
+            valeurReference(
               "newSite"
-            ).value.trim(),
+            ),
+
 
           Localisation:
             document.getElementById(
               "newLocalisation"
             ).value.trim(),
 
+
           Etat:
             document.getElementById(
               "newEtat"
             ).value,
 
+
           DernierInventaire:
             Math.floor(
               Date.now() / 1000
             ),
+
 
           Commentaire:
             document.getElementById(
@@ -1347,11 +1908,14 @@ addButton.addEventListener(
       newForm.style.display =
         "none";
 
+
       statusBox.style.display =
         "none";
 
+
       resultBox.style.display =
         "block";
+
 
       resultBox.innerHTML = `
 
@@ -1379,6 +1943,7 @@ addButton.addEventListener(
         error
       );
 
+
       alert(
 
         "Erreur lors de l'ajout : "
@@ -1398,6 +1963,7 @@ addButton.addEventListener(
       addButton.disabled =
         false;
 
+
       addButton.textContent =
         "💾 Ajouter à l'inventaire";
 
@@ -1408,16 +1974,7 @@ addButton.addEventListener(
 
 
 /* ==================================================
-   MODIFICATION D'UN MATÉRIEL EXISTANT
-
-   IMPORTANT :
-
-   NumeroSerie n'est PAS envoyé.
-
-   DernierInventaire n'est PAS envoyé.
-
-   Ces deux colonnes ne peuvent donc
-   pas être effacées par cette opération.
+   MODIFICATION
 ================================================== */
 
 saveButton.addEventListener(
@@ -1430,31 +1987,33 @@ saveButton.addEventListener(
 
     }
 
+
     if (!columnMappings) {
 
       alert(
+
         "Les colonnes ne sont pas configurées."
+
       );
 
       return;
 
     }
 
+
     saveButton.disabled =
       true;
 
+
     saveButton.textContent =
       "⏳ Enregistrement…";
+
 
     try {
 
       const table =
         grist.getTable();
 
-
-      /*
-        UNIQUEMENT LES CHAMPS MODIFIABLES
-      */
 
       const fields =
         construireChampsGrist({
@@ -1464,40 +2023,48 @@ saveButton.addEventListener(
               "editNumeroInventaire"
             ).value.trim(),
 
+
           TypeMateriel:
-            document.getElementById(
+            valeurReference(
               "editType"
-            ).value.trim(),
+            ),
+
 
           Marque:
-            document.getElementById(
+            valeurReference(
               "editMarque"
-            ).value.trim(),
+            ),
+
 
           Modele:
-            document.getElementById(
+            valeurReference(
               "editModele"
-            ).value.trim(),
+            ),
+
 
           Utilisateur:
             document.getElementById(
               "editUtilisateur"
             ).value.trim(),
 
+
           Site:
-            document.getElementById(
+            valeurReference(
               "editSite"
-            ).value.trim(),
+            ),
+
 
           Localisation:
             document.getElementById(
               "editLocalisation"
             ).value.trim(),
 
+
           Etat:
             document.getElementById(
               "editEtat"
             ).value,
+
 
           Commentaire:
             document.getElementById(
@@ -1513,10 +2080,8 @@ saveButton.addEventListener(
 
 
       /*
-        IMPORTANT :
-
-        fields ne contient NI NumeroSerie
-        NI DernierInventaire.
+        N° série et DernierInventaire
+        ne sont pas envoyés.
       */
 
       await table.update({
@@ -1532,6 +2097,7 @@ saveButton.addEventListener(
 
       resultBox.style.display =
         "block";
+
 
       resultBox.innerHTML = `
 
@@ -1551,13 +2117,6 @@ saveButton.addEventListener(
 
         </div>
 
-        <p>
-
-          Le numéro de série et la date
-          du dernier inventaire ont été conservés.
-
-        </p>
-
       `;
 
     }
@@ -1567,6 +2126,7 @@ saveButton.addEventListener(
       console.error(
         error
       );
+
 
       alert(
 
@@ -1587,6 +2147,7 @@ saveButton.addEventListener(
       saveButton.disabled =
         false;
 
+
       saveButton.textContent =
         "💾 Enregistrer les modifications";
 
@@ -1597,12 +2158,7 @@ saveButton.addEventListener(
 
 
 /* ==================================================
-   CONFIRMATION DE L'INVENTAIRE
-
-   IMPORTANT :
-
-   UNE SEULE COLONNE est envoyée :
-   DernierInventaire
+   CONFIRMATION
 ================================================== */
 
 confirmButton.addEventListener(
@@ -1615,21 +2171,27 @@ confirmButton.addEventListener(
 
     }
 
+
     if (!columnMappings) {
 
       alert(
+
         "Les colonnes ne sont pas configurées."
+
       );
 
       return;
 
     }
 
+
     confirmButton.disabled =
       true;
 
+
     confirmButton.textContent =
       "⏳ Confirmation…";
+
 
     try {
 
@@ -1638,7 +2200,8 @@ confirmButton.addEventListener(
 
 
       /*
-        UNE SEULE VALEUR EST CONSTRUITE.
+        UNE SEULE COLONNE :
+        DernierInventaire
       */
 
       const fields =
@@ -1657,12 +2220,6 @@ confirmButton.addEventListener(
       );
 
 
-      /*
-        fields contient uniquement
-        la vraie colonne Grist correspondant
-        à DernierInventaire.
-      */
-
       await table.update({
 
         id:
@@ -1677,6 +2234,7 @@ confirmButton.addEventListener(
       resultBox.style.display =
         "block";
 
+
       resultBox.innerHTML = `
 
         <div class="success">
@@ -1688,7 +2246,7 @@ confirmButton.addEventListener(
         <p>
 
           Seule la date du dernier inventaire
-          vient d'être mise à jour.
+          a été mise à jour.
 
         </p>
 
@@ -1701,6 +2259,7 @@ confirmButton.addEventListener(
       console.error(
         error
       );
+
 
       alert(
 
@@ -1721,6 +2280,7 @@ confirmButton.addEventListener(
       confirmButton.disabled =
         false;
 
+
       confirmButton.textContent =
         "✅ Confirmer l'inventaire";
 
@@ -1731,7 +2291,7 @@ confirmButton.addEventListener(
 
 
 /* ==================================================
-   SAISIE MANUELLE DU NUMÉRO
+   SAISIE MANUELLE
 ================================================== */
 
 serialInput.addEventListener(
@@ -1742,6 +2302,7 @@ serialInput.addEventListener(
       serialInput
         .value
         .trim();
+
 
     if (serial) {
 
