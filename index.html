@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, maximum-scale=1"
@@ -9,10 +10,14 @@
 
   <title>Inventaire Grist</title>
 
+  <!-- API Grist -->
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+
+  <!-- Bibliothèque de lecture des codes-barres -->
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -20,7 +25,12 @@
     body {
       margin: 0;
       padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
       background: #f5f6f8;
       color: #222;
     }
@@ -31,39 +41,47 @@
     }
 
     h1 {
-      font-size: 24px;
-      margin-bottom: 24px;
+      font-size: 28px;
+      margin-bottom: 25px;
     }
 
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
+      font-size: 18px;
     }
 
-    input {
+    input[type="text"] {
       width: 100%;
-      min-height: 52px;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 18px;
-      margin-bottom: 12px;
+      min-height: 56px;
+      padding: 14px;
+
+      border: 1px solid #bbb;
+      border-radius: 12px;
+
+      font-size: 20px;
+      margin-bottom: 15px;
+
+      background: white;
     }
 
     button {
       width: 100%;
-      min-height: 56px;
+      min-height: 60px;
+
       border: none;
       border-radius: 12px;
-      font-size: 18px;
+
+      font-size: 19px;
       font-weight: 600;
-      margin-bottom: 12px;
+
+      margin-bottom: 15px;
       cursor: pointer;
     }
 
     #scanButton {
-      background: #1976d2;
+      background: #1f5ea8;
       color: white;
     }
 
@@ -73,28 +91,50 @@
       display: none;
     }
 
-    #video {
-      width: 100%;
-      border-radius: 12px;
-      display: none;
-      margin-top: 10px;
-    }
-
     #result {
       margin-top: 20px;
-      padding: 16px;
+      padding: 18px;
+
       background: white;
       border-radius: 12px;
+
       display: none;
+
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
     }
 
     .serial {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
-      margin: 10px 0;
+      margin: 12px 0;
     }
+
+    .line {
+      margin: 8px 0;
+      font-size: 17px;
+    }
+
+    #preview {
+      display: none;
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 12px;
+    }
+
+    .success {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    .warning {
+      color: #a15c00;
+      font-weight: 600;
+    }
+
   </style>
 </head>
+
 
 <body>
 
@@ -102,7 +142,11 @@
 
   <h1>📦 Inventaire matériel</h1>
 
-  <label for="serial">N° de série</label>
+
+  <label for="serial">
+    N° de série
+  </label>
+
 
   <input
     id="serial"
@@ -110,13 +154,35 @@
     placeholder="Scanner ou saisir le numéro"
   >
 
+
+  <!--
+    Ce champ n'est pas visible.
+    Il sert uniquement à ouvrir l'appareil photo de l'iPhone.
+  -->
+
+  <input
+    id="barcodeImage"
+    type="file"
+    accept="image/*"
+    capture="environment"
+    style="display:none;"
+  >
+
+
   <button id="scanButton">
     📷 Scanner le code-barres
   </button>
 
-  <video id="video"></video>
 
-  <div id="result"></div>
+  <img
+    id="preview"
+    alt="Photo du code-barres"
+  >
+
+
+  <div id="result">
+  </div>
+
 
   <button id="confirmButton">
     ✅ Confirmer l'inventaire
@@ -124,215 +190,601 @@
 
 </div>
 
+
 <script>
 
-let records = [];
-let currentRecordId = null;
-let scannerControls = null;
+  /*
+  ===================================================
+  VARIABLES
+  ===================================================
+  */
 
-grist.ready({
-  requiredAccess: "full"
-});
+  let records = [];
 
-grist.onRecords(function(data) {
-  records = data || [];
-});
-
-const serialInput = document.getElementById("serial");
-const scanButton = document.getElementById("scanButton");
-const video = document.getElementById("video");
-const resultBox = document.getElementById("result");
-const confirmButton = document.getElementById("confirmButton");
+  let currentRecordId = null;
 
 
-scanButton.addEventListener("click", async () => {
+  const serialInput =
+    document.getElementById("serial");
 
-  video.style.display = "block";
-  resultBox.style.display = "none";
+  const scanButton =
+    document.getElementById("scanButton");
 
-  try {
+  const barcodeImage =
+    document.getElementById("barcodeImage");
 
-    const reader =
-      new ZXingBrowser.BrowserMultiFormatReader();
+  const preview =
+    document.getElementById("preview");
 
-    scannerControls =
-      await reader.decodeFromConstraints(
+  const resultBox =
+    document.getElementById("result");
 
-        {
-          video: {
-            facingMode: {
-              ideal: "environment"
-            }
-          }
-        },
-
-        video,
-
-        (result, error, controls) => {
-
-          if (result) {
-
-            const serial =
-              result.getText().trim();
-
-            serialInput.value = serial;
-
-            controls.stop();
-
-            video.style.display = "none";
-
-            rechercherMateriel(serial);
-          }
-
-        }
-      );
-
-  } catch(error) {
-
-    alert(
-      "Impossible d'accéder à la caméra : " +
-      error.message
-    );
-
-  }
-
-});
+  const confirmButton =
+    document.getElementById("confirmButton");
 
 
-function rechercherMateriel(serial) {
 
-  const found = records.find(record =>
+  /*
+  ===================================================
+  INITIALISATION GRIST
+  ===================================================
+  */
 
-    String(record.NumeroSerie || "")
-      .trim()
-      .toUpperCase()
+  grist.ready({
+    requiredAccess: "full"
+  });
 
-    ===
 
-    serial
-      .trim()
-      .toUpperCase()
 
+  /*
+  ===================================================
+  RÉCUPÉRATION DES LIGNES DE LA TABLE GRIST
+  ===================================================
+  */
+
+  grist.onRecords(function(data) {
+
+    records = data || [];
+
+  });
+
+
+
+  /*
+  ===================================================
+  BOUTON SCANNER
+  ===================================================
+  */
+
+  scanButton.addEventListener(
+    "click",
+    function() {
+
+      /*
+        On ouvre le sélecteur photo / appareil photo
+        de l'iPhone.
+      */
+
+      barcodeImage.click();
+
+    }
   );
 
-  resultBox.style.display = "block";
-
-  if(found) {
-
-    currentRecordId = found.id;
-
-    resultBox.innerHTML = `
-      <strong>✅ Matériel trouvé</strong>
-
-      <div class="serial">
-        ${found.NumeroSerie || ""}
-      </div>
-
-      <div>
-        <strong>Type :</strong>
-        ${found.TypeMateriel || "-"}
-      </div>
-
-      <div>
-        <strong>Marque :</strong>
-        ${found.Marque || "-"}
-      </div>
-
-      <div>
-        <strong>Modèle :</strong>
-        ${found.Modele || "-"}
-      </div>
-
-      <div>
-        <strong>Utilisateur :</strong>
-        ${found.Utilisateur || "-"}
-      </div>
-
-      <div>
-        <strong>Localisation :</strong>
-        ${found.Localisation || "-"}
-      </div>
-    `;
-
-    confirmButton.style.display = "block";
-
-  } else {
-
-    currentRecordId = null;
-
-    resultBox.innerHTML = `
-      <strong>🆕 Nouveau matériel</strong>
-
-      <p>
-        Le numéro de série
-        <strong>${serial}</strong>
-        n'existe pas encore dans l'inventaire.
-      </p>
-    `;
-
-    confirmButton.style.display = "none";
-
-  }
-
-}
 
 
-confirmButton.addEventListener(
-  "click",
-  async () => {
+  /*
+  ===================================================
+  PHOTO PRISE PAR L'IPHONE
+  ===================================================
+  */
 
-    if(!currentRecordId) {
-      return;
+  barcodeImage.addEventListener(
+    "change",
+    async function() {
+
+      const file = this.files[0];
+
+
+      if (!file) {
+
+        return;
+
+      }
+
+
+      /*
+        Création d'une URL temporaire
+        correspondant à la photo.
+      */
+
+      const imageUrl =
+        URL.createObjectURL(file);
+
+
+      /*
+        On place la photo dans l'élément IMG.
+      */
+
+      preview.src = imageUrl;
+
+
+      /*
+        On laisse l'image cachée.
+        Si tu veux voir la photo prise,
+        remplace "none" par "block".
+      */
+
+      preview.style.display = "none";
+
+
+      /*
+        Une fois la photo chargée,
+        ZXing tente de lire le code-barres.
+      */
+
+      preview.onload =
+        async function() {
+
+          try {
+
+            const reader =
+              new ZXingBrowser.BrowserMultiFormatReader();
+
+
+            const result =
+              await reader.decodeFromImageElement(
+                preview
+              );
+
+
+            /*
+              Valeur trouvée dans le code-barres.
+            */
+
+            const serial =
+              result
+                .getText()
+                .trim();
+
+
+            /*
+              On place le numéro détecté
+              dans le champ N° de série.
+            */
+
+            serialInput.value =
+              serial;
+
+
+            /*
+              Puis on cherche le matériel
+              dans Grist.
+            */
+
+            rechercherMateriel(
+              serial
+            );
+
+          }
+
+          catch(error) {
+
+            /*
+              Aucun code-barres reconnu.
+            */
+
+            resultBox.style.display =
+              "block";
+
+
+            resultBox.innerHTML = `
+
+              <div class="warning">
+
+                ⚠️ Aucun code-barres détecté
+
+              </div>
+
+              <p>
+
+                Essaie de reprendre la photo :
+
+              </p>
+
+              <p>
+
+                • plus près du code-barres<br>
+                • avec une bonne lumière<br>
+                • sans reflet<br>
+                • avec le code bien horizontal
+
+              </p>
+
+            `;
+
+          }
+
+          finally {
+
+            /*
+              On libère l'image temporaire.
+            */
+
+            URL.revokeObjectURL(
+              imageUrl
+            );
+
+
+            /*
+              Important :
+              permet de scanner ensuite
+              une nouvelle fois la même image.
+            */
+
+            barcodeImage.value = "";
+
+          }
+
+        };
+
     }
+  );
 
-    try {
 
-      const table =
-        await grist.getTable();
 
-      await table.update({
-        id: currentRecordId,
+  /*
+  ===================================================
+  RECHERCHE DU MATÉRIEL
+  ===================================================
+  */
 
-        fields: {
-          DernierInventaire:
-            Math.floor(Date.now() / 1000)
+  function rechercherMateriel(serial) {
+
+    /*
+      Recherche insensible aux majuscules/minuscules
+      et aux espaces.
+    */
+
+    const serialNettoye =
+      String(serial)
+        .trim()
+        .toUpperCase();
+
+
+    const found =
+      records.find(
+        function(record) {
+
+          return (
+
+            String(
+              record.NumeroSerie || ""
+            )
+              .trim()
+              .toUpperCase()
+
+            ===
+
+            serialNettoye
+
+          );
+
         }
-      });
-
-      resultBox.innerHTML += `
-        <p>
-          ✅ Inventaire confirmé.
-        </p>
-      `;
-
-      confirmButton.style.display = "none";
-
-    } catch(error) {
-
-      alert(
-        "Erreur lors de la mise à jour : "
-        + error.message
       );
 
+
+    resultBox.style.display =
+      "block";
+
+
+    /*
+    ===================================================
+    MATÉRIEL TROUVÉ
+    ===================================================
+    */
+
+    if (found) {
+
+      currentRecordId =
+        found.id;
+
+
+      resultBox.innerHTML = `
+
+        <div class="success">
+
+          ✅ Matériel trouvé
+
+        </div>
+
+
+        <div class="serial">
+
+          ${echapperHTML(
+            found.NumeroSerie || ""
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>Type :</strong>
+
+          ${echapperHTML(
+            found.TypeMateriel || "-"
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>Marque :</strong>
+
+          ${echapperHTML(
+            found.Marque || "-"
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>Modèle :</strong>
+
+          ${echapperHTML(
+            found.Modele || "-"
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>Utilisateur :</strong>
+
+          ${echapperHTML(
+            found.Utilisateur || "-"
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>Site :</strong>
+
+          ${echapperHTML(
+            found.Site || "-"
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>Localisation :</strong>
+
+          ${echapperHTML(
+            found.Localisation || "-"
+          )}
+
+        </div>
+
+
+        <div class="line">
+
+          <strong>État :</strong>
+
+          ${echapperHTML(
+            found.Etat || "-"
+          )}
+
+        </div>
+
+      `;
+
+
+      confirmButton.style.display =
+        "block";
+
+    }
+
+
+    /*
+    ===================================================
+    MATÉRIEL NON TROUVÉ
+    ===================================================
+    */
+
+    else {
+
+      currentRecordId =
+        null;
+
+
+      resultBox.innerHTML = `
+
+        <div class="warning">
+
+          🆕 Nouveau matériel
+
+        </div>
+
+
+        <p>
+
+          Le numéro de série
+
+          <strong>
+
+            ${echapperHTML(
+              serial
+            )}
+
+          </strong>
+
+          n'existe pas encore
+          dans l'inventaire.
+
+        </p>
+
+      `;
+
+
+      confirmButton.style.display =
+        "none";
+
     }
 
   }
-);
 
 
-serialInput.addEventListener(
-  "change",
-  function() {
 
-    const serial =
-      serialInput.value.trim();
+  /*
+  ===================================================
+  CONFIRMATION D'INVENTAIRE
+  ===================================================
+  */
 
-    if(serial) {
-      rechercherMateriel(serial);
+  confirmButton.addEventListener(
+    "click",
+    async function() {
+
+      if (!currentRecordId) {
+
+        return;
+
+      }
+
+
+      try {
+
+        /*
+          On récupère la table
+          associée au widget.
+        */
+
+        const table =
+          await grist.getTable();
+
+
+        /*
+          On met à jour
+          le champ DernierInventaire.
+        */
+
+        await table.update({
+
+          id:
+            currentRecordId,
+
+          fields: {
+
+            DernierInventaire:
+              Math.floor(
+                Date.now() / 1000
+              )
+
+          }
+
+        });
+
+
+        resultBox.innerHTML += `
+
+          <p class="success">
+
+            ✅ Inventaire confirmé
+
+          </p>
+
+        `;
+
+
+        confirmButton.style.display =
+          "none";
+
+      }
+
+      catch(error) {
+
+        alert(
+
+          "Erreur lors de la mise à jour : "
+          +
+          error.message
+
+        );
+
+      }
+
     }
+  );
+
+
+
+  /*
+  ===================================================
+  SAISIE MANUELLE
+  ===================================================
+  */
+
+  serialInput.addEventListener(
+    "change",
+    function() {
+
+      const serial =
+        serialInput
+          .value
+          .trim();
+
+
+      if (serial) {
+
+        rechercherMateriel(
+          serial
+        );
+
+      }
+
+    }
+  );
+
+
+
+  /*
+  ===================================================
+  SÉCURITÉ AFFICHAGE HTML
+  ===================================================
+  */
+
+  function echapperHTML(value) {
+
+    return String(value)
+      .replaceAll(
+        "&",
+        "&amp;"
+      )
+      .replaceAll(
+        "<",
+        "&lt;"
+      )
+      .replaceAll(
+        ">",
+        "&gt;"
+      )
+      .replaceAll(
+        '"',
+        "&quot;"
+      )
+      .replaceAll(
+        "'",
+        "&#039;"
+      );
 
   }
-);
 
 </script>
 
