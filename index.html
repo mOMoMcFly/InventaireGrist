@@ -270,6 +270,9 @@
 
   <h1>📦 Inventaire matériel</h1>
 
+
+  <!-- CONTEXTE -->
+
   <div id="contextPanel">
 
     <div class="contextTitle">
@@ -287,6 +290,8 @@
 
   </div>
 
+
+  <!-- MAPPING -->
 
   <div id="mappingWarning">
 
@@ -331,16 +336,18 @@
   >
 
   <div id="status"></div>
+
   <div id="result"></div>
 
 
-  <!-- =============================================
+  <!-- =========================================
        MATÉRIEL EXISTANT
-       ============================================= -->
+       ========================================= -->
 
   <div id="editForm">
 
     <h2>📝 Matériel existant</h2>
+
 
     <label>
       N° de série 🔒
@@ -352,6 +359,8 @@
       readonly
     >
 
+
+    <!-- TYPE -->
 
     <label>Type</label>
 
@@ -372,6 +381,8 @@
 
     </div>
 
+
+    <!-- MARQUE -->
 
     <label>Marque</label>
 
@@ -396,6 +407,8 @@
       Les marques sont filtrées selon le type.
     </div>
 
+
+    <!-- MODELE -->
 
     <label>Modèle</label>
 
@@ -429,6 +442,8 @@
     >
 
 
+    <!-- SITE -->
+
     <label>Site</label>
 
     <div class="selectRow">
@@ -448,6 +463,8 @@
 
     </div>
 
+
+    <!-- LOCALISATION -->
 
     <label>Localisation</label>
 
@@ -496,9 +513,9 @@
   </div>
 
 
-  <!-- =============================================
+  <!-- =========================================
        NOUVEAU MATÉRIEL
-       ============================================= -->
+       ========================================= -->
 
   <div id="newForm">
 
@@ -515,6 +532,8 @@
       readonly
     >
 
+
+    <!-- TYPE -->
 
     <label>Type</label>
 
@@ -535,6 +554,8 @@
 
     </div>
 
+
+    <!-- MARQUE -->
 
     <label>Marque</label>
 
@@ -559,6 +580,8 @@
       Les marques sont filtrées selon le type.
     </div>
 
+
+    <!-- MODELE -->
 
     <label>Modèle</label>
 
@@ -592,6 +615,8 @@
     >
 
 
+    <!-- SITE -->
+
     <label>Site</label>
 
     <div class="selectRow">
@@ -611,6 +636,8 @@
 
     </div>
 
+
+    <!-- LOCALISATION -->
 
     <label>Localisation</label>
 
@@ -678,7 +705,9 @@
 </div>
 
 
-<!-- MODALE -->
+<!-- =========================================
+     MODALE AJOUT
+     ========================================= -->
 
 <div id="referenceModal">
 
@@ -734,31 +763,49 @@
 ================================================== */
 
 let records = [];
+
 let currentRecordId = null;
+
 let columnMappings = null;
+
 let referencesChargees = false;
 
+
 let listeSites = [];
+
 let listeTypes = [];
+
 let listeMarques = [];
+
 let listeModeles = [];
+
 let listeLocalisations = [];
 
+
 let contexteSession = {
+
   siteId: null,
+
   siteLabel: "",
+
   localisationId: null,
+
   localisationLabel: ""
+
 };
 
+
 let ajoutReferenceCourant = {
+
   type: null,
+
   prefixe: null
+
 };
 
 
 /* ==================================================
-   CONFIGURATION TABLES
+   CONFIGURATION
 ================================================== */
 
 const CONFIG_REFERENCES = {
@@ -778,17 +825,6 @@ const CONFIG_REFERENCES = {
     libelle: "Marque",
     types: "Type"
   },
-
-  /*
-    IMPORTANT :
-
-    La table Modèle ne contient maintenant
-    QUE :
-      - Modèle
-      - Marque
-
-    Plus de Type.
-  */
 
   Modele: {
     table: "Modèle",
@@ -953,8 +989,11 @@ const columns = [
 
 
 grist.ready({
+
   requiredAccess: "full",
+
   columns: columns
+
 });
 
 
@@ -962,38 +1001,71 @@ grist.ready({
    UTILITAIRES
 ================================================== */
 
-function normaliserNom(valeur) {
+function normaliserNom(
+  valeur
+) {
 
-  return String(valeur || "")
+  return String(
+    valeur || ""
+  )
+
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, "")
+
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+
+    .replace(
+      /[^a-zA-Z0-9]/g,
+      ""
+    )
+
     .toLowerCase();
 
 }
 
 
-function normaliserValeur(valeur) {
+function normaliserValeur(
+  valeur
+) {
 
-  return String(valeur || "")
+  return String(
+    valeur || ""
+  )
+
     .trim()
-    .toLocaleLowerCase("fr");
+
+    .toLocaleLowerCase(
+      "fr"
+    );
 
 }
 
 
-function trierParLibelle(a, b) {
+function trierParLibelle(
+  a,
+  b
+) {
 
   return a.label.localeCompare(
+
     b.label,
+
     "fr",
+
     {
       sensitivity: "base"
     }
+
   );
 
 }
 
+
+/* ==================================================
+   TABLES
+================================================== */
 
 async function trouverTableId(
   nomRecherche
@@ -1002,28 +1074,43 @@ async function trouverTableId(
   const tables =
     await grist.docApi.listTables();
 
+
   const cible =
     normaliserNom(
       nomRecherche
     );
 
+
   const trouve =
     tables.find(
+
       table =>
-        normaliserNom(table)
+
+        normaliserNom(
+          table
+        )
+
         ===
+
         cible
+
     );
+
 
   if (!trouve) {
 
     throw new Error(
+
       'Table introuvable : "' +
+
       nomRecherche +
+
       '".'
+
     );
 
   }
+
 
   return trouve;
 
@@ -1034,30 +1121,48 @@ function convertirFetchTableEnLignes(
   data
 ) {
 
-  if (Array.isArray(data)) {
+  if (
+    Array.isArray(
+      data
+    )
+  ) {
 
     return data;
 
   }
 
+
   if (
+
     data &&
-    Array.isArray(data.id)
+
+    Array.isArray(
+      data.id
+    )
+
   ) {
 
     const lignes = [];
 
+
     for (
+
       let i = 0;
+
       i < data.id.length;
+
       i++
+
     ) {
 
       const ligne = {};
 
+
       for (
         const key
-        of Object.keys(data)
+        of Object.keys(
+          data
+        )
       ) {
 
         if (
@@ -1073,15 +1178,18 @@ function convertirFetchTableEnLignes(
 
       }
 
+
       lignes.push(
         ligne
       );
 
     }
 
+
     return lignes;
 
   }
+
 
   return [];
 
@@ -1094,18 +1202,31 @@ function obtenirColonnesDisponibles(
 ) {
 
   if (
+
     raw &&
-    !Array.isArray(raw) &&
-    typeof raw === "object"
+
+    !Array.isArray(
+      raw
+    ) &&
+
+    typeof raw ===
+      "object"
+
   ) {
 
-    return Object.keys(raw);
+    return Object.keys(
+      raw
+    );
 
   }
 
+
   if (
+
     lignes &&
+
     lignes.length > 0
+
   ) {
 
     return Object.keys(
@@ -1113,6 +1234,7 @@ function obtenirColonnesDisponibles(
     );
 
   }
+
 
   return [];
 
@@ -1129,15 +1251,27 @@ function trouverColonneParNom(
       nomRecherche
     );
 
+
   return (
+
     colonnes.find(
+
       colonne =>
-        normaliserNom(colonne)
+
+        normaliserNom(
+          colonne
+        )
+
         ===
+
         cible
+
     )
+
     ||
+
     null
+
   );
 
 }
@@ -1152,28 +1286,41 @@ function extraireRowId(
 ) {
 
   if (
+
     valeur === null ||
+
     valeur === undefined ||
+
     valeur === ""
+
   ) {
 
     return null;
 
   }
 
+
   if (
-    typeof valeur === "number"
+    typeof valeur ===
+    "number"
   ) {
 
     return valeur;
 
   }
 
+
   if (
-    typeof valeur === "string" &&
+
+    typeof valeur ===
+    "string" &&
+
     !isNaN(
-      Number(valeur)
+      Number(
+        valeur
+      )
     )
+
   ) {
 
     return Number(
@@ -1182,20 +1329,30 @@ function extraireRowId(
 
   }
 
+
   if (
-    Array.isArray(valeur)
+    Array.isArray(
+      valeur
+    )
   ) {
 
     for (
-      let i = valeur.length - 1;
+
+      let i =
+        valeur.length - 1;
+
       i >= 0;
+
       i--
+
     ) {
 
       if (
+
         typeof valeur[i]
         ===
         "number"
+
       ) {
 
         return valeur[i];
@@ -1205,6 +1362,7 @@ function extraireRowId(
     }
 
   }
+
 
   return null;
 
@@ -1216,33 +1374,50 @@ function extraireListeRowIds(
 ) {
 
   if (
+
     valeur === null ||
+
     valeur === undefined ||
+
     valeur === ""
+
   ) {
 
     return [];
 
   }
 
+
   if (
-    typeof valeur === "number"
+    typeof valeur ===
+    "number"
   ) {
 
-    return [valeur];
+    return [
+      valeur
+    ];
 
   }
 
+
   if (
-    Array.isArray(valeur)
+    Array.isArray(
+      valeur
+    )
   ) {
 
     return valeur.filter(
+
       element =>
-        typeof element === "number"
+
+        typeof element
+        ===
+        "number"
+
     );
 
   }
+
 
   return [];
 
@@ -1253,23 +1428,212 @@ function creerReferenceList(
   ids
 ) {
 
-  const propres =
-    [
-      ...new Set(
-        ids
-          .map(Number)
-          .filter(
-            id =>
-              Number.isFinite(id) &&
-              id > 0
-          )
-      )
-    ];
+  const propres = [
+
+    ...new Set(
+
+      ids
+
+        .map(
+          Number
+        )
+
+        .filter(
+
+          id =>
+
+            Number.isFinite(
+              id
+            )
+
+            &&
+
+            id > 0
+
+        )
+
+    )
+
+  ];
+
 
   return [
+
     "L",
+
     ...propres
+
   ];
+
+}
+
+
+/* ==================================================
+   SAUVEGARDE / RESTAURATION DES SELECTS
+
+   C'EST LA CORRECTION IMPORTANTE.
+================================================== */
+
+function capturerSelection(
+  prefixe
+) {
+
+  return {
+
+    typeId:
+      valeurReference(
+        prefixe + "Type"
+      ),
+
+    marqueId:
+      valeurReference(
+        prefixe + "Marque"
+      ),
+
+    modeleId:
+      valeurReference(
+        prefixe + "Modele"
+      ),
+
+    siteId:
+      valeurReference(
+        prefixe + "Site"
+      ),
+
+    localisationId:
+      valeurReference(
+        prefixe + "Localisation"
+      )
+
+  };
+
+}
+
+
+function restaurerSelection(
+  prefixe,
+  selection
+) {
+
+  if (!selection) {
+
+    return;
+
+  }
+
+
+  /*
+    1 — TYPE
+  */
+
+  const typeSelect =
+    document.getElementById(
+      prefixe + "Type"
+    );
+
+
+  if (
+    selection.typeId
+  ) {
+
+    typeSelect.value =
+      String(
+        selection.typeId
+      );
+
+  }
+
+  else {
+
+    typeSelect.value =
+      "";
+
+  }
+
+
+  /*
+    2 — MARQUE
+    On reconstruit la liste APRÈS le Type.
+  */
+
+  mettreAJourMarques(
+
+    prefixe,
+
+    selection.marqueId || null
+
+  );
+
+
+  /*
+    3 — MODELE
+    On reconstruit APRÈS la Marque.
+  */
+
+  if (
+    selection.marqueId
+  ) {
+
+    document.getElementById(
+      prefixe + "Marque"
+    ).value =
+      String(
+        selection.marqueId
+      );
+
+  }
+
+
+  mettreAJourModeles(
+
+    prefixe,
+
+    selection.modeleId || null
+
+  );
+
+
+  /*
+    4 — SITE
+  */
+
+  const siteSelect =
+    document.getElementById(
+      prefixe + "Site"
+    );
+
+
+  if (
+    selection.siteId
+  ) {
+
+    siteSelect.value =
+      String(
+        selection.siteId
+      );
+
+  }
+
+  else {
+
+    siteSelect.value =
+      "";
+
+  }
+
+
+  /*
+    5 — LOCALISATION
+  */
+
+  mettreAJourLocalisations(
+
+    prefixe,
+
+    selection.localisationId
+    || null
+
+  );
 
 }
 
@@ -1288,15 +1652,18 @@ async function chargerReferenceSimple(
       tableNom
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -1304,49 +1671,73 @@ async function chargerReferenceSimple(
       lignes
     );
 
+
   const colonne =
     trouverColonneParNom(
       colonnes,
       colonneNom
     );
 
+
   if (!colonne) {
 
     throw new Error(
+
       'Colonne "' +
+
       colonneNom +
+
       '" introuvable.'
+
     );
 
   }
+
 
   const liste =
     lignes
 
       .filter(
+
         ligne =>
-          ligne.id != null &&
-          ligne[colonne] != null &&
+
+          ligne.id != null
+
+          &&
+
+          ligne[colonne] != null
+
+          &&
+
           String(
             ligne[colonne]
           ).trim() !== ""
+
       )
 
       .map(
+
         ligne => ({
+
           id:
-            Number(ligne.id),
+            Number(
+              ligne.id
+            ),
 
           label:
             String(
               ligne[colonne]
             )
+
         })
+
       );
+
 
   liste.sort(
     trierParLibelle
   );
+
 
   return liste;
 
@@ -1361,18 +1752,21 @@ async function chargerMarques() {
 
   const tableId =
     await trouverTableId(
-      CONFIG_REFERENCES.Marque.table
+      "Marque"
     );
+
 
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -1380,39 +1774,56 @@ async function chargerMarques() {
       lignes
     );
 
+
   const colonneMarque =
     trouverColonneParNom(
       colonnes,
-      CONFIG_REFERENCES.Marque.libelle
+      "Marque"
     );
+
 
   const colonneTypes =
     trouverColonneParNom(
       colonnes,
-      CONFIG_REFERENCES.Marque.types
+      "Type"
     );
 
+
   if (
+
     !colonneMarque ||
+
     !colonneTypes
+
   ) {
 
     throw new Error(
+
       'Vérifie les colonnes "Marque" et "Type" dans la table Marque.'
+
     );
 
   }
+
 
   const liste =
     lignes
 
       .filter(
+
         ligne =>
-          ligne.id != null &&
-          ligne[colonneMarque] != null
+
+          ligne.id != null
+
+          &&
+
+          ligne[colonneMarque]
+          != null
+
       )
 
       .map(
+
         ligne => ({
 
           id:
@@ -1431,11 +1842,14 @@ async function chargerMarques() {
             )
 
         })
+
       );
+
 
   liste.sort(
     trierParLibelle
   );
+
 
   return liste;
 
@@ -1444,26 +1858,27 @@ async function chargerMarques() {
 
 /* ==================================================
    MODELES
-
-   PLUS AUCUNE REFERENCE AU TYPE.
 ================================================== */
 
 async function chargerModeles() {
 
   const tableId =
     await trouverTableId(
-      CONFIG_REFERENCES.Modele.table
+      "Modèle"
     );
+
 
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -1471,39 +1886,56 @@ async function chargerModeles() {
       lignes
     );
 
+
   const colonneModele =
     trouverColonneParNom(
       colonnes,
-      CONFIG_REFERENCES.Modele.libelle
+      "Modèle"
     );
+
 
   const colonneMarque =
     trouverColonneParNom(
       colonnes,
-      CONFIG_REFERENCES.Modele.marque
+      "Marque"
     );
 
+
   if (
+
     !colonneModele ||
+
     !colonneMarque
+
   ) {
 
     throw new Error(
+
       'La table Modèle doit contenir les colonnes "Modèle" et "Marque".'
+
     );
 
   }
+
 
   const liste =
     lignes
 
       .filter(
+
         ligne =>
-          ligne.id != null &&
-          ligne[colonneModele] != null
+
+          ligne.id != null
+
+          &&
+
+          ligne[colonneModele]
+          != null
+
       )
 
       .map(
+
         ligne => ({
 
           id:
@@ -1522,11 +1954,14 @@ async function chargerModeles() {
             )
 
         })
+
       );
+
 
   liste.sort(
     trierParLibelle
   );
+
 
   return liste;
 
@@ -1541,18 +1976,21 @@ async function chargerLocalisations() {
 
   const tableId =
     await trouverTableId(
-      CONFIG_REFERENCES.Localisation.table
+      "Localisation"
     );
+
 
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -1560,11 +1998,13 @@ async function chargerLocalisations() {
       lignes
     );
 
+
   const colonneLocalisation =
     trouverColonneParNom(
       colonnes,
       "Localisation"
     );
+
 
   const colonneSite =
     trouverColonneParNom(
@@ -1572,27 +2012,42 @@ async function chargerLocalisations() {
       "Site"
     );
 
+
   if (
+
     !colonneLocalisation ||
+
     !colonneSite
+
   ) {
 
     throw new Error(
+
       "Vérifie les colonnes de la table Localisation."
+
     );
 
   }
+
 
   const liste =
     lignes
 
       .filter(
+
         ligne =>
-          ligne.id != null &&
-          ligne[colonneLocalisation] != null
+
+          ligne.id != null
+
+          &&
+
+          ligne[colonneLocalisation]
+          != null
+
       )
 
       .map(
+
         ligne => ({
 
           id:
@@ -1611,11 +2066,14 @@ async function chargerLocalisations() {
             )
 
         })
+
       );
+
 
   liste.sort(
     trierParLibelle
   );
+
 
   return liste;
 
@@ -1624,6 +2082,9 @@ async function chargerLocalisations() {
 
 /* ==================================================
    CHARGEMENT GLOBAL
+
+   On mémorise maintenant les sélections AVANT
+   de recharger les listes.
 ================================================== */
 
 async function chargerListesReferences(
@@ -1631,70 +2092,124 @@ async function chargerListesReferences(
 ) {
 
   if (
-    referencesChargees &&
+
+    referencesChargees
+
+    &&
+
     !forcer
+
   ) {
 
     return;
 
   }
 
+
+  /*
+    Sauvegarde des valeurs actuelles.
+  */
+
+  const selectionNew =
+    referencesChargees
+      ?
+      capturerSelection(
+        "new"
+      )
+      :
+      null;
+
+
+  const selectionEdit =
+    referencesChargees
+      ?
+      capturerSelection(
+        "edit"
+      )
+      :
+      null;
+
+
   const [
+
     sites,
+
     types,
+
     marques,
+
     modeles,
+
     localisations
+
   ] = await Promise.all([
+
 
     chargerReferenceSimple(
       "Site",
       "Site"
     ),
 
+
     chargerReferenceSimple(
       "Type",
       "Type"
     ),
 
+
     chargerMarques(),
+
 
     chargerModeles(),
 
+
     chargerLocalisations()
 
+
   ]);
+
 
   listeSites =
     sites;
 
+
   listeTypes =
     types;
+
 
   listeMarques =
     marques;
 
+
   listeModeles =
     modeles;
+
 
   listeLocalisations =
     localisations;
 
+
+  /*
+    Reconstruction des listes de base.
+  */
 
   remplirSelectSimple(
     "newSite",
     listeSites
   );
 
+
   remplirSelectSimple(
     "editSite",
     listeSites
   );
 
+
   remplirSelectSimple(
     "newType",
     listeTypes
   );
+
 
   remplirSelectSimple(
     "editType",
@@ -1702,32 +2217,67 @@ async function chargerListesReferences(
   );
 
 
-  mettreAJourMarques(
-    "new"
-  );
-
-  mettreAJourMarques(
-    "edit"
-  );
-
-
-  mettreAJourLocalisations(
-    "new"
-  );
-
-  mettreAJourLocalisations(
-    "edit"
-  );
-
-
   referencesChargees =
     true;
+
+
+  /*
+    Si c'est un rechargement,
+    on restaure les sélections.
+  */
+
+  if (
+    selectionNew
+  ) {
+
+    restaurerSelection(
+      "new",
+      selectionNew
+    );
+
+  }
+
+  else {
+
+    mettreAJourMarques(
+      "new"
+    );
+
+    mettreAJourLocalisations(
+      "new"
+    );
+
+  }
+
+
+  if (
+    selectionEdit
+  ) {
+
+    restaurerSelection(
+      "edit",
+      selectionEdit
+    );
+
+  }
+
+  else {
+
+    mettreAJourMarques(
+      "edit"
+    );
+
+    mettreAJourLocalisations(
+      "edit"
+    );
+
+  }
 
 }
 
 
 /* ==================================================
-   SELECT
+   SELECT SIMPLE
 ================================================== */
 
 function remplirSelectSimple(
@@ -1740,8 +2290,10 @@ function remplirSelectSimple(
       id
     );
 
+
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
+
 
   for (
     const item
@@ -1753,13 +2305,16 @@ function remplirSelectSimple(
         "option"
       );
 
+
     option.value =
       String(
         item.id
       );
 
+
     option.textContent =
       item.label;
+
 
     select.appendChild(
       option
@@ -1784,18 +2339,24 @@ function mettreAJourMarques(
       prefixe + "Type"
     );
 
+
   const marqueSelect =
     document.getElementById(
       prefixe + "Marque"
     );
 
+
   const typeId =
     typeSelect.value
+
       ?
+
       Number(
         typeSelect.value
       )
+
       :
+
       null;
 
 
@@ -1809,10 +2370,13 @@ function mettreAJourMarques(
 
     marques =
       listeMarques.filter(
+
         marque =>
+
           marque.typeIds.includes(
             typeId
           )
+
       );
 
   }
@@ -1832,13 +2396,16 @@ function mettreAJourMarques(
         "option"
       );
 
+
     option.value =
       String(
         marque.id
       );
 
+
     option.textContent =
       marque.label;
+
 
     marqueSelect.appendChild(
       option
@@ -1848,14 +2415,54 @@ function mettreAJourMarques(
 
 
   if (
-    valeurAConserver !== null
+    valeurAConserver
   ) {
 
-    selectionnerReferenceOuLibelle(
-      marqueSelect,
-      valeurAConserver,
-      listeMarques
-    );
+    const marqueId =
+      extraireRowId(
+        valeurAConserver
+      )
+      ||
+      Number(
+        valeurAConserver
+      );
+
+
+    if (
+      marqueId
+      &&
+      Array.from(
+        marqueSelect.options
+      ).some(
+        option =>
+          option.value
+          ===
+          String(
+            marqueId
+          )
+      )
+    ) {
+
+      marqueSelect.value =
+        String(
+          marqueId
+        );
+
+    }
+
+    else {
+
+      selectionnerReferenceOuLibelle(
+
+        marqueSelect,
+
+        valeurAConserver,
+
+        listeMarques
+
+      );
+
+    }
 
   }
 
@@ -1881,6 +2488,7 @@ function mettreAJourModeles(
       prefixe + "Marque"
     );
 
+
   const select =
     document.getElementById(
       prefixe + "Modele"
@@ -1889,14 +2497,21 @@ function mettreAJourModeles(
 
   const modeles =
     marqueId
+
       ?
+
       listeModeles.filter(
+
         modele =>
+
           modele.marqueId
           ===
           marqueId
+
       )
+
       :
+
       [];
 
 
@@ -1914,13 +2529,16 @@ function mettreAJourModeles(
         "option"
       );
 
+
     option.value =
       String(
         modele.id
       );
 
+
     option.textContent =
       modele.label;
+
 
     select.appendChild(
       option
@@ -1930,14 +2548,54 @@ function mettreAJourModeles(
 
 
   if (
-    valeurAConserver !== null
+    valeurAConserver
   ) {
 
-    selectionnerReferenceOuLibelle(
-      select,
-      valeurAConserver,
-      listeModeles
-    );
+    const modeleId =
+      extraireRowId(
+        valeurAConserver
+      )
+      ||
+      Number(
+        valeurAConserver
+      );
+
+
+    if (
+      modeleId
+      &&
+      Array.from(
+        select.options
+      ).some(
+        option =>
+          option.value
+          ===
+          String(
+            modeleId
+          )
+      )
+    ) {
+
+      select.value =
+        String(
+          modeleId
+        );
+
+    }
+
+    else {
+
+      selectionnerReferenceOuLibelle(
+
+        select,
+
+        valeurAConserver,
+
+        listeModeles
+
+      );
+
+    }
 
   }
 
@@ -1958,6 +2616,7 @@ function mettreAJourLocalisations(
       prefixe + "Site"
     );
 
+
   const select =
     document.getElementById(
       prefixe + "Localisation"
@@ -1966,14 +2625,21 @@ function mettreAJourLocalisations(
 
   const localisations =
     siteId
+
       ?
+
       listeLocalisations.filter(
+
         localisation =>
+
           localisation.siteId
           ===
           siteId
+
       )
+
       :
+
       [];
 
 
@@ -1991,13 +2657,16 @@ function mettreAJourLocalisations(
         "option"
       );
 
+
     option.value =
       String(
         localisation.id
       );
 
+
     option.textContent =
       localisation.label;
+
 
     select.appendChild(
       option
@@ -2007,14 +2676,54 @@ function mettreAJourLocalisations(
 
 
   if (
-    valeurAConserver !== null
+    valeurAConserver
   ) {
 
-    selectionnerReferenceOuLibelle(
-      select,
-      valeurAConserver,
-      listeLocalisations
-    );
+    const localisationId =
+      extraireRowId(
+        valeurAConserver
+      )
+      ||
+      Number(
+        valeurAConserver
+      );
+
+
+    if (
+      localisationId
+      &&
+      Array.from(
+        select.options
+      ).some(
+        option =>
+          option.value
+          ===
+          String(
+            localisationId
+          )
+      )
+    ) {
+
+      select.value =
+        String(
+          localisationId
+        );
+
+    }
+
+    else {
+
+      selectionnerReferenceOuLibelle(
+
+        select,
+
+        valeurAConserver,
+
+        listeLocalisations
+
+      );
+
+    }
 
   }
 
@@ -2026,7 +2735,9 @@ function mettreAJourLocalisations(
 ================================================== */
 
 document
-  .getElementById("newType")
+  .getElementById(
+    "newType"
+  )
   .addEventListener(
     "change",
     () =>
@@ -2037,7 +2748,9 @@ document
 
 
 document
-  .getElementById("editType")
+  .getElementById(
+    "editType"
+  )
   .addEventListener(
     "change",
     () =>
@@ -2048,7 +2761,9 @@ document
 
 
 document
-  .getElementById("newMarque")
+  .getElementById(
+    "newMarque"
+  )
   .addEventListener(
     "change",
     () =>
@@ -2059,7 +2774,9 @@ document
 
 
 document
-  .getElementById("editMarque")
+  .getElementById(
+    "editMarque"
+  )
   .addEventListener(
     "change",
     () =>
@@ -2070,7 +2787,9 @@ document
 
 
 document
-  .getElementById("newSite")
+  .getElementById(
+    "newSite"
+  )
   .addEventListener(
     "change",
     () =>
@@ -2081,7 +2800,9 @@ document
 
 
 document
-  .getElementById("editSite")
+  .getElementById(
+    "editSite"
+  )
   .addEventListener(
     "change",
     () =>
@@ -2096,20 +2817,25 @@ document
 ================================================== */
 
 grist.onRecords(
+
   async function(
     data,
     mappings
   ) {
 
+
     columnMappings =
       mappings;
+
 
     if (!mappings) {
 
       records = [];
 
+
       mappingWarning.style.display =
         "block";
+
 
       return;
 
@@ -2118,17 +2844,27 @@ grist.onRecords(
 
     records =
       (data || [])
+
         .map(
+
           record =>
+
             grist.mapColumnNames(
+
               record,
+
               {
                 mappings:
                   mappings
               }
+
             )
+
         )
-        .filter(Boolean);
+
+        .filter(
+          Boolean
+        );
 
 
     mappingWarning.style.display =
@@ -2151,8 +2887,10 @@ grist.onRecords(
           error
         );
 
+
         statusBox.style.display =
           "block";
+
 
         statusBox.innerHTML = `
 
@@ -2174,6 +2912,7 @@ grist.onRecords(
     }
 
   }
+
 );
 
 
@@ -2185,29 +2924,40 @@ function obtenirColonneGrist(
   logique
 ) {
 
-  if (!columnMappings) {
+  if (
+    !columnMappings
+  ) {
 
     return null;
 
   }
+
 
   const mapping =
     columnMappings[
       logique
     ];
 
+
   if (
-    Array.isArray(mapping)
+    Array.isArray(
+      mapping
+    )
   ) {
 
     return (
-      mapping[0] || null
+      mapping[0]
+      ||
+      null
     );
 
   }
 
+
   return (
-    mapping || null
+    mapping
+    ||
+    null
   );
 
 }
@@ -2235,10 +2985,15 @@ function construireChampsGrist(
         logique
       );
 
+
     if (
+
       colonne &&
+
       colonne !== "id" &&
+
       colonne !== "manualSort"
+
     ) {
 
       fields[colonne] =
@@ -2247,6 +3002,7 @@ function construireChampsGrist(
     }
 
   }
+
 
   return fields;
 
@@ -2261,18 +3017,43 @@ function valeurReference(
   id
 ) {
 
-  const value =
-    document
-      .getElementById(
-        id
-      )
-      .value;
+  const element =
+    document.getElementById(
+      id
+    );
 
-  return value
-    ?
+
+  if (!element) {
+
+    return 0;
+
+  }
+
+
+  const value =
+    element.value;
+
+
+  if (
+    !value
+  ) {
+
+    return 0;
+
+  }
+
+
+  const nombre =
     Number(
       value
-    )
+    );
+
+
+  return Number.isFinite(
+    nombre
+  )
+    ?
+    nombre
     :
     0;
 
@@ -2286,9 +3067,13 @@ function selectionnerReferenceOuLibelle(
 ) {
 
   if (
+
     valeur === null ||
+
     valeur === undefined ||
+
     valeur === ""
+
   ) {
 
     select.value =
@@ -2306,17 +3091,23 @@ function selectionnerReferenceOuLibelle(
 
 
   if (
-    rowId &&
+
+    rowId !== null &&
+
     Array.from(
       select.options
     ).some(
+
       option =>
+
         option.value
         ===
         String(
           rowId
         )
+
     )
+
   ) {
 
     select.value =
@@ -2330,42 +3121,58 @@ function selectionnerReferenceOuLibelle(
 
 
   if (
-    typeof valeur
-    ===
+    typeof valeur ===
     "string"
   ) {
 
     const trouve =
       liste.find(
+
         item =>
+
           normaliserNom(
             item.label
           )
+
           ===
+
           normaliserNom(
             valeur
           )
+
       );
 
 
     if (
-      trouve &&
-      Array.from(
-        select.options
-      ).some(
-        option =>
-          option.value
-          ===
-          String(
-            trouve.id
-          )
-      )
+      trouve
     ) {
 
-      select.value =
-        String(
-          trouve.id
+      const optionExiste =
+        Array.from(
+          select.options
+        ).some(
+
+          option =>
+
+            option.value
+            ===
+            String(
+              trouve.id
+            )
+
         );
+
+
+      if (
+        optionExiste
+      ) {
+
+        select.value =
+          String(
+            trouve.id
+          );
+
+      }
 
     }
 
@@ -2383,11 +3190,16 @@ document
     "[data-add-ref]"
   )
   .forEach(
+
     button => {
 
+
       button.addEventListener(
+
         "click",
+
         () => {
+
 
           ouvrirAjoutReference(
 
@@ -2398,11 +3210,17 @@ document
           );
 
         }
+
       );
 
     }
+
   );
 
+
+/* ==================================================
+   MODALE
+================================================== */
 
 function ouvrirAjoutReference(
   type,
@@ -2410,19 +3228,29 @@ function ouvrirAjoutReference(
 ) {
 
   ajoutReferenceCourant = {
+
     type,
+
     prefixe
+
   };
+
 
   referenceNameInput.value =
     "";
+
 
   referenceModalInfo.style.display =
     "none";
 
 
+  referenceModalInfo.textContent =
+    "";
+
+
   if (
-    type === "TypeMateriel"
+    type ===
+    "TypeMateriel"
   ) {
 
     referenceModalTitle.textContent =
@@ -2432,7 +3260,8 @@ function ouvrirAjoutReference(
 
 
   if (
-    type === "Site"
+    type ===
+    "Site"
   ) {
 
     referenceModalTitle.textContent =
@@ -2442,31 +3271,45 @@ function ouvrirAjoutReference(
 
 
   if (
-    type === "Marque"
+    type ===
+    "Marque"
   ) {
 
     referenceModalTitle.textContent =
       "➕ Ajouter une marque";
+
 
     const typeId =
       valeurReference(
         prefixe + "Type"
       );
 
+
     const typeObjet =
       listeTypes.find(
+
         item =>
-          item.id === typeId
+
+          item.id ===
+          typeId
+
       );
 
 
-    if (typeObjet) {
+    if (
+      typeObjet
+    ) {
 
       referenceModalInfo.style.display =
         "block";
 
+
       referenceModalInfo.textContent =
-        "Type : " +
+
+        "Type : "
+
+        +
+
         typeObjet.label;
 
     }
@@ -2475,7 +3318,8 @@ function ouvrirAjoutReference(
 
 
   if (
-    type === "Modele"
+    type ===
+    "Modele"
   ) {
 
     const marqueId =
@@ -2483,7 +3327,10 @@ function ouvrirAjoutReference(
         prefixe + "Marque"
       );
 
-    if (!marqueId) {
+
+    if (
+      !marqueId
+    ) {
 
       alert(
         "Choisis d'abord une marque."
@@ -2496,8 +3343,12 @@ function ouvrirAjoutReference(
 
     const marque =
       listeMarques.find(
+
         item =>
-          item.id === marqueId
+
+          item.id ===
+          marqueId
+
       );
 
 
@@ -2508,8 +3359,13 @@ function ouvrirAjoutReference(
     referenceModalInfo.style.display =
       "block";
 
+
     referenceModalInfo.textContent =
-      "Marque : " +
+
+      "Marque : "
+
+      +
+
       (
         marque
           ?
@@ -2522,7 +3378,8 @@ function ouvrirAjoutReference(
 
 
   if (
-    type === "Localisation"
+    type ===
+    "Localisation"
   ) {
 
     const siteId =
@@ -2530,7 +3387,10 @@ function ouvrirAjoutReference(
         prefixe + "Site"
       );
 
-    if (!siteId) {
+
+    if (
+      !siteId
+    ) {
 
       alert(
         "Choisis d'abord un site."
@@ -2543,8 +3403,12 @@ function ouvrirAjoutReference(
 
     const site =
       listeSites.find(
+
         item =>
-          item.id === siteId
+
+          item.id ===
+          siteId
+
       );
 
 
@@ -2555,8 +3419,13 @@ function ouvrirAjoutReference(
     referenceModalInfo.style.display =
       "block";
 
+
     referenceModalInfo.textContent =
-      "Site : " +
+
+      "Site : "
+
+      +
+
       (
         site
           ?
@@ -2574,17 +3443,43 @@ function ouvrirAjoutReference(
 
 
   setTimeout(
+
     () =>
       referenceNameInput.focus(),
+
     100
+
   );
 
 }
 
 
 referenceCancelButton.addEventListener(
+
   "click",
+
   fermerAjoutReference
+
+);
+
+
+referenceModal.addEventListener(
+
+  "click",
+
+  function(event) {
+
+    if (
+      event.target ===
+      referenceModal
+    ) {
+
+      fermerAjoutReference();
+
+    }
+
+  }
+
 );
 
 
@@ -2597,16 +3492,46 @@ function fermerAjoutReference() {
 }
 
 
+referenceNameInput.addEventListener(
+
+  "keydown",
+
+  function(event) {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      event.preventDefault();
+
+      referenceSaveButton.click();
+
+    }
+
+  }
+
+);
+
+
 referenceSaveButton.addEventListener(
+
   "click",
+
   async function() {
+
 
     const nom =
       referenceNameInput
+
         .value
+
         .trim();
 
-    if (!nom) {
+
+    if (
+      !nom
+    ) {
 
       alert(
         "Saisis un nom."
@@ -2619,6 +3544,7 @@ referenceSaveButton.addEventListener(
 
     referenceSaveButton.disabled =
       true;
+
 
     referenceSaveButton.textContent =
       "⏳ Ajout…";
@@ -2647,12 +3573,19 @@ referenceSaveButton.addEventListener(
         error
       );
 
+
       alert(
-        "Erreur lors de l'ajout : " +
+
+        "Erreur lors de l'ajout : "
+
+        +
+
         (
-          error.message ||
+          error.message
+          ||
           String(error)
         )
+
       );
 
     }
@@ -2662,12 +3595,14 @@ referenceSaveButton.addEventListener(
       referenceSaveButton.disabled =
         false;
 
+
       referenceSaveButton.textContent =
         "✅ Ajouter";
 
     }
 
   }
+
 );
 
 
@@ -2682,28 +3617,16 @@ async function creerReference(
 ) {
 
   if (
-    type === "TypeMateriel"
+    type ===
+    "TypeMateriel"
   ) {
 
-    const id =
-      await ajouterOuRecupererSimple(
-        "Type",
-        "Type",
-        nom,
-        listeTypes
-      );
+    await creerType(
 
-    await chargerListesReferences(
-      true
-    );
+      prefixe,
 
-    document.getElementById(
-      prefixe + "Type"
-    ).value =
-      String(id);
+      nom
 
-    mettreAJourMarques(
-      prefixe
     );
 
     return;
@@ -2712,28 +3635,16 @@ async function creerReference(
 
 
   if (
-    type === "Site"
+    type ===
+    "Site"
   ) {
 
-    const id =
-      await ajouterOuRecupererSimple(
-        "Site",
-        "Site",
-        nom,
-        listeSites
-      );
+    await creerSite(
 
-    await chargerListesReferences(
-      true
-    );
+      prefixe,
 
-    document.getElementById(
-      prefixe + "Site"
-    ).value =
-      String(id);
+      nom
 
-    mettreAJourLocalisations(
-      prefixe
     );
 
     return;
@@ -2742,12 +3653,16 @@ async function creerReference(
 
 
   if (
-    type === "Marque"
+    type ===
+    "Marque"
   ) {
 
     await creerMarque(
+
       prefixe,
+
       nom
+
     );
 
     return;
@@ -2756,12 +3671,16 @@ async function creerReference(
 
 
   if (
-    type === "Modele"
+    type ===
+    "Modele"
   ) {
 
     await creerModele(
+
       prefixe,
+
       nom
+
     );
 
     return;
@@ -2770,12 +3689,16 @@ async function creerReference(
 
 
   if (
-    type === "Localisation"
+    type ===
+    "Localisation"
   ) {
 
     await creerLocalisation(
+
       prefixe,
+
       nom
+
     );
 
   }
@@ -2784,42 +3707,176 @@ async function creerReference(
 
 
 /* ==================================================
-   SIMPLE
+   TYPE
 ================================================== */
 
-async function ajouterOuRecupererSimple(
-  table,
-  colonne,
-  nom,
-  liste
+async function creerType(
+  prefixe,
+  nom
 ) {
 
-  const existe =
-    liste.find(
-      item =>
-        normaliserValeur(
-          item.label
-        )
-        ===
-        normaliserValeur(
-          nom
-        )
+  const selectionAvant =
+    capturerSelection(
+      prefixe
     );
 
 
-  if (existe) {
+  let id;
 
-    return existe.id;
+
+  const existant =
+    listeTypes.find(
+
+      item =>
+
+        normaliserValeur(
+          item.label
+        )
+
+        ===
+
+        normaliserValeur(
+          nom
+        )
+
+    );
+
+
+  if (
+    existant
+  ) {
+
+    id =
+      existant.id;
+
+  }
+
+  else {
+
+    id =
+      await ajouterLigneReference(
+
+        "Type",
+
+        {
+          Type:
+            nom
+        }
+
+      );
 
   }
 
 
-  return await ajouterLigneReference(
-    table,
-    {
-      [colonne]:
-        nom
-    }
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.typeId =
+    id;
+
+
+  selectionAvant.marqueId =
+    0;
+
+
+  selectionAvant.modeleId =
+    0;
+
+
+  restaurerSelection(
+
+    prefixe,
+
+    selectionAvant
+
+  );
+
+}
+
+
+/* ==================================================
+   SITE
+================================================== */
+
+async function creerSite(
+  prefixe,
+  nom
+) {
+
+  const selectionAvant =
+    capturerSelection(
+      prefixe
+    );
+
+
+  let id;
+
+
+  const existant =
+    listeSites.find(
+
+      item =>
+
+        normaliserValeur(
+          item.label
+        )
+
+        ===
+
+        normaliserValeur(
+          nom
+        )
+
+    );
+
+
+  if (
+    existant
+  ) {
+
+    id =
+      existant.id;
+
+  }
+
+  else {
+
+    id =
+      await ajouterLigneReference(
+
+        "Site",
+
+        {
+          Site:
+            nom
+        }
+
+      );
+
+  }
+
+
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.siteId =
+    id;
+
+
+  selectionAvant.localisationId =
+    0;
+
+
+  restaurerSelection(
+
+    prefixe,
+
+    selectionAvant
+
   );
 
 }
@@ -2834,37 +3891,63 @@ async function creerMarque(
   nom
 ) {
 
-  const typeId =
-    valeurReference(
-      prefixe + "Type"
+  /*
+    IMPORTANT :
+    on mémorise le Type AVANT le reload.
+  */
+
+  const selectionAvant =
+    capturerSelection(
+      prefixe
     );
+
+
+  const typeId =
+    selectionAvant.typeId;
+
+
+  let marqueId;
 
 
   const existante =
     listeMarques.find(
+
       marque =>
+
         normaliserValeur(
           marque.label
         )
+
         ===
+
         normaliserValeur(
           nom
         )
+
     );
 
 
-  if (existante) {
+  if (
+    existante
+  ) {
+
+    marqueId =
+      existante.id;
+
 
     if (
+
       typeId &&
+
       !existante.typeIds.includes(
         typeId
       )
+
     ) {
 
       await mettreAJourTypesMarque(
 
-        existante.id,
+        marqueId,
 
         [
           ...existante.typeIds,
@@ -2875,54 +3958,42 @@ async function creerMarque(
 
     }
 
-
-    await chargerListesReferences(
-      true
-    );
-
-
-    document.getElementById(
-      prefixe + "Type"
-    ).value =
-      typeId
-        ?
-        String(typeId)
-        :
-        "";
-
-
-    mettreAJourMarques(
-      prefixe,
-      existante.id
-    );
-
-
-    return;
-
   }
 
+  else {
 
-  const champs = {
-    Marque:
-      nom
-  };
+    const champs = {
+
+      Marque:
+        nom
+
+    };
 
 
-  if (typeId) {
+    if (
+      typeId
+    ) {
 
-    champs.Type =
-      creerReferenceList(
-        [typeId]
+      champs.Type =
+        creerReferenceList(
+          [
+            typeId
+          ]
+        );
+
+    }
+
+
+    marqueId =
+      await ajouterLigneReference(
+
+        "Marque",
+
+        champs
+
       );
 
   }
-
-
-  const id =
-    await ajouterLigneReference(
-      "Marque",
-      champs
-    );
 
 
   await chargerListesReferences(
@@ -2930,26 +4001,35 @@ async function creerMarque(
   );
 
 
-  document.getElementById(
-    prefixe + "Type"
-  ).value =
-    typeId
-      ?
-      String(typeId)
-      :
-      "";
+  /*
+    RESTAURATION EXPLICITE.
+  */
+
+  selectionAvant.typeId =
+    typeId;
 
 
-  mettreAJourMarques(
+  selectionAvant.marqueId =
+    marqueId;
+
+
+  selectionAvant.modeleId =
+    0;
+
+
+  restaurerSelection(
+
     prefixe,
-    id
+
+    selectionAvant
+
   );
 
 }
 
 
 /* ==================================================
-   UPDATE TYPES MARQUE
+   UPDATE TYPE MARQUE
 ================================================== */
 
 async function mettreAJourTypesMarque(
@@ -2962,21 +4042,25 @@ async function mettreAJourTypesMarque(
       "Marque"
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
+
 
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
 
+
   const colonnes =
     obtenirColonnesDisponibles(
       raw,
       lignes
     );
+
 
   const colonne =
     trouverColonneParNom(
@@ -2985,18 +4069,38 @@ async function mettreAJourTypesMarque(
     );
 
 
+  if (
+    !colonne
+  ) {
+
+    throw new Error(
+
+      'Colonne "Type" introuvable dans la table Marque.'
+
+    );
+
+  }
+
+
   await grist.docApi.applyUserActions([
 
     [
+
       "UpdateRecord",
+
       tableId,
+
       marqueId,
+
       {
+
         [colonne]:
           creerReferenceList(
             ids
           )
+
       }
+
     ]
 
   ]);
@@ -3007,8 +4111,9 @@ async function mettreAJourTypesMarque(
 /* ==================================================
    MODELE
 
-   CORRECTION PRINCIPALE DU BUG :
-   PLUS DE TYPE.
+   CORRECTION PRINCIPALE :
+   on mémorise Type + Marque AVANT reload,
+   puis on restaure les 3 valeurs.
 ================================================== */
 
 async function creerModele(
@@ -3016,65 +4121,105 @@ async function creerModele(
   nom
 ) {
 
-  const marqueId =
-    valeurReference(
-      prefixe + "Marque"
+  /*
+    Mémorisation de TOUTE la sélection actuelle.
+  */
+
+  const selectionAvant =
+    capturerSelection(
+      prefixe
     );
 
 
-  if (!marqueId) {
+  const typeId =
+    selectionAvant.typeId;
+
+
+  const marqueId =
+    selectionAvant.marqueId;
+
+
+  if (
+    !marqueId
+  ) {
 
     throw new Error(
+
       "Choisis d'abord une marque."
+
     );
 
   }
 
 
+  let modeleId;
+
+
   const existe =
     listeModeles.find(
+
       modele =>
-        modele.marqueId === marqueId
+
+        modele.marqueId
+        ===
+        marqueId
+
         &&
+
         normaliserValeur(
           modele.label
         )
+
         ===
+
         normaliserValeur(
           nom
         )
+
     );
 
 
-  if (existe) {
+  if (
+    existe
+  ) {
 
-    mettreAJourModeles(
-      prefixe,
-      existe.id
-    );
+    modeleId =
+      existe.id;
 
-    return;
+  }
+
+  else {
+
+    /*
+      La table Modèle reçoit uniquement :
+
+      - Modèle
+      - Marque
+    */
+
+    modeleId =
+      await ajouterLigneReference(
+
+        "Modèle",
+
+        {
+
+          "Modèle":
+            nom,
+
+          "Marque":
+            marqueId
+
+        }
+
+      );
 
   }
 
 
   /*
-    ICI :
-    uniquement Modèle + Marque.
+    Le reload était la source du bug.
   */
-
-  const id =
-    await ajouterLigneReference(
-      "Modèle",
-      {
-        "Modèle":
-          nom,
-
-        "Marque":
-          marqueId
-      }
-    );
-
 
   await chargerListesReferences(
     true
@@ -3082,8 +4227,56 @@ async function creerModele(
 
 
   /*
-    On restaure la marque.
+    On FORCE la restauration du triplet
+    Type → Marque → Modèle.
   */
+
+  selectionAvant.typeId =
+    typeId;
+
+
+  selectionAvant.marqueId =
+    marqueId;
+
+
+  selectionAvant.modeleId =
+    modeleId;
+
+
+  restaurerSelection(
+
+    prefixe,
+
+    selectionAvant
+
+  );
+
+
+  /*
+    Sécurité supplémentaire :
+    vérification finale des valeurs réelles.
+  */
+
+  document.getElementById(
+    prefixe + "Type"
+  ).value =
+    typeId
+      ?
+      String(
+        typeId
+      )
+      :
+      "";
+
+
+  mettreAJourMarques(
+
+    prefixe,
+
+    marqueId
+
+  );
+
 
   document.getElementById(
     prefixe + "Marque"
@@ -3094,8 +4287,11 @@ async function creerModele(
 
 
   mettreAJourModeles(
+
     prefixe,
-    id
+
+    modeleId
+
   );
 
 }
@@ -3110,61 +4306,85 @@ async function creerLocalisation(
   nom
 ) {
 
-  const siteId =
-    valeurReference(
-      prefixe + "Site"
+  const selectionAvant =
+    capturerSelection(
+      prefixe
     );
 
 
-  if (!siteId) {
+  const siteId =
+    selectionAvant.siteId;
+
+
+  if (
+    !siteId
+  ) {
 
     throw new Error(
+
       "Choisis d'abord un site."
+
     );
 
   }
+
+
+  let localisationId;
 
 
   const existe =
     listeLocalisations.find(
+
       localisation =>
+
         localisation.siteId
         ===
         siteId
+
         &&
+
         normaliserValeur(
           localisation.label
         )
+
         ===
+
         normaliserValeur(
           nom
         )
+
     );
 
 
-  if (existe) {
+  if (
+    existe
+  ) {
 
-    mettreAJourLocalisations(
-      prefixe,
-      existe.id
-    );
-
-    return;
+    localisationId =
+      existe.id;
 
   }
 
+  else {
 
-  const id =
-    await ajouterLigneReference(
-      "Localisation",
-      {
-        Localisation:
-          nom,
+    localisationId =
+      await ajouterLigneReference(
 
-        Site:
-          siteId
-      }
-    );
+        "Localisation",
+
+        {
+
+          Localisation:
+            nom,
+
+          Site:
+            siteId
+
+        }
+
+      );
+
+  }
 
 
   await chargerListesReferences(
@@ -3172,17 +4392,20 @@ async function creerLocalisation(
   );
 
 
-  document.getElementById(
-    prefixe + "Site"
-  ).value =
-    String(
-      siteId
-    );
+  selectionAvant.siteId =
+    siteId;
 
 
-  mettreAJourLocalisations(
+  selectionAvant.localisationId =
+    localisationId;
+
+
+  restaurerSelection(
+
     prefixe,
-    id
+
+    selectionAvant
+
   );
 
 }
@@ -3202,21 +4425,25 @@ async function ajouterLigneReference(
       nomTable
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
+
 
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
 
+
   const colonnes =
     obtenirColonnesDisponibles(
       raw,
       lignes
     );
+
 
   const fields = {};
 
@@ -3238,14 +4465,22 @@ async function ajouterLigneReference(
       );
 
 
-    if (!vraie) {
+    if (
+      !vraie
+    ) {
 
       throw new Error(
+
         'Colonne "' +
+
         logique +
+
         '" introuvable dans la table "' +
+
         tableId +
+
         '".'
+
       );
 
     }
@@ -3259,20 +4494,28 @@ async function ajouterLigneReference(
 
   const avant =
     lignes.map(
+
       ligne =>
+
         Number(
           ligne.id
         )
+
     );
 
 
   await grist.docApi.applyUserActions([
 
     [
+
       "AddRecord",
+
       tableId,
+
       null,
+
       fields
+
     ]
 
   ]);
@@ -3290,19 +4533,28 @@ async function ajouterLigneReference(
 
   const nouvelle =
     apres.find(
+
       ligne =>
+
         !avant.includes(
+
           Number(
             ligne.id
           )
+
         )
+
     );
 
 
-  if (!nouvelle) {
+  if (
+    !nouvelle
+  ) {
 
     throw new Error(
+
       "Impossible de retrouver la nouvelle ligne."
+
     );
 
   }
@@ -3326,23 +4578,34 @@ function mettreAJourContexte(
 
   const site =
     listeSites.find(
+
       item =>
-        item.id === siteId
+
+        item.id
+        ===
+        siteId
+
     );
+
 
   const localisation =
     listeLocalisations.find(
+
       item =>
+
         item.id
         ===
         localisationId
+
     );
 
 
   contexteSession = {
 
     siteId:
-      siteId || null,
+      siteId
+      ||
+      null,
 
     siteLabel:
       site
@@ -3352,7 +4615,9 @@ function mettreAJourContexte(
         "",
 
     localisationId:
-      localisationId || null,
+      localisationId
+      ||
+      null,
 
     localisationLabel:
       localisation
@@ -3372,12 +4637,18 @@ function mettreAJourContexte(
 function afficherContexte() {
 
   if (
-    !contexteSession.siteId &&
+
+    !contexteSession.siteId
+
+    &&
+
     !contexteSession.localisationId
+
   ) {
 
     contextPanel.style.display =
       "none";
+
 
     return;
 
@@ -3422,19 +4693,29 @@ function afficherContexte() {
 
 
 clearContextButton.addEventListener(
+
   "click",
+
   () => {
 
+
     contexteSession = {
+
       siteId: null,
+
       siteLabel: "",
+
       localisationId: null,
+
       localisationLabel: ""
+
     };
+
 
     afficherContexte();
 
   }
+
 );
 
 
@@ -3443,21 +4724,29 @@ clearContextButton.addEventListener(
 ================================================== */
 
 scanButton.addEventListener(
+
   "click",
+
   () =>
     barcodeImage.click()
+
 );
 
 
 nextScanButton.addEventListener(
+
   "click",
+
   () => {
 
+
     reinitialiserPourScanSuivant();
+
 
     barcodeImage.click();
 
   }
+
 );
 
 
@@ -3466,23 +4755,35 @@ function reinitialiserPourScanSuivant() {
   currentRecordId =
     null;
 
+
   serialInput.value =
     "";
+
 
   preview.style.display =
     "none";
 
+
+  preview.removeAttribute(
+    "src"
+  );
+
+
   statusBox.style.display =
     "none";
+
 
   resultBox.style.display =
     "none";
 
+
   editForm.style.display =
     "none";
 
+
   newForm.style.display =
     "none";
+
 
   successPanel.style.display =
     "none";
@@ -3491,14 +4792,19 @@ function reinitialiserPourScanSuivant() {
 
 
 barcodeImage.addEventListener(
+
   "change",
+
   async function() {
+
 
     const file =
       this.files[0];
 
 
-    if (!file) {
+    if (
+      !file
+    ) {
 
       return;
 
@@ -3517,6 +4823,7 @@ barcodeImage.addEventListener(
     preview.src =
       url;
 
+
     preview.style.display =
       "block";
 
@@ -3524,12 +4831,14 @@ barcodeImage.addEventListener(
     statusBox.style.display =
       "block";
 
+
     statusBox.textContent =
       "🔎 Analyse du code…";
 
 
     preview.onload =
       async function() {
+
 
         try {
 
@@ -3558,8 +4867,12 @@ barcodeImage.addEventListener(
           statusBox.innerHTML = `
 
             <span class="success">
+
               ✅ Code reconnu :
-              ${echapperHTML(serial)}
+              ${echapperHTML(
+                serial
+              )}
+
             </span>
 
           `;
@@ -3571,23 +4884,33 @@ barcodeImage.addEventListener(
 
         }
 
+
         catch(error) {
+
+          console.error(
+            error
+          );
+
 
           statusBox.innerHTML = `
 
             <div class="error">
+
               ❌ Aucun code reconnu
+
             </div>
 
           `;
 
         }
 
+
         finally {
 
           URL.revokeObjectURL(
             url
           );
+
 
           barcodeImage.value =
             "";
@@ -3597,6 +4920,7 @@ barcodeImage.addEventListener(
       };
 
   }
+
 );
 
 
@@ -3612,20 +4936,31 @@ function rechercherMateriel(
     String(
       serial
     )
+
       .trim()
+
       .toUpperCase();
 
 
   const found =
     records.find(
+
       record =>
+
         String(
-          record.NumeroSerie || ""
+          record.NumeroSerie
+          ||
+          ""
         )
+
           .trim()
+
           .toUpperCase()
+
         ===
+
         cible
+
     );
 
 
@@ -3633,7 +4968,9 @@ function rechercherMateriel(
     "block";
 
 
-  if (found) {
+  if (
+    found
+  ) {
 
     currentRecordId =
       found.id;
@@ -3642,13 +4979,17 @@ function rechercherMateriel(
     resultBox.innerHTML = `
 
       <div class="success">
+
         ✅ Matériel trouvé
+
       </div>
 
       <div class="serial">
+
         ${echapperHTML(
           found.NumeroSerie
         )}
+
       </div>
 
     `;
@@ -3660,6 +5001,7 @@ function rechercherMateriel(
 
   }
 
+
   else {
 
     currentRecordId =
@@ -3669,7 +5011,9 @@ function rechercherMateriel(
     resultBox.innerHTML = `
 
       <div class="warning">
+
         🆕 Nouveau matériel
+
       </div>
 
     `;
@@ -3699,61 +5043,86 @@ function remplirFormulaireEdition(
   document.getElementById(
     "editNumeroSerie"
   ).value =
-    record.NumeroSerie || "";
+    record.NumeroSerie
+    ||
+    "";
 
 
   selectionnerReferenceOuLibelle(
+
     document.getElementById(
       "editType"
     ),
+
     record.TypeMateriel,
+
     listeTypes
+
   );
 
 
   mettreAJourMarques(
+
     "edit",
+
     record.Marque
+
   );
 
 
   mettreAJourModeles(
+
     "edit",
+
     record.Modele
+
   );
 
 
   document.getElementById(
     "editUtilisateur"
   ).value =
-    record.Utilisateur || "";
+    record.Utilisateur
+    ||
+    "";
 
 
   selectionnerReferenceOuLibelle(
+
     document.getElementById(
       "editSite"
     ),
+
     record.Site,
+
     listeSites
+
   );
 
 
   mettreAJourLocalisations(
+
     "edit",
+
     record.Localisation
+
   );
 
 
   document.getElementById(
     "editEtat"
   ).value =
-    record.Etat || "";
+    record.Etat
+    ||
+    "";
 
 
   document.getElementById(
     "editCommentaire"
   ).value =
-    record.Commentaire || "";
+    record.Commentaire
+    ||
+    "";
 
 
   editForm.style.display =
@@ -3801,11 +5170,15 @@ function remplirFormulaireCreation(
     "newSite"
   ).value =
     contexteSession.siteId
+
       ?
+
       String(
         contexteSession.siteId
       )
+
       :
+
       "";
 
 
@@ -3836,16 +5209,23 @@ function remplirFormulaireCreation(
 }
 
 
+/* ==================================================
+   MASQUAGE
+================================================== */
+
 function masquerFormulaires() {
 
   resultBox.style.display =
     "none";
 
+
   editForm.style.display =
     "none";
 
+
   newForm.style.display =
     "none";
+
 
   successPanel.style.display =
     "none";
@@ -3854,7 +5234,7 @@ function masquerFormulaires() {
 
 
 /* ==================================================
-   SUCCES
+   SUCCÈS
 ================================================== */
 
 function afficherSucces(
@@ -3864,8 +5244,10 @@ function afficherSucces(
   resultBox.style.display =
     "none";
 
+
   editForm.style.display =
     "none";
+
 
   newForm.style.display =
     "none";
@@ -3882,19 +5264,100 @@ function afficherSucces(
 
 
 /* ==================================================
-   INVENTAIRE - AJOUT
+   AJOUT MATÉRIEL
 ================================================== */
 
 addButton.addEventListener(
+
   "click",
+
   async function() {
+
 
     const serial =
       document.getElementById(
         "newNumeroSerie"
       )
-      .value
-      .trim();
+
+        .value
+
+        .trim();
+
+
+    if (
+      !serial
+    ) {
+
+      alert(
+        "Le numéro de série est obligatoire."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      IMPORTANT :
+
+      On capture UNE FOIS les IDs avant
+      d'effectuer l'écriture Grist.
+    */
+
+    const typeId =
+      valeurReference(
+        "newType"
+      );
+
+
+    const marqueId =
+      valeurReference(
+        "newMarque"
+      );
+
+
+    const modeleId =
+      valeurReference(
+        "newModele"
+      );
+
+
+    const siteId =
+      valeurReference(
+        "newSite"
+      );
+
+
+    const localisationId =
+      valeurReference(
+        "newLocalisation"
+      );
+
+
+    /*
+      Sécurité :
+      si le formulaire affiche une sélection,
+      ces IDs doivent être > 0.
+    */
+
+    console.log(
+      "Création matériel",
+      {
+        typeId,
+        marqueId,
+        modeleId,
+        siteId,
+        localisationId
+      }
+    );
+
+
+    addButton.disabled =
+      true;
+
+
+    addButton.textContent =
+      "⏳ Enregistrement…";
 
 
     try {
@@ -3903,116 +5366,213 @@ addButton.addEventListener(
         grist.getTable();
 
 
-      const siteId =
-        valeurReference(
-          "newSite"
-        );
-
-
-      const localisationId =
-        valeurReference(
-          "newLocalisation"
-        );
-
-
       const fields =
         construireChampsGrist({
+
 
           NumeroSerie:
             serial,
 
+
           TypeMateriel:
-            valeurReference(
-              "newType"
-            ),
+            typeId,
+
 
           Marque:
-            valeurReference(
-              "newMarque"
-            ),
+            marqueId,
+
 
           Modele:
-            valeurReference(
-              "newModele"
-            ),
+            modeleId,
+
 
           Utilisateur:
             document.getElementById(
               "newUtilisateur"
-            ).value.trim(),
+            )
+            .value
+            .trim(),
+
 
           Site:
             siteId,
 
+
           Localisation:
             localisationId,
+
 
           Etat:
             document.getElementById(
               "newEtat"
             ).value,
 
+
           DernierInventaire:
             Math.floor(
-              Date.now() / 1000
+              Date.now()
+              /
+              1000
             ),
+
 
           Commentaire:
             document.getElementById(
               "newCommentaire"
-            ).value.trim()
+            )
+            .value
+            .trim()
+
 
         });
 
 
-      await table.create({
+      console.log(
+        "Champs envoyés à Grist",
         fields
+      );
+
+
+      await table.create({
+
+        fields:
+          fields
+
       });
 
 
       mettreAJourContexte(
+
         siteId,
+
         localisationId
+
       );
 
 
       afficherSucces(`
 
         <div class="serial">
-          ${echapperHTML(serial)}
+
+          ${echapperHTML(
+            serial
+          )}
+
         </div>
 
         <p>
+
           Nouveau matériel ajouté et inventorié.
+
         </p>
 
       `);
 
     }
 
+
     catch(error) {
 
+      console.error(
+        error
+      );
+
+
       alert(
-        "Erreur : " +
+
+        "Erreur lors de l'ajout : "
+
+        +
+
         (
-          error.message ||
+          error.message
+          ||
           String(error)
         )
+
       );
 
     }
 
+
+    finally {
+
+      addButton.disabled =
+        false;
+
+
+      addButton.textContent =
+        "💾 Ajouter à l'inventaire";
+
+    }
+
   }
+
 );
 
 
 /* ==================================================
-   INVENTAIRE - CONFIRMATION
+   CONFIRMATION
 ================================================== */
 
 confirmButton.addEventListener(
+
   "click",
+
   async function() {
+
+
+    if (
+      !currentRecordId
+    ) {
+
+      return;
+
+    }
+
+
+    /*
+      Même sécurité pour un équipement existant :
+      capture des IDs AVANT update.
+    */
+
+    const typeId =
+      valeurReference(
+        "editType"
+      );
+
+
+    const marqueId =
+      valeurReference(
+        "editMarque"
+      );
+
+
+    const modeleId =
+      valeurReference(
+        "editModele"
+      );
+
+
+    const siteId =
+      valeurReference(
+        "editSite"
+      );
+
+
+    const localisationId =
+      valeurReference(
+        "editLocalisation"
+      );
+
+
+    confirmButton.disabled =
+      true;
+
+
+    confirmButton.textContent =
+      "⏳ Enregistrement…";
+
 
     try {
 
@@ -4020,61 +5580,59 @@ confirmButton.addEventListener(
         grist.getTable();
 
 
-      const siteId =
-        valeurReference(
-          "editSite"
-        );
-
-
-      const localisationId =
-        valeurReference(
-          "editLocalisation"
-        );
-
-
       const fields =
         construireChampsGrist({
 
+
           TypeMateriel:
-            valeurReference(
-              "editType"
-            ),
+            typeId,
+
 
           Marque:
-            valeurReference(
-              "editMarque"
-            ),
+            marqueId,
+
 
           Modele:
-            valeurReference(
-              "editModele"
-            ),
+            modeleId,
+
 
           Utilisateur:
             document.getElementById(
               "editUtilisateur"
-            ).value.trim(),
+            )
+            .value
+            .trim(),
+
 
           Site:
             siteId,
 
+
           Localisation:
             localisationId,
+
 
           Etat:
             document.getElementById(
               "editEtat"
             ).value,
 
+
           Commentaire:
             document.getElementById(
               "editCommentaire"
-            ).value.trim(),
+            )
+            .value
+            .trim(),
+
 
           DernierInventaire:
             Math.floor(
-              Date.now() / 1000
+              Date.now()
+              /
+              1000
             )
+
 
         });
 
@@ -4084,48 +5642,83 @@ confirmButton.addEventListener(
         id:
           currentRecordId,
 
-        fields
+        fields:
+          fields
 
       });
 
 
       mettreAJourContexte(
+
         siteId,
+
         localisationId
+
       );
 
 
       afficherSucces(`
 
         <div class="serial">
+
           ${echapperHTML(
+
             document.getElementById(
               "editNumeroSerie"
             ).value
+
           )}
+
         </div>
 
         <p>
+
           Inventaire confirmé.
+
         </p>
 
       `);
 
     }
 
+
     catch(error) {
 
+      console.error(
+        error
+      );
+
+
       alert(
-        "Erreur : " +
+
+        "Erreur lors de la confirmation : "
+
+        +
+
         (
-          error.message ||
+          error.message
+          ||
           String(error)
         )
+
       );
 
     }
 
+
+    finally {
+
+      confirmButton.disabled =
+        false;
+
+
+      confirmButton.textContent =
+        "✅ Confirmer l'inventaire";
+
+    }
+
   }
+
 );
 
 
@@ -4134,15 +5727,23 @@ confirmButton.addEventListener(
 ================================================== */
 
 serialInput.addEventListener(
+
   "change",
+
   () => {
+
 
     const serial =
       serialInput
+
         .value
+
         .trim();
 
-    if (serial) {
+
+    if (
+      serial
+    ) {
 
       rechercherMateriel(
         serial
@@ -4151,6 +5752,7 @@ serialInput.addEventListener(
     }
 
   }
+
 );
 
 
@@ -4162,7 +5764,9 @@ function echapperHTML(
   value
 ) {
 
-  return String(value)
+  return String(
+    value
+  )
 
     .replaceAll(
       "&",
