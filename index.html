@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, maximum-scale=1"
@@ -213,10 +214,6 @@
       border: 1px solid #c7d9ef;
     }
 
-    /* ===========================
-       SUIVI
-       =========================== */
-
     .suiviSection {
       margin-top: 24px;
       padding-top: 20px;
@@ -257,10 +254,6 @@
     #editIntervention {
       min-height: 90px;
     }
-
-    /* ===========================
-       MODALE
-       =========================== */
 
     #referenceModal {
       display: none;
@@ -323,8 +316,6 @@
 
   <h1>📦 Inventaire matériel</h1>
 
-  <!-- CONTEXTE -->
-
   <div id="contextPanel">
 
     <div class="contextTitle">
@@ -343,8 +334,6 @@
   </div>
 
 
-  <!-- MAPPING -->
-
   <div id="mappingWarning">
 
     <div class="warning">
@@ -357,8 +346,6 @@
 
   </div>
 
-
-  <!-- SCANNER -->
 
   <label for="serial">
     N° de série
@@ -391,17 +378,13 @@
   <div id="result"></div>
 
 
-  <!-- =========================================
-       MATÉRIEL EXISTANT
-       ========================================= -->
+  <!-- MATÉRIEL EXISTANT -->
 
   <div id="editForm">
 
     <h2>📝 Matériel existant</h2>
 
-    <label>
-      N° de série 🔒
-    </label>
+    <label>N° de série 🔒</label>
 
     <input
       id="editNumeroSerie"
@@ -409,8 +392,6 @@
       readonly
     >
 
-
-    <!-- TYPE -->
 
     <label>Type</label>
 
@@ -431,8 +412,6 @@
 
     </div>
 
-
-    <!-- MARQUE -->
 
     <label>Marque</label>
 
@@ -458,8 +437,6 @@
     </div>
 
 
-    <!-- MODELE -->
-
     <label>Modèle</label>
 
     <div class="selectRow">
@@ -484,8 +461,6 @@
     </div>
 
 
-    <!-- UTILISATEUR -->
-
     <label>Utilisateur</label>
 
     <input
@@ -493,8 +468,6 @@
       type="text"
     >
 
-
-    <!-- SITE -->
 
     <label>Site</label>
 
@@ -515,8 +488,6 @@
 
     </div>
 
-
-    <!-- LOCALISATION -->
 
     <label>Localisation</label>
 
@@ -542,64 +513,37 @@
     </div>
 
 
-    <!-- ETAT -->
-
     <label>État</label>
 
     <select id="editEtat">
 
-      <option value="">
-        -- Choisir --
-      </option>
-
-      <option value="En service">
-        En service
-      </option>
-
-      <option value="En stock">
-        En stock
-      </option>
-
-      <option value="En panne">
-        En panne
-      </option>
-
-      <option value="Réformé">
-        Réformé
-      </option>
+      <option value="">-- Choisir --</option>
+      <option value="En service">En service</option>
+      <option value="En stock">En stock</option>
+      <option value="En panne">En panne</option>
+      <option value="Réformé">Réformé</option>
 
     </select>
 
-
-    <!-- COMMENTAIRE -->
 
     <label>Commentaire</label>
 
     <textarea id="editCommentaire"></textarea>
 
 
-    <!-- ===============================
-         SUIVI
-         =============================== -->
-
     <div class="suiviSection">
 
       <h2>📋 Suivi du matériel</h2>
 
-
-      <label>
-        Historique
-      </label>
+      <label>Historique</label>
 
       <div
         id="editSuiviHistorique"
         class="historiqueBox"
       >
-
         <span class="historiqueVide">
           Aucun suivi enregistré.
         </span>
-
       </div>
 
 
@@ -609,10 +553,7 @@
           🔧 Ajouter une intervention
         </h3>
 
-
-        <label>
-          Technicien
-        </label>
+        <label>Technicien</label>
 
         <input
           id="editTechnicien"
@@ -621,16 +562,12 @@
           autocomplete="name"
         >
 
-
-        <label>
-          Intervention
-        </label>
+        <label>Intervention</label>
 
         <textarea
           id="editIntervention"
           placeholder="Ex. Alimentation remplacée"
         ></textarea>
-
 
         <div class="hint">
           La date du jour sera ajoutée automatiquement.
@@ -648,20 +585,14 @@
   </div>
 
 
-  <!-- =========================================
-       NOUVEAU MATÉRIEL
-       ========================================= -->
+  <!-- NOUVEAU MATÉRIEL -->
 
   <div id="newForm">
 
-    <h2>
-      ➕ Nouveau matériel
-    </h2>
+    <h2>➕ Nouveau matériel</h2>
 
 
-    <label>
-      N° de série 🔒
-    </label>
+    <label>N° de série 🔒</label>
 
     <input
       id="newNumeroSerie"
@@ -669,8 +600,6 @@
       readonly
     >
 
-
-    <!-- TYPE -->
 
     <label>Type</label>
 
@@ -691,8 +620,6 @@
 
     </div>
 
-
-    <!-- MARQUE -->
 
     <label>Marque</label>
 
@@ -718,8 +645,6 @@
     </div>
 
 
-    <!-- MODELE -->
-
     <label>Modèle</label>
 
     <div class="selectRow">
@@ -744,11 +669,7 @@
     </div>
 
 
-    <!-- UTILISATEUR -->
-
-    <label>
-      Utilisateur
-    </label>
+    <label>Utilisateur</label>
 
     <input
       id="newUtilisateur"
@@ -756,11 +677,7 @@
     >
 
 
-    <!-- SITE -->
-
-    <label>
-      Site
-    </label>
+    <label>Site</label>
 
     <div class="selectRow">
 
@@ -780,11 +697,7 @@
     </div>
 
 
-    <!-- LOCALISATION -->
-
-    <label>
-      Localisation
-    </label>
+    <label>Localisation</label>
 
     <div class="selectRow">
 
@@ -808,42 +721,20 @@
     </div>
 
 
-    <!-- ETAT -->
-
-    <label>
-      État
-    </label>
+    <label>État</label>
 
     <select id="newEtat">
 
-      <option value="">
-        -- Choisir --
-      </option>
-
-      <option value="En service">
-        En service
-      </option>
-
-      <option value="En stock">
-        En stock
-      </option>
-
-      <option value="En panne">
-        En panne
-      </option>
-
-      <option value="Réformé">
-        Réformé
-      </option>
+      <option value="">-- Choisir --</option>
+      <option value="En service">En service</option>
+      <option value="En stock">En stock</option>
+      <option value="En panne">En panne</option>
+      <option value="Réformé">Réformé</option>
 
     </select>
 
 
-    <!-- COMMENTAIRE -->
-
-    <label>
-      Commentaire
-    </label>
+    <label>Commentaire</label>
 
     <textarea id="newCommentaire"></textarea>
 
@@ -854,8 +745,6 @@
 
   </div>
 
-
-  <!-- SUCCES -->
 
   <div id="successPanel">
 
@@ -874,9 +763,7 @@
 </div>
 
 
-<!-- =========================================
-     MODALE
-     ========================================= -->
+<!-- MODALE -->
 
 <div id="referenceModal">
 
@@ -1201,7 +1088,7 @@ function trierParLibelle(a, b) {
 
 
 /* ==================================================
-   DATE FRANÇAISE
+   DATE
 ================================================== */
 
 function obtenirDateDuJourFR() {
@@ -1428,6 +1315,7 @@ function extraireRowId(
 
   }
 
+
   if (
     typeof valeur ===
     "number"
@@ -1436,6 +1324,7 @@ function extraireRowId(
     return valeur;
 
   }
+
 
   if (
     typeof valeur ===
@@ -1453,6 +1342,7 @@ function extraireRowId(
     );
 
   }
+
 
   if (
     Array.isArray(
@@ -1481,6 +1371,7 @@ function extraireRowId(
 
   }
 
+
   if (
     typeof valeur ===
       "object" &&
@@ -1498,6 +1389,7 @@ function extraireRowId(
       valeur.value
 
     ];
+
 
     for (
       const candidat
@@ -1534,6 +1426,7 @@ function extraireRowId(
 
   }
 
+
   return null;
 
 }
@@ -1545,6 +1438,7 @@ function extraireTextesReference(
 
   const textes = [];
 
+
   if (
     typeof valeur ===
     "string"
@@ -1555,6 +1449,7 @@ function extraireTextesReference(
     );
 
   }
+
 
   if (
     Array.isArray(
@@ -1584,6 +1479,7 @@ function extraireTextesReference(
 
   }
 
+
   if (
     typeof valeur ===
       "object" &&
@@ -1605,6 +1501,7 @@ function extraireTextesReference(
 
     ];
 
+
     for (
       const candidat
       of candidats
@@ -1625,6 +1522,7 @@ function extraireTextesReference(
 
   }
 
+
   return textes;
 
 }
@@ -1640,6 +1538,7 @@ function resoudreReferenceId(
       valeur
     );
 
+
   if (
     idDirect !== null &&
     liste.some(
@@ -1653,10 +1552,12 @@ function resoudreReferenceId(
 
   }
 
+
   const textes =
     extraireTextesReference(
       valeur
     );
+
 
   for (
     const texte
@@ -1668,6 +1569,7 @@ function resoudreReferenceId(
         texte
       );
 
+
     const trouve =
       liste.find(
         item =>
@@ -1678,6 +1580,7 @@ function resoudreReferenceId(
           cible
       );
 
+
     if (
       trouve
     ) {
@@ -1687,6 +1590,170 @@ function resoudreReferenceId(
     }
 
   }
+
+
+  return null;
+
+}
+
+
+/* ==================================================
+   RESOLUTION LOCALISATION
+
+   IMPORTANT :
+   SITE + LOCALISATION sont pris en compte ensemble.
+================================================== */
+
+function resoudreLocalisationId(
+  valeur,
+  siteId
+) {
+
+  /*
+    1 — Recherche par ID exact.
+  */
+
+  const idDirect =
+    extraireRowId(
+      valeur
+    );
+
+
+  if (
+    idDirect !== null
+  ) {
+
+    const localisationDirecte =
+      listeLocalisations.find(
+        localisation =>
+          localisation.id ===
+          idDirect
+      );
+
+
+    if (
+      localisationDirecte &&
+      (
+        !siteId ||
+        localisationDirecte.siteId ===
+        siteId
+      )
+    ) {
+
+      return idDirect;
+
+    }
+
+  }
+
+
+  /*
+    2 — Recherche par libellé,
+        mais obligatoirement sur le bon site.
+  */
+
+  const textes =
+    extraireTextesReference(
+      valeur
+    );
+
+
+  for (
+    const texte
+    of textes
+  ) {
+
+    const cible =
+      normaliserValeur(
+        texte
+      );
+
+
+    const trouveSurLeBonSite =
+      listeLocalisations.find(
+        localisation =>
+          localisation.siteId ===
+          siteId
+          &&
+          normaliserValeur(
+            localisation.label
+          )
+          ===
+          cible
+      );
+
+
+    if (
+      trouveSurLeBonSite
+    ) {
+
+      return trouveSurLeBonSite.id;
+
+    }
+
+  }
+
+
+  /*
+    3 — Si l'ID existait réellement
+        mais qu'il appartient à un autre site,
+        on le retourne quand même.
+
+        Cela permet de conserver l'alerte
+        "autre site" en cas de vraie incohérence.
+  */
+
+  if (
+    idDirect !== null &&
+    listeLocalisations.some(
+      localisation =>
+        localisation.id ===
+        idDirect
+    )
+  ) {
+
+    return idDirect;
+
+  }
+
+
+  /*
+    4 — Dernier recours :
+        recherche par libellé sans le site.
+  */
+
+  for (
+    const texte
+    of textes
+  ) {
+
+    const cible =
+      normaliserValeur(
+        texte
+      );
+
+
+    const trouve =
+      listeLocalisations.find(
+        localisation =>
+          normaliserValeur(
+            localisation.label
+          )
+          ===
+          cible
+      );
+
+
+    if (
+      trouve
+    ) {
+
+      return trouve.id;
+
+    }
+
+  }
+
 
   return null;
 
@@ -1707,6 +1774,7 @@ function extraireListeRowIds(
 
   }
 
+
   if (
     typeof valeur ===
     "number"
@@ -1717,6 +1785,7 @@ function extraireListeRowIds(
     ];
 
   }
+
 
   if (
     Array.isArray(
@@ -1731,6 +1800,7 @@ function extraireListeRowIds(
     );
 
   }
+
 
   return [];
 
@@ -1762,6 +1832,7 @@ function creerReferenceList(
     )
 
   ];
+
 
   return [
     "L",
@@ -1920,15 +1991,18 @@ async function chargerReferenceSimple(
       tableNom
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -1936,11 +2010,13 @@ async function chargerReferenceSimple(
       lignes
     );
 
+
   const colonne =
     trouverColonneParNom(
       colonnes,
       colonneNom
     );
+
 
   if (
     !colonne
@@ -1953,6 +2029,7 @@ async function chargerReferenceSimple(
     );
 
   }
+
 
   const liste =
     lignes
@@ -1968,14 +2045,17 @@ async function chargerReferenceSimple(
 
       .map(
         ligne => ({
+
           id:
             Number(
               ligne.id
             ),
+
           label:
             String(
               ligne[colonne]
             )
+
         })
       );
 
@@ -1983,6 +2063,7 @@ async function chargerReferenceSimple(
   liste.sort(
     trierParLibelle
   );
+
 
   return liste;
 
@@ -2000,15 +2081,18 @@ async function chargerMarques() {
       "Marque"
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -2016,17 +2100,20 @@ async function chargerMarques() {
       lignes
     );
 
+
   const colonneMarque =
     trouverColonneParNom(
       colonnes,
       "Marque"
     );
 
+
   const colonneTypes =
     trouverColonneParNom(
       colonnes,
       "Type"
     );
+
 
   if (
     !colonneMarque ||
@@ -2038,6 +2125,7 @@ async function chargerMarques() {
     );
 
   }
+
 
   const liste =
     lignes
@@ -2079,6 +2167,7 @@ async function chargerMarques() {
     trierParLibelle
   );
 
+
   return liste;
 
 }
@@ -2095,15 +2184,18 @@ async function chargerModeles() {
       "Modèle"
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -2111,17 +2203,20 @@ async function chargerModeles() {
       lignes
     );
 
+
   const colonneModele =
     trouverColonneParNom(
       colonnes,
       "Modèle"
     );
 
+
   const colonneMarque =
     trouverColonneParNom(
       colonnes,
       "Marque"
     );
+
 
   if (
     !colonneModele ||
@@ -2133,6 +2228,7 @@ async function chargerModeles() {
     );
 
   }
+
 
   const liste =
     lignes
@@ -2174,6 +2270,7 @@ async function chargerModeles() {
     trierParLibelle
   );
 
+
   return liste;
 
 }
@@ -2190,15 +2287,18 @@ async function chargerLocalisations() {
       "Localisation"
     );
 
+
   const raw =
     await grist.docApi.fetchTable(
       tableId
     );
 
+
   const lignes =
     convertirFetchTableEnLignes(
       raw
     );
+
 
   const colonnes =
     obtenirColonnesDisponibles(
@@ -2206,17 +2306,20 @@ async function chargerLocalisations() {
       lignes
     );
 
+
   const colonneLocalisation =
     trouverColonneParNom(
       colonnes,
       "Localisation"
     );
 
+
   const colonneSite =
     trouverColonneParNom(
       colonnes,
       "Site"
     );
+
 
   if (
     !colonneLocalisation ||
@@ -2228,6 +2331,7 @@ async function chargerLocalisations() {
     );
 
   }
+
 
   const liste =
     lignes
@@ -2269,6 +2373,7 @@ async function chargerLocalisations() {
   liste.sort(
     trierParLibelle
   );
+
 
   return liste;
 
@@ -2451,6 +2556,7 @@ function remplirSelectSimple(
       id
     );
 
+
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
 
@@ -2465,13 +2571,16 @@ function remplirSelectSimple(
         "option"
       );
 
+
     option.value =
       String(
         item.id
       );
 
+
     option.textContent =
       item.label;
+
 
     select.appendChild(
       option
@@ -2497,11 +2606,13 @@ function mettreAJourMarques(
       "Type"
     );
 
+
   const marqueSelect =
     document.getElementById(
       prefixe +
       "Marque"
     );
+
 
   const typeId =
     typeSelect.value
@@ -2546,13 +2657,16 @@ function mettreAJourMarques(
         "option"
       );
 
+
     option.value =
       String(
         marque.id
       );
 
+
     option.textContent =
       marque.label;
+
 
     marqueSelect.appendChild(
       option
@@ -2627,6 +2741,7 @@ function mettreAJourModeles(
       "Marque"
     );
 
+
   const select =
     document.getElementById(
       prefixe +
@@ -2660,13 +2775,16 @@ function mettreAJourModeles(
         "option"
       );
 
+
     option.value =
       String(
         modele.id
       );
 
+
     option.textContent =
       modele.label;
+
 
     select.appendChild(
       option
@@ -2736,6 +2854,7 @@ function mettreAJourLocalisations(
       "Site"
     );
 
+
   const select =
     document.getElementById(
       prefixe +
@@ -2743,16 +2862,50 @@ function mettreAJourLocalisations(
     );
 
 
-  const localisationId =
+  /*
+    Ici, si la valeur reçue est déjà un ID,
+    on la conserve directement.
+  */
+
+  let localisationId = null;
+
+
+  if (
     valeurAConserver !== null &&
     valeurAConserver !== undefined
-      ?
-      resoudreReferenceId(
-        valeurAConserver,
-        listeLocalisations
+  ) {
+
+    const idPossible =
+      extraireRowId(
+        valeurAConserver
+      );
+
+
+    if (
+      idPossible !== null &&
+      listeLocalisations.some(
+        localisation =>
+          localisation.id ===
+          idPossible
       )
-      :
-      null;
+    ) {
+
+      localisationId =
+        idPossible;
+
+    }
+
+    else {
+
+      localisationId =
+        resoudreLocalisationId(
+          valeurAConserver,
+          siteId
+        );
+
+    }
+
+  }
 
 
   let localisations =
@@ -2766,6 +2919,12 @@ function mettreAJourLocalisations(
       :
       [];
 
+
+  /*
+    Si la localisation existe vraiment
+    mais appartient à un autre site,
+    on la garde avec un avertissement.
+  */
 
   if (
     localisationId !== null &&
@@ -2818,10 +2977,12 @@ function mettreAJourLocalisations(
         "option"
       );
 
+
     option.value =
       String(
         localisation.id
       );
+
 
     option.textContent =
       localisation.horsSite
@@ -2830,6 +2991,7 @@ function mettreAJourLocalisations(
         " ⚠️ (autre site)"
         :
         localisation.label;
+
 
     select.appendChild(
       option
@@ -2953,7 +3115,7 @@ document
 
 
 /* ==================================================
-   GRIST RECORDS
+   GRIST
 ================================================== */
 
 grist.onRecords(
@@ -3020,8 +3182,10 @@ grist.onRecords(
           error
         );
 
+
         statusBox.style.display =
           "block";
+
 
         statusBox.innerHTML = `
 
@@ -3050,7 +3214,7 @@ grist.onRecords(
 
 
 /* ==================================================
-   MAPPING INVENTAIRE
+   MAPPING
 ================================================== */
 
 function obtenirColonneGrist(
@@ -3139,7 +3303,7 @@ function construireChampsGrist(
 
 
 /* ==================================================
-   SELECT REFERENCE
+   SELECT
 ================================================== */
 
 function valeurReference(
@@ -3302,6 +3466,7 @@ function ouvrirAjoutReference(
 
       referenceModalInfo.style.display =
         "block";
+
 
       referenceModalInfo.textContent =
         "Type : " +
@@ -4586,10 +4751,6 @@ function reinitialiserPourScanSuivant() {
 }
 
 
-/* ==================================================
-   SCAN IMAGE
-================================================== */
-
 barcodeImage.addEventListener(
   "change",
   async function() {
@@ -4964,12 +5125,17 @@ function remplirFormulaireEdition(
       "";
 
 
-  /* LOCALISATION */
+  /* LOCALISATION
+
+     NOUVELLE LOGIQUE :
+     on cherche d'abord la localisation
+     correspondant au site du matériel.
+  */
 
   const localisationId =
-    resoudreReferenceId(
+    resoudreLocalisationId(
       record.Localisation,
-      listeLocalisations
+      siteId
     );
 
 
@@ -5149,11 +5315,7 @@ function afficherSucces(
 
 
 /* ==================================================
-   CONSTRUCTION DU SUIVI
-
-   IMPORTANT :
-   LA NOUVELLE INTERVENTION EST AJOUTÉE
-   EN PREMIÈRE LIGNE.
+   SUIVI
 ================================================== */
 
 function construireNouveauSuivi(
@@ -5186,11 +5348,6 @@ function construireNouveauSuivi(
     ).trim();
 
 
-  /*
-    Pas de nouvelle intervention :
-    on ne modifie pas le suivi.
-  */
-
   if (
     !texteIntervention
   ) {
@@ -5199,11 +5356,6 @@ function construireNouveauSuivi(
 
   }
 
-
-  /*
-    Si une intervention est renseignée,
-    le technicien est obligatoire.
-  */
 
   if (
     !tech
@@ -5215,10 +5367,6 @@ function construireNouveauSuivi(
 
   }
 
-
-  /*
-    Création de la nouvelle ligne.
-  */
 
   const nouvelleLigne =
     obtenirDateDuJourFR()
@@ -5232,11 +5380,6 @@ function construireNouveauSuivi(
     texteIntervention;
 
 
-  /*
-    S'il n'existe aucun historique,
-    cette nouvelle ligne devient le suivi.
-  */
-
   if (
     !historique
   ) {
@@ -5247,15 +5390,8 @@ function construireNouveauSuivi(
 
 
   /*
-    NOUVEAU COMPORTEMENT :
-
-    La nouvelle intervention est placée
-    AVANT les anciennes.
-
-    Exemple :
-
-    05/09/2026 - Philippe : Firmware mis à jour
-    05/09/2026 - Morgan : Alimentation remplacée
+    La dernière intervention
+    reste toujours en première ligne.
   */
 
   return (
@@ -5652,11 +5788,6 @@ confirmButton.addEventListener(
       };
 
 
-      /*
-        Suivi n'est mis à jour
-        que si une intervention a été saisie.
-      */
-
       if (
         intervention
       ) {
@@ -5683,10 +5814,6 @@ confirmButton.addEventListener(
 
       });
 
-
-      /*
-        Mise à jour de la copie locale.
-      */
 
       if (
         intervention
