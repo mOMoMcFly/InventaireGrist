@@ -3,8 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1"
+  >
 
   <title>Inventaire Grist</title>
 
@@ -12,9 +14,13 @@
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
 
   <style>
-    * { box-sizing: border-box; }
 
-    html, body {
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
       margin: 0;
       padding: 0;
       min-height: 100%;
@@ -24,7 +30,11 @@
 
     body {
       padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
       background: #f5f6f8;
       color: #222;
     }
@@ -57,7 +67,9 @@
       margin-bottom: 6px;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
       min-height: 52px;
       padding: 12px;
@@ -201,7 +213,9 @@
       border: 1px solid #c7d9ef;
     }
 
-    /* ===== SUIVI ===== */
+    /* ===========================
+       SUIVI
+       =========================== */
 
     .suiviSection {
       margin-top: 24px;
@@ -244,7 +258,9 @@
       min-height: 90px;
     }
 
-    /* ===== MODALE ===== */
+    /* ===========================
+       MODALE
+       =========================== */
 
     #referenceModal {
       display: none;
@@ -297,6 +313,7 @@
       background: #2e7d32;
       color: white;
     }
+
   </style>
 </head>
 
@@ -306,18 +323,46 @@
 
   <h1>📦 Inventaire matériel</h1>
 
+  <!-- CONTEXTE -->
+
   <div id="contextPanel">
-    <div class="contextTitle">📍 Contexte actuel</div>
-    <div id="contextValue" class="contextValue"></div>
-    <button id="clearContextButton">✕ Effacer le contexte</button>
+
+    <div class="contextTitle">
+      📍 Contexte actuel
+    </div>
+
+    <div
+      id="contextValue"
+      class="contextValue"
+    ></div>
+
+    <button id="clearContextButton">
+      ✕ Effacer le contexte
+    </button>
+
   </div>
+
+
+  <!-- MAPPING -->
 
   <div id="mappingWarning">
-    <div class="warning">⚙️ Configuration des colonnes requise</div>
-    <p>Vérifie les associations de colonnes dans les options du widget Grist.</p>
+
+    <div class="warning">
+      ⚙️ Configuration des colonnes requise
+    </div>
+
+    <p>
+      Vérifie les associations de colonnes dans les options du widget Grist.
+    </p>
+
   </div>
 
-  <label for="serial">N° de série</label>
+
+  <!-- SCANNER -->
+
+  <label for="serial">
+    N° de série
+  </label>
 
   <input
     id="serial"
@@ -333,12 +378,18 @@
     style="display:none;"
   >
 
-  <button id="scanButton">📷 Scanner le code-barres / QR code</button>
+  <button id="scanButton">
+    📷 Scanner le code-barres / QR code
+  </button>
 
-  <img id="preview" alt="Photo du code">
+  <img
+    id="preview"
+    alt="Photo du code"
+  >
 
   <div id="status"></div>
   <div id="result"></div>
+
 
   <!-- =========================================
        MATÉRIEL EXISTANT
@@ -348,99 +399,220 @@
 
     <h2>📝 Matériel existant</h2>
 
-    <label>N° de série 🔒</label>
-    <input id="editNumeroSerie" type="text" readonly>
+    <label>
+      N° de série 🔒
+    </label>
+
+    <input
+      id="editNumeroSerie"
+      type="text"
+      readonly
+    >
+
+
+    <!-- TYPE -->
 
     <label>Type</label>
+
     <div class="selectRow">
+
       <select id="editType">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="TypeMateriel"
-              data-prefix="edit">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="TypeMateriel"
+        data-prefix="edit"
+      >
+        ➕
+      </button>
+
     </div>
 
+
+    <!-- MARQUE -->
+
     <label>Marque</label>
+
     <div class="selectRow">
+
       <select id="editMarque">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Marque"
-              data-prefix="edit">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Marque"
+        data-prefix="edit"
+      >
+        ➕
+      </button>
+
     </div>
-    <div class="hint">Les marques sont filtrées selon le type.</div>
+
+    <div class="hint">
+      Les marques sont filtrées selon le type.
+    </div>
+
+
+    <!-- MODELE -->
 
     <label>Modèle</label>
+
     <div class="selectRow">
+
       <select id="editModele">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Modele"
-              data-prefix="edit">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Modele"
+        data-prefix="edit"
+      >
+        ➕
+      </button>
+
     </div>
-    <div class="hint">Les modèles sont filtrés selon la marque.</div>
+
+    <div class="hint">
+      Les modèles sont filtrés selon la marque.
+    </div>
+
+
+    <!-- UTILISATEUR -->
 
     <label>Utilisateur</label>
-    <input id="editUtilisateur" type="text">
+
+    <input
+      id="editUtilisateur"
+      type="text"
+    >
+
+
+    <!-- SITE -->
 
     <label>Site</label>
+
     <div class="selectRow">
+
       <select id="editSite">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Site"
-              data-prefix="edit">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Site"
+        data-prefix="edit"
+      >
+        ➕
+      </button>
+
     </div>
 
+
+    <!-- LOCALISATION -->
+
     <label>Localisation</label>
+
     <div class="selectRow">
+
       <select id="editLocalisation">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Localisation"
-              data-prefix="edit">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Localisation"
+        data-prefix="edit"
+      >
+        ➕
+      </button>
+
     </div>
-    <div class="hint">Les localisations sont filtrées selon le site.</div>
+
+    <div class="hint">
+      Les localisations sont filtrées selon le site.
+    </div>
+
+
+    <!-- ETAT -->
 
     <label>État</label>
+
     <select id="editEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
 
+
+    <!-- COMMENTAIRE -->
+
     <label>Commentaire</label>
+
     <textarea id="editCommentaire"></textarea>
 
-    <!-- NOUVEAU : SUIVI -->
+
+    <!-- ===============================
+         SUIVI
+         =============================== -->
 
     <div class="suiviSection">
 
       <h2>📋 Suivi du matériel</h2>
 
-      <label>Historique</label>
 
-      <div id="editSuiviHistorique" class="historiqueBox">
-        <span class="historiqueVide">Aucun suivi enregistré.</span>
+      <label>
+        Historique
+      </label>
+
+      <div
+        id="editSuiviHistorique"
+        class="historiqueBox"
+      >
+
+        <span class="historiqueVide">
+          Aucun suivi enregistré.
+        </span>
+
       </div>
+
 
       <div class="nouvelleIntervention">
 
-        <h3>🔧 Ajouter une intervention</h3>
+        <h3>
+          🔧 Ajouter une intervention
+        </h3>
 
-        <label>Technicien</label>
+
+        <label>
+          Technicien
+        </label>
 
         <input
           id="editTechnicien"
@@ -449,12 +621,16 @@
           autocomplete="name"
         >
 
-        <label>Intervention</label>
+
+        <label>
+          Intervention
+        </label>
 
         <textarea
           id="editIntervention"
           placeholder="Ex. Alimentation remplacée"
         ></textarea>
+
 
         <div class="hint">
           La date du jour sera ajoutée automatiquement.
@@ -464,9 +640,13 @@
 
     </div>
 
-    <button id="confirmButton">✅ Confirmer l'inventaire</button>
+
+    <button id="confirmButton">
+      ✅ Confirmer l'inventaire
+    </button>
 
   </div>
+
 
   <!-- =========================================
        NOUVEAU MATÉRIEL
@@ -474,109 +654,247 @@
 
   <div id="newForm">
 
-    <h2>➕ Nouveau matériel</h2>
+    <h2>
+      ➕ Nouveau matériel
+    </h2>
 
-    <label>N° de série 🔒</label>
-    <input id="newNumeroSerie" type="text" readonly>
+
+    <label>
+      N° de série 🔒
+    </label>
+
+    <input
+      id="newNumeroSerie"
+      type="text"
+      readonly
+    >
+
+
+    <!-- TYPE -->
 
     <label>Type</label>
+
     <div class="selectRow">
+
       <select id="newType">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="TypeMateriel"
-              data-prefix="new">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="TypeMateriel"
+        data-prefix="new"
+      >
+        ➕
+      </button>
+
     </div>
 
+
+    <!-- MARQUE -->
+
     <label>Marque</label>
+
     <div class="selectRow">
+
       <select id="newMarque">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Marque"
-              data-prefix="new">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Marque"
+        data-prefix="new"
+      >
+        ➕
+      </button>
+
     </div>
-    <div class="hint">Les marques sont filtrées selon le type.</div>
+
+    <div class="hint">
+      Les marques sont filtrées selon le type.
+    </div>
+
+
+    <!-- MODELE -->
 
     <label>Modèle</label>
+
     <div class="selectRow">
+
       <select id="newModele">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Modele"
-              data-prefix="new">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Modele"
+        data-prefix="new"
+      >
+        ➕
+      </button>
+
     </div>
-    <div class="hint">Les modèles sont filtrés selon la marque.</div>
 
-    <label>Utilisateur</label>
-    <input id="newUtilisateur" type="text">
+    <div class="hint">
+      Les modèles sont filtrés selon la marque.
+    </div>
 
-    <label>Site</label>
+
+    <!-- UTILISATEUR -->
+
+    <label>
+      Utilisateur
+    </label>
+
+    <input
+      id="newUtilisateur"
+      type="text"
+    >
+
+
+    <!-- SITE -->
+
+    <label>
+      Site
+    </label>
+
     <div class="selectRow">
+
       <select id="newSite">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Site"
-              data-prefix="new">➕</button>
+
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Site"
+        data-prefix="new"
+      >
+        ➕
+      </button>
+
     </div>
 
-    <label>Localisation</label>
+
+    <!-- LOCALISATION -->
+
+    <label>
+      Localisation
+    </label>
+
     <div class="selectRow">
+
       <select id="newLocalisation">
         <option value="">-- Choisir --</option>
       </select>
-      <button class="miniAddButton"
-              type="button"
-              data-add-ref="Localisation"
-              data-prefix="new">➕</button>
-    </div>
-    <div class="hint">Les localisations sont filtrées selon le site.</div>
 
-    <label>État</label>
+      <button
+        class="miniAddButton"
+        type="button"
+        data-add-ref="Localisation"
+        data-prefix="new"
+      >
+        ➕
+      </button>
+
+    </div>
+
+    <div class="hint">
+      Les localisations sont filtrées selon le site.
+    </div>
+
+
+    <!-- ETAT -->
+
+    <label>
+      État
+    </label>
+
     <select id="newEtat">
-      <option value="">-- Choisir --</option>
-      <option value="En service">En service</option>
-      <option value="En stock">En stock</option>
-      <option value="En panne">En panne</option>
-      <option value="Réformé">Réformé</option>
+
+      <option value="">
+        -- Choisir --
+      </option>
+
+      <option value="En service">
+        En service
+      </option>
+
+      <option value="En stock">
+        En stock
+      </option>
+
+      <option value="En panne">
+        En panne
+      </option>
+
+      <option value="Réformé">
+        Réformé
+      </option>
+
     </select>
 
-    <label>Commentaire</label>
+
+    <!-- COMMENTAIRE -->
+
+    <label>
+      Commentaire
+    </label>
+
     <textarea id="newCommentaire"></textarea>
 
-    <button id="addButton">💾 Ajouter à l'inventaire</button>
+
+    <button id="addButton">
+      💾 Ajouter à l'inventaire
+    </button>
 
   </div>
 
+
+  <!-- SUCCES -->
+
   <div id="successPanel">
-    <div class="success">✅ Opération terminée</div>
+
+    <div class="success">
+      ✅ Opération terminée
+    </div>
+
     <div id="successMessage"></div>
-    <button id="nextScanButton">📷 Scanner le suivant</button>
+
+    <button id="nextScanButton">
+      📷 Scanner le suivant
+    </button>
+
   </div>
 
 </div>
 
-<!-- MODALE -->
+
+<!-- =========================================
+     MODALE
+     ========================================= -->
 
 <div id="referenceModal">
 
   <div class="modalCard">
 
-    <h2 id="referenceModalTitle">Ajouter</h2>
+    <h2 id="referenceModalTitle">
+      Ajouter
+    </h2>
 
-    <div id="referenceModalInfo"
-         class="modalInfo"
-         style="display:none;"></div>
+    <div
+      id="referenceModalInfo"
+      class="modalInfo"
+      style="display:none;"
+    ></div>
 
-    <label for="referenceNameInput">Nom</label>
+    <label for="referenceNameInput">
+      Nom
+    </label>
 
     <input
       id="referenceNameInput"
@@ -586,11 +904,17 @@
 
     <div class="modalButtons">
 
-      <button id="referenceCancelButton" type="button">
+      <button
+        id="referenceCancelButton"
+        type="button"
+      >
         Annuler
       </button>
 
-      <button id="referenceSaveButton" type="button">
+      <button
+        id="referenceSaveButton"
+        type="button"
+      >
         ✅ Ajouter
       </button>
 
@@ -599,6 +923,7 @@
   </div>
 
 </div>
+
 
 <script>
 
@@ -672,29 +997,74 @@ const CONFIG_REFERENCES = {
    DOM
 ================================================== */
 
-const serialInput = document.getElementById("serial");
-const scanButton = document.getElementById("scanButton");
-const barcodeImage = document.getElementById("barcodeImage");
-const preview = document.getElementById("preview");
-const statusBox = document.getElementById("status");
-const resultBox = document.getElementById("result");
-const newForm = document.getElementById("newForm");
-const editForm = document.getElementById("editForm");
-const addButton = document.getElementById("addButton");
-const confirmButton = document.getElementById("confirmButton");
-const mappingWarning = document.getElementById("mappingWarning");
-const successPanel = document.getElementById("successPanel");
-const successMessage = document.getElementById("successMessage");
-const nextScanButton = document.getElementById("nextScanButton");
-const contextPanel = document.getElementById("contextPanel");
-const contextValue = document.getElementById("contextValue");
-const clearContextButton = document.getElementById("clearContextButton");
-const referenceModal = document.getElementById("referenceModal");
-const referenceModalTitle = document.getElementById("referenceModalTitle");
-const referenceModalInfo = document.getElementById("referenceModalInfo");
-const referenceNameInput = document.getElementById("referenceNameInput");
-const referenceCancelButton = document.getElementById("referenceCancelButton");
-const referenceSaveButton = document.getElementById("referenceSaveButton");
+const serialInput =
+  document.getElementById("serial");
+
+const scanButton =
+  document.getElementById("scanButton");
+
+const barcodeImage =
+  document.getElementById("barcodeImage");
+
+const preview =
+  document.getElementById("preview");
+
+const statusBox =
+  document.getElementById("status");
+
+const resultBox =
+  document.getElementById("result");
+
+const newForm =
+  document.getElementById("newForm");
+
+const editForm =
+  document.getElementById("editForm");
+
+const addButton =
+  document.getElementById("addButton");
+
+const confirmButton =
+  document.getElementById("confirmButton");
+
+const mappingWarning =
+  document.getElementById("mappingWarning");
+
+const successPanel =
+  document.getElementById("successPanel");
+
+const successMessage =
+  document.getElementById("successMessage");
+
+const nextScanButton =
+  document.getElementById("nextScanButton");
+
+const contextPanel =
+  document.getElementById("contextPanel");
+
+const contextValue =
+  document.getElementById("contextValue");
+
+const clearContextButton =
+  document.getElementById("clearContextButton");
+
+const referenceModal =
+  document.getElementById("referenceModal");
+
+const referenceModalTitle =
+  document.getElementById("referenceModalTitle");
+
+const referenceModalInfo =
+  document.getElementById("referenceModalInfo");
+
+const referenceNameInput =
+  document.getElementById("referenceNameInput");
+
+const referenceCancelButton =
+  document.getElementById("referenceCancelButton");
+
+const referenceSaveButton =
+  document.getElementById("referenceSaveButton");
 
 const editSuiviHistorique =
   document.getElementById("editSuiviHistorique");
@@ -765,6 +1135,12 @@ const columns = [
   },
 
   {
+    name: "Suivi",
+    title: "Suivi",
+    optional: true
+  },
+
+  {
     name: "DernierInventaire",
     title: "Dernier inventaire",
     optional: true
@@ -773,14 +1149,6 @@ const columns = [
   {
     name: "Commentaire",
     title: "Commentaire",
-    optional: true
-  },
-
-  /* NOUVELLE COLONNE */
-
-  {
-    name: "Suivi",
-    title: "Suivi",
     optional: true
   }
 
@@ -824,7 +1192,9 @@ function trierParLibelle(a, b) {
   return a.label.localeCompare(
     b.label,
     "fr",
-    { sensitivity: "base" }
+    {
+      sensitivity: "base"
+    }
   );
 
 }
@@ -836,20 +1206,35 @@ function trierParLibelle(a, b) {
 
 function obtenirDateDuJourFR() {
 
-  const maintenant = new Date();
+  const maintenant =
+    new Date();
 
   const jour =
-    String(maintenant.getDate())
-      .padStart(2, "0");
+    String(
+      maintenant.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
 
   const mois =
-    String(maintenant.getMonth() + 1)
-      .padStart(2, "0");
+    String(
+      maintenant.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
 
   const annee =
     maintenant.getFullYear();
 
-  return `${jour}/${mois}/${annee}`;
+  return (
+    jour +
+    "/" +
+    mois +
+    "/" +
+    annee
+  );
 
 }
 
@@ -858,21 +1243,31 @@ function obtenirDateDuJourFR() {
    TABLES
 ================================================== */
 
-async function trouverTableId(nomRecherche) {
+async function trouverTableId(
+  nomRecherche
+) {
 
   const tables =
     await grist.docApi.listTables();
 
   const cible =
-    normaliserNom(nomRecherche);
+    normaliserNom(
+      nomRecherche
+    );
 
   const trouve =
     tables.find(
       table =>
-        normaliserNom(table) === cible
+        normaliserNom(
+          table
+        )
+        ===
+        cible
     );
 
-  if (!trouve) {
+  if (
+    !trouve
+  ) {
 
     throw new Error(
       'Table introuvable : "' +
@@ -887,32 +1282,65 @@ async function trouverTableId(nomRecherche) {
 }
 
 
-function convertirFetchTableEnLignes(data) {
+function convertirFetchTableEnLignes(
+  data
+) {
 
-  if (Array.isArray(data)) {
+  if (
+    Array.isArray(
+      data
+    )
+  ) {
+
     return data;
+
   }
 
-  if (data && Array.isArray(data.id)) {
+  if (
+    data &&
+    Array.isArray(
+      data.id
+    )
+  ) {
 
     const lignes = [];
 
-    for (let i = 0; i < data.id.length; i++) {
+    for (
+      let i = 0;
+      i < data.id.length;
+      i++
+    ) {
 
       const ligne = {};
 
-      for (const key of Object.keys(data)) {
+      for (
+        const key
+        of Object.keys(
+          data
+        )
+      ) {
 
-        if (Array.isArray(data[key])) {
-          ligne[key] = data[key][i];
+        if (
+          Array.isArray(
+            data[key]
+          )
+        ) {
+
+          ligne[key] =
+            data[key][i];
+
         }
 
       }
 
-      lignes.push(ligne);
+      lignes.push(
+        ligne
+      );
+
     }
 
     return lignes;
+
   }
 
   return [];
@@ -920,18 +1348,35 @@ function convertirFetchTableEnLignes(data) {
 }
 
 
-function obtenirColonnesDisponibles(raw, lignes) {
+function obtenirColonnesDisponibles(
+  raw,
+  lignes
+) {
 
   if (
     raw &&
-    !Array.isArray(raw) &&
-    typeof raw === "object"
+    !Array.isArray(
+      raw
+    ) &&
+    typeof raw ===
+      "object"
   ) {
-    return Object.keys(raw);
+
+    return Object.keys(
+      raw
+    );
+
   }
 
-  if (lignes && lignes.length > 0) {
-    return Object.keys(lignes[0]);
+  if (
+    lignes &&
+    lignes.length > 0
+  ) {
+
+    return Object.keys(
+      lignes[0]
+    );
+
   }
 
   return [];
@@ -939,15 +1384,24 @@ function obtenirColonnesDisponibles(raw, lignes) {
 }
 
 
-function trouverColonneParNom(colonnes, nomRecherche) {
+function trouverColonneParNom(
+  colonnes,
+  nomRecherche
+) {
 
   const cible =
-    normaliserNom(nomRecherche);
+    normaliserNom(
+      nomRecherche
+    );
 
   return (
     colonnes.find(
       colonne =>
-        normaliserNom(colonne) === cible
+        normaliserNom(
+          colonne
+        )
+        ===
+        cible
     )
     ||
     null
@@ -960,34 +1414,67 @@ function trouverColonneParNom(colonnes, nomRecherche) {
    REFERENCES
 ================================================== */
 
-function extraireRowId(valeur) {
+function extraireRowId(
+  valeur
+) {
 
   if (
     valeur === null ||
     valeur === undefined ||
     valeur === ""
   ) {
-    return null;
-  }
 
-  if (typeof valeur === "number") {
-    return valeur;
+    return null;
+
   }
 
   if (
-    typeof valeur === "string" &&
-    valeur.trim() !== "" &&
-    !isNaN(Number(valeur))
+    typeof valeur ===
+    "number"
   ) {
-    return Number(valeur);
+
+    return valeur;
+
   }
 
-  if (Array.isArray(valeur)) {
+  if (
+    typeof valeur ===
+      "string" &&
+    valeur.trim() !== "" &&
+    !isNaN(
+      Number(
+        valeur
+      )
+    )
+  ) {
 
-    for (let i = valeur.length - 1; i >= 0; i--) {
+    return Number(
+      valeur
+    );
 
-      if (typeof valeur[i] === "number") {
+  }
+
+  if (
+    Array.isArray(
+      valeur
+    )
+  ) {
+
+    for (
+      let i =
+        valeur.length - 1;
+      i >= 0;
+      i--
+    ) {
+
+      if (
+        typeof valeur[i]
+        ===
+        "number"
+      ) {
+
         return valeur[i];
+
       }
 
     }
@@ -995,29 +1482,52 @@ function extraireRowId(valeur) {
   }
 
   if (
-    typeof valeur === "object" &&
+    typeof valeur ===
+      "object" &&
     valeur !== null
   ) {
 
     const candidats = [
+
       valeur.id,
+
       valeur.rowId,
+
       valeur.recordId,
+
       valeur.value
+
     ];
 
-    for (const candidat of candidats) {
+    for (
+      const candidat
+      of candidats
+    ) {
 
-      if (typeof candidat === "number") {
+      if (
+        typeof candidat ===
+        "number"
+      ) {
+
         return candidat;
+
       }
 
       if (
-        typeof candidat === "string" &&
+        typeof candidat ===
+          "string" &&
         candidat !== "" &&
-        !isNaN(Number(candidat))
+        !isNaN(
+          Number(
+            candidat
+          )
+        )
       ) {
-        return Number(candidat);
+
+        return Number(
+          candidat
+        );
+
       }
 
     }
@@ -1025,27 +1535,49 @@ function extraireRowId(valeur) {
   }
 
   return null;
+
 }
 
 
-function extraireTextesReference(valeur) {
+function extraireTextesReference(
+  valeur
+) {
 
   const textes = [];
 
-  if (typeof valeur === "string") {
-    textes.push(valeur);
+  if (
+    typeof valeur ===
+    "string"
+  ) {
+
+    textes.push(
+      valeur
+    );
+
   }
 
-  if (Array.isArray(valeur)) {
+  if (
+    Array.isArray(
+      valeur
+    )
+  ) {
 
-    for (const element of valeur) {
+    for (
+      const element
+      of valeur
+    ) {
 
       if (
-        typeof element === "string" &&
+        typeof element ===
+          "string" &&
         element !== "R" &&
         element !== "L"
       ) {
-        textes.push(element);
+
+        textes.push(
+          element
+        );
+
       }
 
     }
@@ -1053,22 +1585,40 @@ function extraireTextesReference(valeur) {
   }
 
   if (
-    typeof valeur === "object" &&
+    typeof valeur ===
+      "object" &&
     valeur !== null &&
-    !Array.isArray(valeur)
+    !Array.isArray(
+      valeur
+    )
   ) {
 
     const candidats = [
+
       valeur.label,
+
       valeur.display,
+
       valeur.name,
+
       valeur.text
+
     ];
 
-    for (const candidat of candidats) {
+    for (
+      const candidat
+      of candidats
+    ) {
 
-      if (typeof candidat === "string") {
-        textes.push(candidat);
+      if (
+        typeof candidat ===
+        "string"
+      ) {
+
+        textes.push(
+          candidat
+        );
+
       }
 
     }
@@ -1076,84 +1626,148 @@ function extraireTextesReference(valeur) {
   }
 
   return textes;
+
 }
 
 
-function resoudreReferenceId(valeur, liste) {
+function resoudreReferenceId(
+  valeur,
+  liste
+) {
 
   const idDirect =
-    extraireRowId(valeur);
+    extraireRowId(
+      valeur
+    );
 
   if (
     idDirect !== null &&
-    liste.some(item => item.id === idDirect)
+    liste.some(
+      item =>
+        item.id ===
+        idDirect
+    )
   ) {
+
     return idDirect;
+
   }
 
   const textes =
-    extraireTextesReference(valeur);
+    extraireTextesReference(
+      valeur
+    );
 
-  for (const texte of textes) {
+  for (
+    const texte
+    of textes
+  ) {
 
     const cible =
-      normaliserValeur(texte);
+      normaliserValeur(
+        texte
+      );
 
     const trouve =
       liste.find(
         item =>
-          normaliserValeur(item.label) === cible
+          normaliserValeur(
+            item.label
+          )
+          ===
+          cible
       );
 
-    if (trouve) {
+    if (
+      trouve
+    ) {
+
       return trouve.id;
+
     }
 
   }
 
   return null;
+
 }
 
 
-function extraireListeRowIds(valeur) {
+function extraireListeRowIds(
+  valeur
+) {
 
   if (
     valeur === null ||
     valeur === undefined ||
     valeur === ""
   ) {
+
     return [];
+
   }
 
-  if (typeof valeur === "number") {
-    return [valeur];
+  if (
+    typeof valeur ===
+    "number"
+  ) {
+
+    return [
+      valeur
+    ];
+
   }
 
-  if (Array.isArray(valeur)) {
+  if (
+    Array.isArray(
+      valeur
+    )
+  ) {
+
     return valeur.filter(
-      element => typeof element === "number"
+      element =>
+        typeof element ===
+        "number"
     );
+
   }
 
   return [];
+
 }
 
 
-function creerReferenceList(ids) {
+function creerReferenceList(
+  ids
+) {
 
   const propres = [
+
     ...new Set(
+
       ids
-        .map(Number)
+
+        .map(
+          Number
+        )
+
         .filter(
           id =>
-            Number.isFinite(id) &&
+            Number.isFinite(
+              id
+            ) &&
             id > 0
         )
+
     )
+
   ];
 
-  return ["L", ...propres];
+  return [
+    "L",
+    ...propres
+  ];
+
 }
 
 
@@ -1161,66 +1775,132 @@ function creerReferenceList(ids) {
    SAUVEGARDE SELECTS
 ================================================== */
 
-function capturerSelection(prefixe) {
+function capturerSelection(
+  prefixe
+) {
 
   return {
 
     typeId:
-      valeurReference(prefixe + "Type"),
+      valeurReference(
+        prefixe +
+        "Type"
+      ),
 
     marqueId:
-      valeurReference(prefixe + "Marque"),
+      valeurReference(
+        prefixe +
+        "Marque"
+      ),
 
     modeleId:
-      valeurReference(prefixe + "Modele"),
+      valeurReference(
+        prefixe +
+        "Modele"
+      ),
 
     siteId:
-      valeurReference(prefixe + "Site"),
+      valeurReference(
+        prefixe +
+        "Site"
+      ),
 
     localisationId:
-      valeurReference(prefixe + "Localisation")
+      valeurReference(
+        prefixe +
+        "Localisation"
+      )
 
   };
 
 }
 
 
-function restaurerSelection(prefixe, selection) {
+function restaurerSelection(
+  prefixe,
+  selection
+) {
 
-  if (!selection) {
+  if (
+    !selection
+  ) {
+
     return;
+
   }
 
-  document.getElementById(prefixe + "Type").value =
+
+  document.getElementById(
+    prefixe +
+    "Type"
+  ).value =
     selection.typeId
-      ? String(selection.typeId)
-      : "";
+      ?
+      String(
+        selection.typeId
+      )
+      :
+      "";
+
 
   mettreAJourMarques(
+
     prefixe,
-    selection.marqueId || null
+
+    selection.marqueId
+    ||
+    null
+
   );
 
-  if (selection.marqueId) {
 
-    document.getElementById(prefixe + "Marque").value =
-      String(selection.marqueId);
+  if (
+    selection.marqueId
+  ) {
+
+    document.getElementById(
+      prefixe +
+      "Marque"
+    ).value =
+      String(
+        selection.marqueId
+      );
 
   }
 
+
   mettreAJourModeles(
+
     prefixe,
-    selection.modeleId || null
+
+    selection.modeleId
+    ||
+    null
+
   );
 
-  document.getElementById(prefixe + "Site").value =
+
+  document.getElementById(
+    prefixe +
+    "Site"
+  ).value =
     selection.siteId
-      ? String(selection.siteId)
-      : "";
+      ?
+      String(
+        selection.siteId
+      )
+      :
+      "";
+
 
   mettreAJourLocalisations(
+
     prefixe,
-    selection.localisationId || null
+
+    selection.localisationId
+    ||
+    null
+
   );
 
 }
@@ -1230,24 +1910,41 @@ function restaurerSelection(prefixe, selection) {
    REFERENCE SIMPLE
 ================================================== */
 
-async function chargerReferenceSimple(tableNom, colonneNom) {
+async function chargerReferenceSimple(
+  tableNom,
+  colonneNom
+) {
 
   const tableId =
-    await trouverTableId(tableNom);
+    await trouverTableId(
+      tableNom
+    );
 
   const raw =
-    await grist.docApi.fetchTable(tableId);
+    await grist.docApi.fetchTable(
+      tableId
+    );
 
   const lignes =
-    convertirFetchTableEnLignes(raw);
+    convertirFetchTableEnLignes(
+      raw
+    );
 
   const colonnes =
-    obtenirColonnesDisponibles(raw, lignes);
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonne =
-    trouverColonneParNom(colonnes, colonneNom);
+    trouverColonneParNom(
+      colonnes,
+      colonneNom
+    );
 
-  if (!colonne) {
+  if (
+    !colonne
+  ) {
 
     throw new Error(
       'Colonne "' +
@@ -1259,22 +1956,36 @@ async function chargerReferenceSimple(tableNom, colonneNom) {
 
   const liste =
     lignes
+
       .filter(
         ligne =>
           ligne.id != null &&
           ligne[colonne] != null &&
-          String(ligne[colonne]).trim() !== ""
+          String(
+            ligne[colonne]
+          ).trim() !== ""
       )
+
       .map(
         ligne => ({
-          id: Number(ligne.id),
-          label: String(ligne[colonne])
+          id:
+            Number(
+              ligne.id
+            ),
+          label:
+            String(
+              ligne[colonne]
+            )
         })
       );
 
-  liste.sort(trierParLibelle);
+
+  liste.sort(
+    trierParLibelle
+  );
 
   return liste;
+
 }
 
 
@@ -1285,24 +1996,42 @@ async function chargerReferenceSimple(tableNom, colonneNom) {
 async function chargerMarques() {
 
   const tableId =
-    await trouverTableId("Marque");
+    await trouverTableId(
+      "Marque"
+    );
 
   const raw =
-    await grist.docApi.fetchTable(tableId);
+    await grist.docApi.fetchTable(
+      tableId
+    );
 
   const lignes =
-    convertirFetchTableEnLignes(raw);
+    convertirFetchTableEnLignes(
+      raw
+    );
 
   const colonnes =
-    obtenirColonnesDisponibles(raw, lignes);
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonneMarque =
-    trouverColonneParNom(colonnes, "Marque");
+    trouverColonneParNom(
+      colonnes,
+      "Marque"
+    );
 
   const colonneTypes =
-    trouverColonneParNom(colonnes, "Type");
+    trouverColonneParNom(
+      colonnes,
+      "Type"
+    );
 
-  if (!colonneMarque || !colonneTypes) {
+  if (
+    !colonneMarque ||
+    !colonneTypes
+  ) {
 
     throw new Error(
       'Vérifie les colonnes "Marque" et "Type" dans la table Marque.'
@@ -1312,23 +2041,46 @@ async function chargerMarques() {
 
   const liste =
     lignes
+
       .filter(
         ligne =>
           ligne.id != null &&
-          ligne[colonneMarque] != null
+          ligne[colonneMarque]
+          != null
       )
+
       .map(
         ligne => ({
-          id: Number(ligne.id),
-          label: String(ligne[colonneMarque]),
+
+          id:
+            Number(
+              ligne.id
+            ),
+
+          label:
+            String(
+              ligne[
+                colonneMarque
+              ]
+            ),
+
           typeIds:
-            extraireListeRowIds(ligne[colonneTypes])
+            extraireListeRowIds(
+              ligne[
+                colonneTypes
+              ]
+            )
+
         })
       );
 
-  liste.sort(trierParLibelle);
+
+  liste.sort(
+    trierParLibelle
+  );
 
   return liste;
+
 }
 
 
@@ -1339,24 +2091,42 @@ async function chargerMarques() {
 async function chargerModeles() {
 
   const tableId =
-    await trouverTableId("Modèle");
+    await trouverTableId(
+      "Modèle"
+    );
 
   const raw =
-    await grist.docApi.fetchTable(tableId);
+    await grist.docApi.fetchTable(
+      tableId
+    );
 
   const lignes =
-    convertirFetchTableEnLignes(raw);
+    convertirFetchTableEnLignes(
+      raw
+    );
 
   const colonnes =
-    obtenirColonnesDisponibles(raw, lignes);
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonneModele =
-    trouverColonneParNom(colonnes, "Modèle");
+    trouverColonneParNom(
+      colonnes,
+      "Modèle"
+    );
 
   const colonneMarque =
-    trouverColonneParNom(colonnes, "Marque");
+    trouverColonneParNom(
+      colonnes,
+      "Marque"
+    );
 
-  if (!colonneModele || !colonneMarque) {
+  if (
+    !colonneModele ||
+    !colonneMarque
+  ) {
 
     throw new Error(
       'La table Modèle doit contenir les colonnes "Modèle" et "Marque".'
@@ -1366,23 +2136,46 @@ async function chargerModeles() {
 
   const liste =
     lignes
+
       .filter(
         ligne =>
           ligne.id != null &&
-          ligne[colonneModele] != null
+          ligne[colonneModele]
+          != null
       )
+
       .map(
         ligne => ({
-          id: Number(ligne.id),
-          label: String(ligne[colonneModele]),
+
+          id:
+            Number(
+              ligne.id
+            ),
+
+          label:
+            String(
+              ligne[
+                colonneModele
+              ]
+            ),
+
           marqueId:
-            extraireRowId(ligne[colonneMarque])
+            extraireRowId(
+              ligne[
+                colonneMarque
+              ]
+            )
+
         })
       );
 
-  liste.sort(trierParLibelle);
+
+  liste.sort(
+    trierParLibelle
+  );
 
   return liste;
+
 }
 
 
@@ -1393,24 +2186,42 @@ async function chargerModeles() {
 async function chargerLocalisations() {
 
   const tableId =
-    await trouverTableId("Localisation");
+    await trouverTableId(
+      "Localisation"
+    );
 
   const raw =
-    await grist.docApi.fetchTable(tableId);
+    await grist.docApi.fetchTable(
+      tableId
+    );
 
   const lignes =
-    convertirFetchTableEnLignes(raw);
+    convertirFetchTableEnLignes(
+      raw
+    );
 
   const colonnes =
-    obtenirColonnesDisponibles(raw, lignes);
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
 
   const colonneLocalisation =
-    trouverColonneParNom(colonnes, "Localisation");
+    trouverColonneParNom(
+      colonnes,
+      "Localisation"
+    );
 
   const colonneSite =
-    trouverColonneParNom(colonnes, "Site");
+    trouverColonneParNom(
+      colonnes,
+      "Site"
+    );
 
-  if (!colonneLocalisation || !colonneSite) {
+  if (
+    !colonneLocalisation ||
+    !colonneSite
+  ) {
 
     throw new Error(
       "Vérifie les colonnes de la table Localisation."
@@ -1420,23 +2231,47 @@ async function chargerLocalisations() {
 
   const liste =
     lignes
+
       .filter(
         ligne =>
           ligne.id != null &&
-          ligne[colonneLocalisation] != null
+          ligne[
+            colonneLocalisation
+          ] != null
       )
+
       .map(
         ligne => ({
-          id: Number(ligne.id),
-          label: String(ligne[colonneLocalisation]),
+
+          id:
+            Number(
+              ligne.id
+            ),
+
+          label:
+            String(
+              ligne[
+                colonneLocalisation
+              ]
+            ),
+
           siteId:
-            extraireRowId(ligne[colonneSite])
+            extraireRowId(
+              ligne[
+                colonneSite
+              ]
+            )
+
         })
       );
 
-  liste.sort(trierParLibelle);
+
+  liste.sort(
+    trierParLibelle
+  );
 
   return liste;
+
 }
 
 
@@ -1444,63 +2279,159 @@ async function chargerLocalisations() {
    CHARGEMENT GLOBAL
 ================================================== */
 
-async function chargerListesReferences(forcer = false) {
+async function chargerListesReferences(
+  forcer = false
+) {
 
-  if (referencesChargees && !forcer) {
+  if (
+    referencesChargees &&
+    !forcer
+  ) {
+
     return;
+
   }
+
 
   const selectionNew =
     referencesChargees
-      ? capturerSelection("new")
-      : null;
+      ?
+      capturerSelection(
+        "new"
+      )
+      :
+      null;
+
 
   const selectionEdit =
     referencesChargees
-      ? capturerSelection("edit")
-      : null;
+      ?
+      capturerSelection(
+        "edit"
+      )
+      :
+      null;
+
 
   const [
+
     sites,
+
     types,
+
     marques,
+
     modeles,
+
     localisations
+
   ] = await Promise.all([
 
-    chargerReferenceSimple("Site", "Site"),
-    chargerReferenceSimple("Type", "Type"),
+    chargerReferenceSimple(
+      "Site",
+      "Site"
+    ),
+
+    chargerReferenceSimple(
+      "Type",
+      "Type"
+    ),
+
     chargerMarques(),
+
     chargerModeles(),
+
     chargerLocalisations()
 
   ]);
 
-  listeSites = sites;
-  listeTypes = types;
-  listeMarques = marques;
-  listeModeles = modeles;
-  listeLocalisations = localisations;
 
-  remplirSelectSimple("newSite", listeSites);
-  remplirSelectSimple("editSite", listeSites);
-  remplirSelectSimple("newType", listeTypes);
-  remplirSelectSimple("editType", listeTypes);
+  listeSites =
+    sites;
 
-  referencesChargees = true;
+  listeTypes =
+    types;
 
-  if (selectionNew) {
-    restaurerSelection("new", selectionNew);
-  } else {
-    mettreAJourMarques("new");
-    mettreAJourLocalisations("new");
+  listeMarques =
+    marques;
+
+  listeModeles =
+    modeles;
+
+  listeLocalisations =
+    localisations;
+
+
+  remplirSelectSimple(
+    "newSite",
+    listeSites
+  );
+
+  remplirSelectSimple(
+    "editSite",
+    listeSites
+  );
+
+  remplirSelectSimple(
+    "newType",
+    listeTypes
+  );
+
+  remplirSelectSimple(
+    "editType",
+    listeTypes
+  );
+
+
+  referencesChargees =
+    true;
+
+
+  if (
+    selectionNew
+  ) {
+
+    restaurerSelection(
+      "new",
+      selectionNew
+    );
+
   }
 
-  if (selectionEdit) {
-    restaurerSelection("edit", selectionEdit);
-  } else {
-    mettreAJourMarques("edit");
-    mettreAJourLocalisations("edit");
+  else {
+
+    mettreAJourMarques(
+      "new"
+    );
+
+    mettreAJourLocalisations(
+      "new"
+    );
+
+  }
+
+
+  if (
+    selectionEdit
+  ) {
+
+    restaurerSelection(
+      "edit",
+      selectionEdit
+    );
+
+  }
+
+  else {
+
+    mettreAJourMarques(
+      "edit"
+    );
+
+    mettreAJourLocalisations(
+      "edit"
+    );
+
   }
 
 }
@@ -1510,26 +2441,42 @@ async function chargerListesReferences(forcer = false) {
    SELECT SIMPLE
 ================================================== */
 
-function remplirSelectSimple(id, liste) {
+function remplirSelectSimple(
+  id,
+  liste
+) {
 
   const select =
-    document.getElementById(id);
+    document.getElementById(
+      id
+    );
 
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
 
-  for (const item of liste) {
+
+  for (
+    const item
+    of liste
+  ) {
 
     const option =
-      document.createElement("option");
+      document.createElement(
+        "option"
+      );
 
     option.value =
-      String(item.id);
+      String(
+        item.id
+      );
 
     option.textContent =
       item.label;
 
-    select.appendChild(option);
+    select.appendChild(
+      option
+    );
+
   }
 
 }
@@ -1539,48 +2486,80 @@ function remplirSelectSimple(id, liste) {
    TYPE -> MARQUE
 ================================================== */
 
-function mettreAJourMarques(prefixe, valeurAConserver = null) {
+function mettreAJourMarques(
+  prefixe,
+  valeurAConserver = null
+) {
 
   const typeSelect =
-    document.getElementById(prefixe + "Type");
+    document.getElementById(
+      prefixe +
+      "Type"
+    );
 
   const marqueSelect =
-    document.getElementById(prefixe + "Marque");
+    document.getElementById(
+      prefixe +
+      "Marque"
+    );
 
   const typeId =
     typeSelect.value
-      ? Number(typeSelect.value)
-      : null;
+      ?
+      Number(
+        typeSelect.value
+      )
+      :
+      null;
+
 
   let marques =
     listeMarques;
 
-  if (typeId !== null) {
+
+  if (
+    typeId !== null
+  ) {
 
     marques =
       listeMarques.filter(
         marque =>
-          marque.typeIds.includes(typeId)
+          marque.typeIds.includes(
+            typeId
+          )
       );
 
   }
 
+
   marqueSelect.innerHTML =
     '<option value="">-- Choisir --</option>';
 
-  for (const marque of marques) {
+
+  for (
+    const marque
+    of marques
+  ) {
 
     const option =
-      document.createElement("option");
+      document.createElement(
+        "option"
+      );
 
     option.value =
-      String(marque.id);
+      String(
+        marque.id
+      );
 
     option.textContent =
       marque.label;
 
-    marqueSelect.appendChild(option);
+    marqueSelect.appendChild(
+      option
+    );
+
   }
+
 
   if (
     valeurAConserver !== null &&
@@ -1593,23 +2572,43 @@ function mettreAJourMarques(prefixe, valeurAConserver = null) {
         listeMarques
       );
 
-    if (marqueId !== null) {
+
+    if (
+      marqueId !== null
+    ) {
 
       const existe =
-        Array.from(marqueSelect.options).some(
+        Array.from(
+          marqueSelect.options
+        ).some(
           option =>
-            option.value === String(marqueId)
+            option.value ===
+            String(
+              marqueId
+            )
         );
 
-      if (existe) {
-        marqueSelect.value = String(marqueId);
+
+      if (
+        existe
+      ) {
+
+        marqueSelect.value =
+          String(
+            marqueId
+          );
+
       }
 
     }
 
   }
 
-  mettreAJourModeles(prefixe);
+
+  mettreAJourModeles(
+    prefixe
+  );
+
 }
 
 
@@ -1617,38 +2616,64 @@ function mettreAJourMarques(prefixe, valeurAConserver = null) {
    MARQUE -> MODELE
 ================================================== */
 
-function mettreAJourModeles(prefixe, valeurAConserver = null) {
+function mettreAJourModeles(
+  prefixe,
+  valeurAConserver = null
+) {
 
   const marqueId =
-    valeurReference(prefixe + "Marque");
+    valeurReference(
+      prefixe +
+      "Marque"
+    );
 
   const select =
-    document.getElementById(prefixe + "Modele");
+    document.getElementById(
+      prefixe +
+      "Modele"
+    );
+
 
   const modeles =
     marqueId
-      ? listeModeles.filter(
-          modele =>
-            modele.marqueId === marqueId
-        )
-      : [];
+      ?
+      listeModeles.filter(
+        modele =>
+          modele.marqueId ===
+          marqueId
+      )
+      :
+      [];
+
 
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
 
-  for (const modele of modeles) {
+
+  for (
+    const modele
+    of modeles
+  ) {
 
     const option =
-      document.createElement("option");
+      document.createElement(
+        "option"
+      );
 
     option.value =
-      String(modele.id);
+      String(
+        modele.id
+      );
 
     option.textContent =
       modele.label;
 
-    select.appendChild(option);
+    select.appendChild(
+      option
+    );
+
   }
+
 
   if (
     valeurAConserver !== null &&
@@ -1661,16 +2686,32 @@ function mettreAJourModeles(prefixe, valeurAConserver = null) {
         listeModeles
       );
 
-    if (modeleId !== null) {
+
+    if (
+      modeleId !== null
+    ) {
 
       const existe =
-        Array.from(select.options).some(
+        Array.from(
+          select.options
+        ).some(
           option =>
-            option.value === String(modeleId)
+            option.value ===
+            String(
+              modeleId
+            )
         );
 
-      if (existe) {
-        select.value = String(modeleId);
+
+      if (
+        existe
+      ) {
+
+        select.value =
+          String(
+            modeleId
+          );
+
       }
 
     }
@@ -1684,88 +2725,144 @@ function mettreAJourModeles(prefixe, valeurAConserver = null) {
    SITE -> LOCALISATION
 ================================================== */
 
-function mettreAJourLocalisations(prefixe, valeurAConserver = null) {
+function mettreAJourLocalisations(
+  prefixe,
+  valeurAConserver = null
+) {
 
   const siteId =
-    valeurReference(prefixe + "Site");
+    valeurReference(
+      prefixe +
+      "Site"
+    );
 
   const select =
-    document.getElementById(prefixe + "Localisation");
+    document.getElementById(
+      prefixe +
+      "Localisation"
+    );
+
 
   const localisationId =
     valeurAConserver !== null &&
     valeurAConserver !== undefined
-      ? resoudreReferenceId(
-          valeurAConserver,
-          listeLocalisations
-        )
-      : null;
+      ?
+      resoudreReferenceId(
+        valeurAConserver,
+        listeLocalisations
+      )
+      :
+      null;
+
 
   let localisations =
     siteId
-      ? listeLocalisations.filter(
-          localisation =>
-            localisation.siteId === siteId
-        )
-      : [];
+      ?
+      listeLocalisations.filter(
+        localisation =>
+          localisation.siteId ===
+          siteId
+      )
+      :
+      [];
+
 
   if (
     localisationId !== null &&
     !localisations.some(
       localisation =>
-        localisation.id === localisationId
+        localisation.id ===
+        localisationId
     )
   ) {
 
     const localisationExistante =
       listeLocalisations.find(
         localisation =>
-          localisation.id === localisationId
+          localisation.id ===
+          localisationId
       );
 
-    if (localisationExistante) {
+
+    if (
+      localisationExistante
+    ) {
 
       localisations = [
+
         ...localisations,
+
         {
           ...localisationExistante,
           horsSite: true
         }
+
       ];
 
     }
 
   }
 
+
   select.innerHTML =
     '<option value="">-- Choisir --</option>';
 
-  for (const localisation of localisations) {
+
+  for (
+    const localisation
+    of localisations
+  ) {
 
     const option =
-      document.createElement("option");
+      document.createElement(
+        "option"
+      );
 
     option.value =
-      String(localisation.id);
+      String(
+        localisation.id
+      );
 
     option.textContent =
       localisation.horsSite
-        ? localisation.label + " ⚠️ (autre site)"
-        : localisation.label;
+        ?
+        localisation.label +
+        " ⚠️ (autre site)"
+        :
+        localisation.label;
 
-    select.appendChild(option);
+    select.appendChild(
+      option
+    );
+
   }
 
-  if (localisationId !== null) {
+
+  if (
+    localisationId !== null
+  ) {
 
     const optionExiste =
-      Array.from(select.options).some(
+      Array.from(
+        select.options
+      ).some(
         option =>
-          option.value === String(localisationId)
+          option.value ===
+          String(
+            localisationId
+          )
       );
 
-    if (optionExiste) {
-      select.value = String(localisationId);
+
+    if (
+      optionExiste
+    ) {
+
+      select.value =
+        String(
+          localisationId
+        );
+
     }
 
   }
@@ -1777,40 +2874,81 @@ function mettreAJourLocalisations(prefixe, valeurAConserver = null) {
    CASCADES
 ================================================== */
 
-document.getElementById("newType")
+document
+  .getElementById(
+    "newType"
+  )
   .addEventListener(
     "change",
-    () => mettreAJourMarques("new")
+    () =>
+      mettreAJourMarques(
+        "new"
+      )
   );
 
-document.getElementById("editType")
+
+document
+  .getElementById(
+    "editType"
+  )
   .addEventListener(
     "change",
-    () => mettreAJourMarques("edit")
+    () =>
+      mettreAJourMarques(
+        "edit"
+      )
   );
 
-document.getElementById("newMarque")
+
+document
+  .getElementById(
+    "newMarque"
+  )
   .addEventListener(
     "change",
-    () => mettreAJourModeles("new")
+    () =>
+      mettreAJourModeles(
+        "new"
+      )
   );
 
-document.getElementById("editMarque")
+
+document
+  .getElementById(
+    "editMarque"
+  )
   .addEventListener(
     "change",
-    () => mettreAJourModeles("edit")
+    () =>
+      mettreAJourModeles(
+        "edit"
+      )
   );
 
-document.getElementById("newSite")
+
+document
+  .getElementById(
+    "newSite"
+  )
   .addEventListener(
     "change",
-    () => mettreAJourLocalisations("new")
+    () =>
+      mettreAJourLocalisations(
+        "new"
+      )
   );
 
-document.getElementById("editSite")
+
+document
+  .getElementById(
+    "editSite"
+  )
   .addEventListener(
     "change",
-    () => mettreAJourLocalisations("edit")
+    () =>
+      mettreAJourLocalisations(
+        "edit"
+      )
   );
 
 
@@ -1820,32 +2958,55 @@ document.getElementById("editSite")
 
 grist.onRecords(
 
-  async function(data, mappings) {
+  async function(
+    data,
+    mappings
+  ) {
 
-    columnMappings = mappings;
+    columnMappings =
+      mappings;
 
-    if (!mappings) {
+
+    if (
+      !mappings
+    ) {
 
       records = [];
-      mappingWarning.style.display = "block";
+
+      mappingWarning.style.display =
+        "block";
 
       return;
+
     }
+
 
     records =
       (data || [])
+
         .map(
           record =>
             grist.mapColumnNames(
               record,
-              { mappings: mappings }
+              {
+                mappings:
+                  mappings
+              }
             )
         )
-        .filter(Boolean);
 
-    mappingWarning.style.display = "none";
+        .filter(
+          Boolean
+        );
 
-    if (!referencesChargees) {
+
+    mappingWarning.style.display =
+      "none";
+
+
+    if (
+      !referencesChargees
+    ) {
 
       try {
 
@@ -1855,19 +3016,28 @@ grist.onRecords(
 
       catch(error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
 
-        statusBox.style.display = "block";
+        statusBox.style.display =
+          "block";
 
         statusBox.innerHTML = `
+
           <div class="error">
             ⚠️ Impossible de charger les listes.
           </div>
+
           <p>
             ${echapperHTML(
-              error.message || String(error)
+              error.message ||
+              String(
+                error
+              )
             )}
           </p>
+
         `;
 
       }
@@ -1883,46 +3053,88 @@ grist.onRecords(
    MAPPING INVENTAIRE
 ================================================== */
 
-function obtenirColonneGrist(logique) {
+function obtenirColonneGrist(
+  logique
+) {
 
-  if (!columnMappings) {
+  if (
+    !columnMappings
+  ) {
+
     return null;
+
   }
+
 
   const mapping =
-    columnMappings[logique];
+    columnMappings[
+      logique
+    ];
 
-  if (Array.isArray(mapping)) {
-    return mapping[0] || null;
+
+  if (
+    Array.isArray(
+      mapping
+    )
+  ) {
+
+    return (
+      mapping[0]
+      ||
+      null
+    );
+
   }
 
-  return mapping || null;
+
+  return (
+    mapping
+    ||
+    null
+  );
+
 }
 
 
-function construireChampsGrist(valeurs) {
+function construireChampsGrist(
+  valeurs
+) {
 
   const fields = {};
 
+
   for (
-    const [logique, valeur]
-    of Object.entries(valeurs)
+    const [
+      logique,
+      valeur
+    ]
+    of Object.entries(
+      valeurs
+    )
   ) {
 
     const colonne =
-      obtenirColonneGrist(logique);
+      obtenirColonneGrist(
+        logique
+      );
+
 
     if (
       colonne &&
       colonne !== "id" &&
       colonne !== "manualSort"
     ) {
-      fields[colonne] = valeur;
+
+      fields[colonne] =
+        valeur;
+
     }
 
   }
 
+
   return fields;
+
 }
 
 
@@ -1930,28 +3142,52 @@ function construireChampsGrist(valeurs) {
    SELECT REFERENCE
 ================================================== */
 
-function valeurReference(id) {
+function valeurReference(
+  id
+) {
 
   const element =
-    document.getElementById(id);
+    document.getElementById(
+      id
+    );
 
-  if (!element) {
+
+  if (
+    !element
+  ) {
+
     return 0;
+
   }
+
 
   const value =
     element.value;
 
-  if (!value) {
+
+  if (
+    !value
+  ) {
+
     return 0;
+
   }
 
-  const nombre =
-    Number(value);
 
-  return Number.isFinite(nombre)
-    ? nombre
-    : 0;
+  const nombre =
+    Number(
+      value
+    );
+
+
+  return Number.isFinite(
+    nombre
+  )
+    ?
+    nombre
+    :
+    0;
+
 }
 
 
@@ -1960,7 +3196,9 @@ function valeurReference(id) {
 ================================================== */
 
 document
-  .querySelectorAll("[data-add-ref]")
+  .querySelectorAll(
+    "[data-add-ref]"
+  )
   .forEach(
 
     button => {
@@ -1970,8 +3208,11 @@ document
         () => {
 
           ouvrirAjoutReference(
+
             button.dataset.addRef,
+
             button.dataset.prefix
+
           );
 
         }
@@ -1986,109 +3227,210 @@ document
    MODALE
 ================================================== */
 
-function ouvrirAjoutReference(type, prefixe) {
+function ouvrirAjoutReference(
+  type,
+  prefixe
+) {
 
   ajoutReferenceCourant = {
     type,
     prefixe
   };
 
-  referenceNameInput.value = "";
-  referenceModalInfo.style.display = "none";
-  referenceModalInfo.textContent = "";
 
-  if (type === "TypeMateriel") {
+  referenceNameInput.value =
+    "";
+
+
+  referenceModalInfo.style.display =
+    "none";
+
+
+  referenceModalInfo.textContent =
+    "";
+
+
+  if (
+    type ===
+    "TypeMateriel"
+  ) {
+
     referenceModalTitle.textContent =
       "➕ Ajouter un type";
+
   }
 
-  if (type === "Site") {
+
+  if (
+    type ===
+    "Site"
+  ) {
+
     referenceModalTitle.textContent =
       "➕ Ajouter un site";
+
   }
 
-  if (type === "Marque") {
+
+  if (
+    type ===
+    "Marque"
+  ) {
 
     referenceModalTitle.textContent =
       "➕ Ajouter une marque";
 
+
     const typeId =
-      valeurReference(prefixe + "Type");
+      valeurReference(
+        prefixe +
+        "Type"
+      );
+
 
     const typeObjet =
       listeTypes.find(
-        item => item.id === typeId
+        item =>
+          item.id ===
+          typeId
       );
 
-    if (typeObjet) {
+
+    if (
+      typeObjet
+    ) {
 
       referenceModalInfo.style.display =
         "block";
 
       referenceModalInfo.textContent =
-        "Type : " + typeObjet.label;
+        "Type : " +
+        typeObjet.label;
+
     }
 
   }
 
-  if (type === "Modele") {
+
+  if (
+    type ===
+    "Modele"
+  ) {
 
     const marqueId =
-      valeurReference(prefixe + "Marque");
+      valeurReference(
+        prefixe +
+        "Marque"
+      );
 
-    if (!marqueId) {
-      alert("Choisis d'abord une marque.");
+
+    if (
+      !marqueId
+    ) {
+
+      alert(
+        "Choisis d'abord une marque."
+      );
+
       return;
+
     }
+
 
     const marque =
       listeMarques.find(
-        item => item.id === marqueId
+        item =>
+          item.id ===
+          marqueId
       );
+
 
     referenceModalTitle.textContent =
       "➕ Ajouter un modèle";
 
+
     referenceModalInfo.style.display =
       "block";
 
+
     referenceModalInfo.textContent =
       "Marque : " +
-      (marque ? marque.label : "");
+      (
+        marque
+          ?
+          marque.label
+          :
+          ""
+      );
+
   }
 
-  if (type === "Localisation") {
+
+  if (
+    type ===
+    "Localisation"
+  ) {
 
     const siteId =
-      valeurReference(prefixe + "Site");
+      valeurReference(
+        prefixe +
+        "Site"
+      );
 
-    if (!siteId) {
-      alert("Choisis d'abord un site.");
+
+    if (
+      !siteId
+    ) {
+
+      alert(
+        "Choisis d'abord un site."
+      );
+
       return;
+
     }
+
 
     const site =
       listeSites.find(
-        item => item.id === siteId
+        item =>
+          item.id ===
+          siteId
       );
+
 
     referenceModalTitle.textContent =
       "➕ Ajouter une localisation";
 
+
     referenceModalInfo.style.display =
       "block";
 
+
     referenceModalInfo.textContent =
       "Site : " +
-      (site ? site.label : "");
+      (
+        site
+          ?
+          site.label
+          :
+          ""
+      );
+
   }
 
-  referenceModal.classList.add("open");
+
+  referenceModal.classList.add(
+    "open"
+  );
+
 
   setTimeout(
-    () => referenceNameInput.focus(),
+    () =>
+      referenceNameInput.focus(),
     100
   );
+
 }
 
 
@@ -2102,8 +3444,13 @@ referenceModal.addEventListener(
   "click",
   function(event) {
 
-    if (event.target === referenceModal) {
+    if (
+      event.target ===
+      referenceModal
+    ) {
+
       fermerAjoutReference();
+
     }
 
   }
@@ -2111,7 +3458,11 @@ referenceModal.addEventListener(
 
 
 function fermerAjoutReference() {
-  referenceModal.classList.remove("open");
+
+  referenceModal.classList.remove(
+    "open"
+  );
+
 }
 
 
@@ -2119,9 +3470,15 @@ referenceNameInput.addEventListener(
   "keydown",
   function(event) {
 
-    if (event.key === "Enter") {
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
       event.preventDefault();
+
       referenceSaveButton.click();
+
     }
 
   }
@@ -2133,23 +3490,44 @@ referenceSaveButton.addEventListener(
   async function() {
 
     const nom =
-      referenceNameInput.value.trim();
+      referenceNameInput
+        .value
+        .trim();
 
-    if (!nom) {
-      alert("Saisis un nom.");
+
+    if (
+      !nom
+    ) {
+
+      alert(
+        "Saisis un nom."
+      );
+
       return;
+
     }
 
-    referenceSaveButton.disabled = true;
-    referenceSaveButton.textContent = "⏳ Ajout…";
+
+    referenceSaveButton.disabled =
+      true;
+
+
+    referenceSaveButton.textContent =
+      "⏳ Ajout…";
+
 
     try {
 
       await creerReference(
+
         ajoutReferenceCourant.type,
+
         ajoutReferenceCourant.prefixe,
+
         nom
+
       );
+
 
       fermerAjoutReference();
 
@@ -2157,19 +3535,37 @@ referenceSaveButton.addEventListener(
 
     catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       alert(
-        "Erreur lors de l'ajout : " +
-        (error.message || String(error))
+
+        "Erreur lors de l'ajout : "
+
+        +
+
+        (
+          error.message
+          ||
+          String(
+            error
+          )
+        )
+
       );
 
     }
 
     finally {
 
-      referenceSaveButton.disabled = false;
-      referenceSaveButton.textContent = "✅ Ajouter";
+      referenceSaveButton.disabled =
+        false;
+
+
+      referenceSaveButton.textContent =
+        "✅ Ajouter";
 
     }
 
@@ -2181,30 +3577,82 @@ referenceSaveButton.addEventListener(
    CREATION REFERENCE
 ================================================== */
 
-async function creerReference(type, prefixe, nom) {
+async function creerReference(
+  type,
+  prefixe,
+  nom
+) {
 
-  if (type === "TypeMateriel") {
-    await creerType(prefixe, nom);
+  if (
+    type ===
+    "TypeMateriel"
+  ) {
+
+    await creerType(
+      prefixe,
+      nom
+    );
+
     return;
+
   }
 
-  if (type === "Site") {
-    await creerSite(prefixe, nom);
+
+  if (
+    type ===
+    "Site"
+  ) {
+
+    await creerSite(
+      prefixe,
+      nom
+    );
+
     return;
+
   }
 
-  if (type === "Marque") {
-    await creerMarque(prefixe, nom);
+
+  if (
+    type ===
+    "Marque"
+  ) {
+
+    await creerMarque(
+      prefixe,
+      nom
+    );
+
     return;
+
   }
 
-  if (type === "Modele") {
-    await creerModele(prefixe, nom);
+
+  if (
+    type ===
+    "Modele"
+  ) {
+
+    await creerModele(
+      prefixe,
+      nom
+    );
+
     return;
+
   }
 
-  if (type === "Localisation") {
-    await creerLocalisation(prefixe, nom);
+
+  if (
+    type ===
+    "Localisation"
+  ) {
+
+    await creerLocalisation(
+      prefixe,
+      nom
+    );
+
   }
 
 }
@@ -2214,44 +3662,81 @@ async function creerReference(type, prefixe, nom) {
    TYPE
 ================================================== */
 
-async function creerType(prefixe, nom) {
+async function creerType(
+  prefixe,
+  nom
+) {
 
   const selectionAvant =
-    capturerSelection(prefixe);
+    capturerSelection(
+      prefixe
+    );
+
 
   let id;
+
 
   const existant =
     listeTypes.find(
       item =>
-        normaliserValeur(item.label) ===
-        normaliserValeur(nom)
+        normaliserValeur(
+          item.label
+        )
+        ===
+        normaliserValeur(
+          nom
+        )
     );
 
-  if (existant) {
-    id = existant.id;
+
+  if (
+    existant
+  ) {
+
+    id =
+      existant.id;
+
   }
 
   else {
 
     id =
       await ajouterLigneReference(
+
         "Type",
-        { Type: nom }
+
+        {
+          Type:
+            nom
+        }
+
       );
 
   }
 
-  await chargerListesReferences(true);
 
-  selectionAvant.typeId = id;
-  selectionAvant.marqueId = 0;
-  selectionAvant.modeleId = 0;
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.typeId =
+    id;
+
+
+  selectionAvant.marqueId =
+    0;
+
+
+  selectionAvant.modeleId =
+    0;
+
 
   restaurerSelection(
     prefixe,
     selectionAvant
   );
+
 }
 
 
@@ -2259,43 +3744,77 @@ async function creerType(prefixe, nom) {
    SITE
 ================================================== */
 
-async function creerSite(prefixe, nom) {
+async function creerSite(
+  prefixe,
+  nom
+) {
 
   const selectionAvant =
-    capturerSelection(prefixe);
+    capturerSelection(
+      prefixe
+    );
+
 
   let id;
+
 
   const existant =
     listeSites.find(
       item =>
-        normaliserValeur(item.label) ===
-        normaliserValeur(nom)
+        normaliserValeur(
+          item.label
+        )
+        ===
+        normaliserValeur(
+          nom
+        )
     );
 
-  if (existant) {
-    id = existant.id;
+
+  if (
+    existant
+  ) {
+
+    id =
+      existant.id;
+
   }
 
   else {
 
     id =
       await ajouterLigneReference(
+
         "Site",
-        { Site: nom }
+
+        {
+          Site:
+            nom
+        }
+
       );
 
   }
 
-  await chargerListesReferences(true);
 
-  selectionAvant.siteId = id;
-  selectionAvant.localisationId = 0;
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.siteId =
+    id;
+
+
+  selectionAvant.localisationId =
+    0;
+
 
   restaurerSelection(
     prefixe,
     selectionAvant
   );
+
 }
 
 
@@ -2303,36 +3822,61 @@ async function creerSite(prefixe, nom) {
    MARQUE
 ================================================== */
 
-async function creerMarque(prefixe, nom) {
+async function creerMarque(
+  prefixe,
+  nom
+) {
 
   const selectionAvant =
-    capturerSelection(prefixe);
+    capturerSelection(
+      prefixe
+    );
+
 
   const typeId =
     selectionAvant.typeId;
 
+
   let marqueId;
+
 
   const existante =
     listeMarques.find(
       marque =>
-        normaliserValeur(marque.label) ===
-        normaliserValeur(nom)
+        normaliserValeur(
+          marque.label
+        )
+        ===
+        normaliserValeur(
+          nom
+        )
     );
 
-  if (existante) {
+
+  if (
+    existante
+  ) {
 
     marqueId =
       existante.id;
 
+
     if (
       typeId &&
-      !existante.typeIds.includes(typeId)
+      !existante.typeIds.includes(
+        typeId
+      )
     ) {
 
       await mettreAJourTypesMarque(
+
         marqueId,
-        [...existante.typeIds, typeId]
+
+        [
+          ...existante.typeIds,
+          typeId
+        ]
+
       );
 
     }
@@ -2342,32 +3886,59 @@ async function creerMarque(prefixe, nom) {
   else {
 
     const champs = {
-      Marque: nom
+      Marque:
+        nom
     };
 
-    if (typeId) {
+
+    if (
+      typeId
+    ) {
+
       champs.Type =
-        creerReferenceList([typeId]);
+        creerReferenceList(
+          [
+            typeId
+          ]
+        );
+
     }
+
 
     marqueId =
       await ajouterLigneReference(
+
         "Marque",
+
         champs
+
       );
 
   }
 
-  await chargerListesReferences(true);
 
-  selectionAvant.typeId = typeId;
-  selectionAvant.marqueId = marqueId;
-  selectionAvant.modeleId = 0;
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.typeId =
+    typeId;
+
+
+  selectionAvant.marqueId =
+    marqueId;
+
+
+  selectionAvant.modeleId =
+    0;
+
 
   restaurerSelection(
     prefixe,
     selectionAvant
   );
+
 }
 
 
@@ -2375,24 +3946,46 @@ async function creerMarque(prefixe, nom) {
    UPDATE TYPES MARQUE
 ================================================== */
 
-async function mettreAJourTypesMarque(marqueId, ids) {
+async function mettreAJourTypesMarque(
+  marqueId,
+  ids
+) {
 
   const tableId =
-    await trouverTableId("Marque");
+    await trouverTableId(
+      "Marque"
+    );
+
 
   const raw =
-    await grist.docApi.fetchTable(tableId);
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
 
   const lignes =
-    convertirFetchTableEnLignes(raw);
+    convertirFetchTableEnLignes(
+      raw
+    );
+
 
   const colonnes =
-    obtenirColonnesDisponibles(raw, lignes);
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
+
 
   const colonne =
-    trouverColonneParNom(colonnes, "Type");
+    trouverColonneParNom(
+      colonnes,
+      "Type"
+    );
 
-  if (!colonne) {
+
+  if (
+    !colonne
+  ) {
 
     throw new Error(
       'Colonne "Type" introuvable dans la table Marque.'
@@ -2400,19 +3993,30 @@ async function mettreAJourTypesMarque(marqueId, ids) {
 
   }
 
+
   await grist.docApi.applyUserActions([
 
     [
+
       "UpdateRecord",
+
       tableId,
+
       marqueId,
+
       {
+
         [colonne]:
-          creerReferenceList(ids)
+          creerReferenceList(
+            ids
+          )
+
       }
+
     ]
 
   ]);
+
 }
 
 
@@ -2420,18 +4024,28 @@ async function mettreAJourTypesMarque(marqueId, ids) {
    MODELE
 ================================================== */
 
-async function creerModele(prefixe, nom) {
+async function creerModele(
+  prefixe,
+  nom
+) {
 
   const selectionAvant =
-    capturerSelection(prefixe);
+    capturerSelection(
+      prefixe
+    );
+
 
   const typeId =
     selectionAvant.typeId;
 
+
   const marqueId =
     selectionAvant.marqueId;
 
-  if (!marqueId) {
+
+  if (
+    !marqueId
+  ) {
 
     throw new Error(
       "Choisis d'abord une marque."
@@ -2439,17 +4053,29 @@ async function creerModele(prefixe, nom) {
 
   }
 
+
   let modeleId;
+
 
   const existe =
     listeModeles.find(
       modele =>
-        modele.marqueId === marqueId &&
-        normaliserValeur(modele.label) ===
-        normaliserValeur(nom)
+        modele.marqueId ===
+        marqueId
+        &&
+        normaliserValeur(
+          modele.label
+        )
+        ===
+        normaliserValeur(
+          nom
+        )
     );
 
-  if (existe) {
+
+  if (
+    existe
+  ) {
 
     modeleId =
       existe.id;
@@ -2460,25 +4086,46 @@ async function creerModele(prefixe, nom) {
 
     modeleId =
       await ajouterLigneReference(
+
         "Modèle",
+
         {
-          "Modèle": nom,
-          "Marque": marqueId
+
+          "Modèle":
+            nom,
+
+          "Marque":
+            marqueId
+
         }
+
       );
 
   }
 
-  await chargerListesReferences(true);
 
-  selectionAvant.typeId = typeId;
-  selectionAvant.marqueId = marqueId;
-  selectionAvant.modeleId = modeleId;
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.typeId =
+    typeId;
+
+
+  selectionAvant.marqueId =
+    marqueId;
+
+
+  selectionAvant.modeleId =
+    modeleId;
+
 
   restaurerSelection(
     prefixe,
     selectionAvant
   );
+
 }
 
 
@@ -2486,15 +4133,24 @@ async function creerModele(prefixe, nom) {
    LOCALISATION
 ================================================== */
 
-async function creerLocalisation(prefixe, nom) {
+async function creerLocalisation(
+  prefixe,
+  nom
+) {
 
   const selectionAvant =
-    capturerSelection(prefixe);
+    capturerSelection(
+      prefixe
+    );
+
 
   const siteId =
     selectionAvant.siteId;
 
-  if (!siteId) {
+
+  if (
+    !siteId
+  ) {
 
     throw new Error(
       "Choisis d'abord un site."
@@ -2502,17 +4158,29 @@ async function creerLocalisation(prefixe, nom) {
 
   }
 
+
   let localisationId;
+
 
   const existe =
     listeLocalisations.find(
       localisation =>
-        localisation.siteId === siteId &&
-        normaliserValeur(localisation.label) ===
-        normaliserValeur(nom)
+        localisation.siteId ===
+        siteId
+        &&
+        normaliserValeur(
+          localisation.label
+        )
+        ===
+        normaliserValeur(
+          nom
+        )
     );
 
-  if (existe) {
+
+  if (
+    existe
+  ) {
 
     localisationId =
       existe.id;
@@ -2523,24 +4191,42 @@ async function creerLocalisation(prefixe, nom) {
 
     localisationId =
       await ajouterLigneReference(
+
         "Localisation",
+
         {
-          Localisation: nom,
-          Site: siteId
+
+          Localisation:
+            nom,
+
+          Site:
+            siteId
+
         }
+
       );
 
   }
 
-  await chargerListesReferences(true);
 
-  selectionAvant.siteId = siteId;
-  selectionAvant.localisationId = localisationId;
+  await chargerListesReferences(
+    true
+  );
+
+
+  selectionAvant.siteId =
+    siteId;
+
+
+  selectionAvant.localisationId =
+    localisationId;
+
 
   restaurerSelection(
     prefixe,
     selectionAvant
   );
+
 }
 
 
@@ -2548,25 +4234,47 @@ async function creerLocalisation(prefixe, nom) {
    AJOUT GENERIQUE
 ================================================== */
 
-async function ajouterLigneReference(nomTable, champsLogiques) {
+async function ajouterLigneReference(
+  nomTable,
+  champsLogiques
+) {
 
   const tableId =
-    await trouverTableId(nomTable);
+    await trouverTableId(
+      nomTable
+    );
+
 
   const raw =
-    await grist.docApi.fetchTable(tableId);
+    await grist.docApi.fetchTable(
+      tableId
+    );
+
 
   const lignes =
-    convertirFetchTableEnLignes(raw);
+    convertirFetchTableEnLignes(
+      raw
+    );
+
 
   const colonnes =
-    obtenirColonnesDisponibles(raw, lignes);
+    obtenirColonnesDisponibles(
+      raw,
+      lignes
+    );
+
 
   const fields = {};
 
+
   for (
-    const [logique, valeur]
-    of Object.entries(champsLogiques)
+    const [
+      logique,
+      valeur
+    ]
+    of Object.entries(
+      champsLogiques
+    )
   ) {
 
     const vraie =
@@ -2575,49 +4283,84 @@ async function ajouterLigneReference(nomTable, champsLogiques) {
         logique
       );
 
-    if (!vraie) {
+
+    if (
+      !vraie
+    ) {
 
       throw new Error(
+
         'Colonne "' +
+
         logique +
+
         '" introuvable dans la table "' +
+
         tableId +
+
         '".'
+
       );
 
     }
 
-    fields[vraie] = valeur;
+
+    fields[vraie] =
+      valeur;
+
   }
+
 
   const avant =
     lignes.map(
-      ligne => Number(ligne.id)
+      ligne =>
+        Number(
+          ligne.id
+        )
     );
+
 
   await grist.docApi.applyUserActions([
 
     [
+
       "AddRecord",
+
       tableId,
+
       null,
+
       fields
+
     ]
 
   ]);
 
+
   const apres =
     convertirFetchTableEnLignes(
-      await grist.docApi.fetchTable(tableId)
+
+      await grist.docApi.fetchTable(
+        tableId
+      )
+
     );
+
 
   const nouvelle =
     apres.find(
       ligne =>
-        !avant.includes(Number(ligne.id))
+        !avant.includes(
+          Number(
+            ligne.id
+          )
+        )
     );
 
-  if (!nouvelle) {
+
+  if (
+    !nouvelle
+  ) {
 
     throw new Error(
       "Impossible de retrouver la nouvelle ligne."
@@ -2625,7 +4368,11 @@ async function ajouterLigneReference(nomTable, champsLogiques) {
 
   }
 
-  return Number(nouvelle.id);
+
+  return Number(
+    nouvelle.id
+  );
+
 }
 
 
@@ -2633,34 +4380,58 @@ async function ajouterLigneReference(nomTable, champsLogiques) {
    CONTEXTE
 ================================================== */
 
-function mettreAJourContexte(siteId, localisationId) {
+function mettreAJourContexte(
+  siteId,
+  localisationId
+) {
 
   const site =
     listeSites.find(
-      item => item.id === siteId
+      item =>
+        item.id ===
+        siteId
     );
+
 
   const localisation =
     listeLocalisations.find(
-      item => item.id === localisationId
+      item =>
+        item.id ===
+        localisationId
     );
+
 
   contexteSession = {
 
-    siteId: siteId || null,
+    siteId:
+      siteId
+      ||
+      null,
 
     siteLabel:
-      site ? site.label : "",
+      site
+        ?
+        site.label
+        :
+        "",
 
     localisationId:
-      localisationId || null,
+      localisationId
+      ||
+      null,
 
     localisationLabel:
-      localisation ? localisation.label : ""
+      localisation
+        ?
+        localisation.label
+        :
+        ""
 
   };
 
+
   afficherContexte();
+
 }
 
 
@@ -2671,25 +4442,48 @@ function afficherContexte() {
     !contexteSession.localisationId
   ) {
 
-    contextPanel.style.display = "none";
+    contextPanel.style.display =
+      "none";
+
     return;
+
   }
+
 
   const valeurs = [];
 
-  if (contexteSession.siteLabel) {
-    valeurs.push(contexteSession.siteLabel);
+
+  if (
+    contexteSession.siteLabel
+  ) {
+
+    valeurs.push(
+      contexteSession.siteLabel
+    );
+
   }
 
-  if (contexteSession.localisationLabel) {
-    valeurs.push(contexteSession.localisationLabel);
+
+  if (
+    contexteSession.localisationLabel
+  ) {
+
+    valeurs.push(
+      contexteSession.localisationLabel
+    );
+
   }
+
 
   contextValue.textContent =
-    valeurs.join(" — ");
+    valeurs.join(
+      " — "
+    );
+
 
   contextPanel.style.display =
     "block";
+
 }
 
 
@@ -2698,11 +4492,17 @@ clearContextButton.addEventListener(
   () => {
 
     contexteSession = {
+
       siteId: null,
+
       siteLabel: "",
+
       localisationId: null,
+
       localisationLabel: ""
+
     };
+
 
     afficherContexte();
 
@@ -2716,7 +4516,8 @@ clearContextButton.addEventListener(
 
 scanButton.addEventListener(
   "click",
-  () => barcodeImage.click()
+  () =>
+    barcodeImage.click()
 );
 
 
@@ -2725,6 +4526,7 @@ nextScanButton.addEventListener(
   () => {
 
     reinitialiserPourScanSuivant();
+
     barcodeImage.click();
 
   }
@@ -2733,24 +4535,60 @@ nextScanButton.addEventListener(
 
 function reinitialiserPourScanSuivant() {
 
-  currentRecordId = null;
-  currentRecord = null;
+  currentRecordId =
+    null;
 
-  serialInput.value = "";
 
-  preview.style.display = "none";
-  preview.removeAttribute("src");
+  currentRecord =
+    null;
 
-  statusBox.style.display = "none";
-  resultBox.style.display = "none";
-  editForm.style.display = "none";
-  newForm.style.display = "none";
-  successPanel.style.display = "none";
 
-  editTechnicien.value = "";
-  editIntervention.value = "";
+  serialInput.value =
+    "";
+
+
+  preview.style.display =
+    "none";
+
+
+  preview.removeAttribute(
+    "src"
+  );
+
+
+  statusBox.style.display =
+    "none";
+
+
+  resultBox.style.display =
+    "none";
+
+
+  editForm.style.display =
+    "none";
+
+
+  newForm.style.display =
+    "none";
+
+
+  successPanel.style.display =
+    "none";
+
+
+  editTechnicien.value =
+    "";
+
+
+  editIntervention.value =
+    "";
+
 }
 
+
+/* ==================================================
+   SCAN IMAGE
+================================================== */
 
 barcodeImage.addEventListener(
   "change",
@@ -2759,65 +4597,119 @@ barcodeImage.addEventListener(
     const file =
       this.files[0];
 
-    if (!file) {
+
+    if (
+      !file
+    ) {
+
       return;
+
     }
+
 
     masquerFormulaires();
 
+
     const url =
-      URL.createObjectURL(file);
+      URL.createObjectURL(
+        file
+      );
 
-    preview.src = url;
-    preview.style.display = "block";
 
-    statusBox.style.display = "block";
+    preview.src =
+      url;
+
+
+    preview.style.display =
+      "block";
+
+
+    statusBox.style.display =
+      "block";
+
+
     statusBox.textContent =
       "🔎 Analyse du code…";
+
 
     preview.onload =
       async function() {
 
+
         try {
 
           const reader =
-            new ZXingBrowser.BrowserMultiFormatReader();
+            new ZXingBrowser
+              .BrowserMultiFormatReader();
+
 
           const result =
-            await reader.decodeFromImageElement(preview);
+            await reader
+              .decodeFromImageElement(
+                preview
+              );
+
 
           const serial =
-            result.getText().trim();
+            result
+              .getText()
+              .trim();
 
-          serialInput.value = serial;
+
+          serialInput.value =
+            serial;
+
 
           statusBox.innerHTML = `
+
             <span class="success">
+
               ✅ Code reconnu :
-              ${echapperHTML(serial)}
+              ${echapperHTML(
+                serial
+              )}
+
             </span>
+
           `;
 
-          rechercherMateriel(serial);
+
+          rechercherMateriel(
+            serial
+          );
 
         }
+
 
         catch(error) {
 
-          console.error(error);
+          console.error(
+            error
+          );
+
 
           statusBox.innerHTML = `
+
             <div class="error">
+
               ❌ Aucun code reconnu
+
             </div>
+
           `;
 
         }
 
+
         finally {
 
-          URL.revokeObjectURL(url);
-          barcodeImage.value = "";
+          URL.revokeObjectURL(
+            url
+          );
+
+
+          barcodeImage.value =
+            "";
 
         }
 
@@ -2831,61 +4723,104 @@ barcodeImage.addEventListener(
    RECHERCHE
 ================================================== */
 
-function rechercherMateriel(serial) {
+function rechercherMateriel(
+  serial
+) {
 
   const cible =
-    String(serial)
+    String(
+      serial
+    )
+
       .trim()
+
       .toUpperCase();
+
 
   const found =
     records.find(
-
       record =>
-
         String(
-          record.NumeroSerie || ""
+          record.NumeroSerie
+          ||
+          ""
         )
+
           .trim()
+
           .toUpperCase()
 
-        === cible
+        ===
 
+        cible
     );
 
-  resultBox.style.display = "block";
 
-  if (found) {
+  resultBox.style.display =
+    "block";
 
-    currentRecordId = found.id;
-    currentRecord = found;
+
+  if (
+    found
+  ) {
+
+    currentRecordId =
+      found.id;
+
+
+    currentRecord =
+      found;
+
 
     resultBox.innerHTML = `
+
       <div class="success">
+
         ✅ Matériel trouvé
+
       </div>
 
       <div class="serial">
-        ${echapperHTML(found.NumeroSerie)}
+
+        ${echapperHTML(
+          found.NumeroSerie
+        )}
+
       </div>
+
     `;
 
-    remplirFormulaireEdition(found);
+
+    remplirFormulaireEdition(
+      found
+    );
 
   }
 
   else {
 
-    currentRecordId = null;
-    currentRecord = null;
+    currentRecordId =
+      null;
+
+
+    currentRecord =
+      null;
+
 
     resultBox.innerHTML = `
+
       <div class="warning">
+
         🆕 Nouveau matériel
+
       </div>
+
     `;
 
-    remplirFormulaireCreation(serial);
+
+    remplirFormulaireCreation(
+      serial
+    );
 
   }
 
@@ -2896,27 +4831,34 @@ function rechercherMateriel(serial) {
    AFFICHAGE SUIVI
 ================================================== */
 
-function afficherHistoriqueSuivi(suivi) {
+function afficherHistoriqueSuivi(
+  suivi
+) {
 
   const texte =
-    String(suivi || "").trim();
+    String(
+      suivi
+      ||
+      ""
+    ).trim();
 
-  if (!texte) {
+
+  if (
+    !texte
+  ) {
 
     editSuiviHistorique.innerHTML =
       '<span class="historiqueVide">Aucun suivi enregistré.</span>';
 
+
     return;
+
   }
 
-  /*
-    textContent est volontairement utilisé ici :
-    le contenu venant de Grist n'est jamais interprété
-    comme du HTML.
-  */
 
   editSuiviHistorique.textContent =
     texte;
+
 }
 
 
@@ -2924,12 +4866,23 @@ function afficherHistoriqueSuivi(suivi) {
    EDITION
 ================================================== */
 
-function remplirFormulaireEdition(record) {
+function remplirFormulaireEdition(
+  record
+) {
 
-  newForm.style.display = "none";
+  newForm.style.display =
+    "none";
 
-  document.getElementById("editNumeroSerie").value =
-    record.NumeroSerie || "";
+
+  document.getElementById(
+    "editNumeroSerie"
+  ).value =
+    record.NumeroSerie
+    ||
+    "";
+
+
+  /* TYPE */
 
   const typeId =
     resoudreReferenceId(
@@ -2937,10 +4890,20 @@ function remplirFormulaireEdition(record) {
       listeTypes
     );
 
-  document.getElementById("editType").value =
+
+  document.getElementById(
+    "editType"
+  ).value =
     typeId !== null
-      ? String(typeId)
-      : "";
+      ?
+      String(
+        typeId
+      )
+      :
+      "";
+
+
+  /* MARQUE */
 
   const marqueId =
     resoudreReferenceId(
@@ -2948,10 +4911,14 @@ function remplirFormulaireEdition(record) {
       listeMarques
     );
 
+
   mettreAJourMarques(
     "edit",
     marqueId
   );
+
+
+  /* MODELE */
 
   const modeleId =
     resoudreReferenceId(
@@ -2959,13 +4926,24 @@ function remplirFormulaireEdition(record) {
       listeModeles
     );
 
+
   mettreAJourModeles(
     "edit",
     modeleId
   );
 
-  document.getElementById("editUtilisateur").value =
-    record.Utilisateur || "";
+
+  /* UTILISATEUR */
+
+  document.getElementById(
+    "editUtilisateur"
+  ).value =
+    record.Utilisateur
+    ||
+    "";
+
+
+  /* SITE */
 
   const siteId =
     resoudreReferenceId(
@@ -2973,10 +4951,20 @@ function remplirFormulaireEdition(record) {
       listeSites
     );
 
-  document.getElementById("editSite").value =
+
+  document.getElementById(
+    "editSite"
+  ).value =
     siteId !== null
-      ? String(siteId)
-      : "";
+      ?
+      String(
+        siteId
+      )
+      :
+      "";
+
+
+  /* LOCALISATION */
 
   const localisationId =
     resoudreReferenceId(
@@ -2984,32 +4972,51 @@ function remplirFormulaireEdition(record) {
       listeLocalisations
     );
 
+
   mettreAJourLocalisations(
     "edit",
     localisationId
   );
 
-  document.getElementById("editEtat").value =
-    record.Etat || "";
 
-  document.getElementById("editCommentaire").value =
-    record.Commentaire || "";
+  /* ETAT */
 
-  /* ===== SUIVI ===== */
+  document.getElementById(
+    "editEtat"
+  ).value =
+    record.Etat
+    ||
+    "";
+
+
+  /* COMMENTAIRE */
+
+  document.getElementById(
+    "editCommentaire"
+  ).value =
+    record.Commentaire
+    ||
+    "";
+
+
+  /* SUIVI */
 
   afficherHistoriqueSuivi(
     record.Suivi
   );
 
-  /*
-    Les champs de nouvelle intervention sont
-    toujours remis à zéro lors d'un nouveau scan.
-  */
 
-  editTechnicien.value = "";
-  editIntervention.value = "";
+  editTechnicien.value =
+    "";
 
-  editForm.style.display = "block";
+
+  editIntervention.value =
+    "";
+
+
+  editForm.style.display =
+    "block";
+
 }
 
 
@@ -3017,33 +5024,73 @@ function remplirFormulaireEdition(record) {
    CREATION
 ================================================== */
 
-function remplirFormulaireCreation(serial) {
+function remplirFormulaireCreation(
+  serial
+) {
 
-  editForm.style.display = "none";
+  editForm.style.display =
+    "none";
 
-  document.getElementById("newNumeroSerie").value =
+
+  document.getElementById(
+    "newNumeroSerie"
+  ).value =
     serial;
 
-  document.getElementById("newType").value = "";
 
-  mettreAJourMarques("new");
+  document.getElementById(
+    "newType"
+  ).value =
+    "";
 
-  document.getElementById("newUtilisateur").value = "";
 
-  document.getElementById("newSite").value =
-    contexteSession.siteId
-      ? String(contexteSession.siteId)
-      : "";
-
-  mettreAJourLocalisations(
-    "new",
-    contexteSession.localisationId
+  mettreAJourMarques(
+    "new"
   );
 
-  document.getElementById("newEtat").value = "";
-  document.getElementById("newCommentaire").value = "";
 
-  newForm.style.display = "block";
+  document.getElementById(
+    "newUtilisateur"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "newSite"
+  ).value =
+    contexteSession.siteId
+      ?
+      String(
+        contexteSession.siteId
+      )
+      :
+      "";
+
+
+  mettreAJourLocalisations(
+
+    "new",
+
+    contexteSession.localisationId
+
+  );
+
+
+  document.getElementById(
+    "newEtat"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "newCommentaire"
+  ).value =
+    "";
+
+
+  newForm.style.display =
+    "block";
+
 }
 
 
@@ -3053,31 +5100,60 @@ function remplirFormulaireCreation(serial) {
 
 function masquerFormulaires() {
 
-  resultBox.style.display = "none";
-  editForm.style.display = "none";
-  newForm.style.display = "none";
-  successPanel.style.display = "none";
+  resultBox.style.display =
+    "none";
+
+
+  editForm.style.display =
+    "none";
+
+
+  newForm.style.display =
+    "none";
+
+
+  successPanel.style.display =
+    "none";
+
 }
 
 
 /* ==================================================
-   SUCCÈS
+   SUCCES
 ================================================== */
 
-function afficherSucces(message) {
+function afficherSucces(
+  message
+) {
 
-  resultBox.style.display = "none";
-  editForm.style.display = "none";
-  newForm.style.display = "none";
+  resultBox.style.display =
+    "none";
 
-  successMessage.innerHTML = message;
 
-  successPanel.style.display = "block";
+  editForm.style.display =
+    "none";
+
+
+  newForm.style.display =
+    "none";
+
+
+  successMessage.innerHTML =
+    message;
+
+
+  successPanel.style.display =
+    "block";
+
 }
 
 
 /* ==================================================
    CONSTRUCTION DU SUIVI
+
+   IMPORTANT :
+   LA NOUVELLE INTERVENTION EST AJOUTÉE
+   EN PREMIÈRE LIGNE.
 ================================================== */
 
 function construireNouveauSuivi(
@@ -3087,29 +5163,51 @@ function construireNouveauSuivi(
 ) {
 
   const historique =
-    String(historiqueExistant || "").trim();
+    String(
+      historiqueExistant
+      ||
+      ""
+    ).trim();
+
 
   const tech =
-    String(technicien || "").trim();
+    String(
+      technicien
+      ||
+      ""
+    ).trim();
+
 
   const texteIntervention =
-    String(intervention || "").trim();
+    String(
+      intervention
+      ||
+      ""
+    ).trim();
+
 
   /*
-    Pas d'intervention :
-    on retourne exactement l'historique existant.
+    Pas de nouvelle intervention :
+    on ne modifie pas le suivi.
   */
 
-  if (!texteIntervention) {
+  if (
+    !texteIntervention
+  ) {
+
     return historique;
+
   }
 
+
   /*
-    Si une intervention est saisie,
-    le technicien devient obligatoire.
+    Si une intervention est renseignée,
+    le technicien est obligatoire.
   */
 
-  if (!tech) {
+  if (
+    !tech
+  ) {
 
     throw new Error(
       "Indique le nom du technicien pour enregistrer l'intervention."
@@ -3117,14 +5215,57 @@ function construireNouveauSuivi(
 
   }
 
-  const nouvelleLigne =
-    `${obtenirDateDuJourFR()} - ${tech} : ${texteIntervention}`;
 
-  if (!historique) {
+  /*
+    Création de la nouvelle ligne.
+  */
+
+  const nouvelleLigne =
+    obtenirDateDuJourFR()
+    +
+    " - "
+    +
+    tech
+    +
+    " : "
+    +
+    texteIntervention;
+
+
+  /*
+    S'il n'existe aucun historique,
+    cette nouvelle ligne devient le suivi.
+  */
+
+  if (
+    !historique
+  ) {
+
     return nouvelleLigne;
+
   }
 
-  return historique + "\n" + nouvelleLigne;
+
+  /*
+    NOUVEAU COMPORTEMENT :
+
+    La nouvelle intervention est placée
+    AVANT les anciennes.
+
+    Exemple :
+
+    05/09/2026 - Philippe : Firmware mis à jour
+    05/09/2026 - Morgan : Alimentation remplacée
+  */
+
+  return (
+    nouvelleLigne
+    +
+    "\n"
+    +
+    historique
+  );
+
 }
 
 
@@ -3136,122 +5277,208 @@ addButton.addEventListener(
   "click",
   async function() {
 
+
     const serial =
       document
-        .getElementById("newNumeroSerie")
+        .getElementById(
+          "newNumeroSerie"
+        )
         .value
         .trim();
 
-    if (!serial) {
+
+    if (
+      !serial
+    ) {
 
       alert(
         "Le numéro de série est obligatoire."
       );
 
       return;
+
     }
 
+
     const typeId =
-      valeurReference("newType");
+      valeurReference(
+        "newType"
+      );
+
 
     const marqueId =
-      valeurReference("newMarque");
+      valeurReference(
+        "newMarque"
+      );
+
 
     const modeleId =
-      valeurReference("newModele");
+      valeurReference(
+        "newModele"
+      );
+
 
     const siteId =
-      valeurReference("newSite");
+      valeurReference(
+        "newSite"
+      );
+
 
     const localisationId =
-      valeurReference("newLocalisation");
+      valeurReference(
+        "newLocalisation"
+      );
 
-    addButton.disabled = true;
-    addButton.textContent = "⏳ Enregistrement…";
+
+    addButton.disabled =
+      true;
+
+
+    addButton.textContent =
+      "⏳ Enregistrement…";
+
 
     try {
 
       const table =
         grist.getTable();
 
+
       const fields =
         construireChampsGrist({
+
 
           NumeroSerie:
             serial,
 
+
           TypeMateriel:
             typeId,
+
 
           Marque:
             marqueId,
 
+
           Modele:
             modeleId,
 
+
           Utilisateur:
             document
-              .getElementById("newUtilisateur")
+              .getElementById(
+                "newUtilisateur"
+              )
               .value
               .trim(),
+
 
           Site:
             siteId,
 
+
           Localisation:
             localisationId,
 
+
           Etat:
             document
-              .getElementById("newEtat")
+              .getElementById(
+                "newEtat"
+              )
               .value,
 
+
           DernierInventaire:
-            Math.floor(Date.now() / 1000),
+            Math.floor(
+              Date.now()
+              /
+              1000
+            ),
+
 
           Commentaire:
             document
-              .getElementById("newCommentaire")
+              .getElementById(
+                "newCommentaire"
+              )
               .value
               .trim()
 
+
         });
 
+
       await table.create({
-        fields: fields
+
+        fields:
+          fields
+
       });
 
+
       mettreAJourContexte(
+
         siteId,
+
         localisationId
+
       );
 
+
       afficherSucces(`
+
         <div class="serial">
-          ${echapperHTML(serial)}
+
+          ${echapperHTML(
+            serial
+          )}
+
         </div>
 
         <p>
+
           Nouveau matériel ajouté et inventorié.
+
         </p>
+
       `);
 
     }
 
+
     catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       alert(
-        "Erreur lors de l'ajout : " +
-        (error.message || String(error))
+
+        "Erreur lors de l'ajout : "
+
+        +
+
+        (
+          error.message
+          ||
+          String(
+            error
+          )
+        )
+
       );
 
     }
 
+
     finally {
 
-      addButton.disabled = false;
+      addButton.disabled =
+        false;
+
+
       addButton.textContent =
         "💾 Ajouter à l'inventaire";
 
@@ -3269,185 +5496,298 @@ confirmButton.addEventListener(
   "click",
   async function() {
 
-    if (!currentRecordId || !currentRecord) {
+
+    if (
+      !currentRecordId ||
+      !currentRecord
+    ) {
+
       return;
+
     }
 
+
     const typeId =
-      valeurReference("editType");
+      valeurReference(
+        "editType"
+      );
+
 
     const marqueId =
-      valeurReference("editMarque");
+      valeurReference(
+        "editMarque"
+      );
+
 
     const modeleId =
-      valeurReference("editModele");
+      valeurReference(
+        "editModele"
+      );
+
 
     const siteId =
-      valeurReference("editSite");
+      valeurReference(
+        "editSite"
+      );
+
 
     const localisationId =
-      valeurReference("editLocalisation");
+      valeurReference(
+        "editLocalisation"
+      );
+
 
     const technicien =
-      editTechnicien.value.trim();
+      editTechnicien
+        .value
+        .trim();
+
 
     const intervention =
-      editIntervention.value.trim();
+      editIntervention
+        .value
+        .trim();
+
 
     let nouveauSuivi;
+
 
     try {
 
       nouveauSuivi =
         construireNouveauSuivi(
+
           currentRecord.Suivi,
+
           technicien,
+
           intervention
+
         );
 
     }
 
+
     catch(error) {
 
-      alert(error.message);
+      alert(
+        error.message
+      );
+
       return;
 
     }
 
-    confirmButton.disabled = true;
+
+    confirmButton.disabled =
+      true;
+
+
     confirmButton.textContent =
       "⏳ Enregistrement…";
+
 
     try {
 
       const table =
         grist.getTable();
 
-      /*
-        On construit d'abord les champs habituels.
-
-        IMPORTANT :
-        Suivi n'est ajouté aux champs à mettre à jour
-        QUE si une intervention a réellement été saisie.
-
-        Ainsi, une simple confirmation d'inventaire
-        ne risque pas d'écraser accidentellement Suivi.
-      */
 
       const valeurs = {
+
 
         TypeMateriel:
           typeId,
 
+
         Marque:
           marqueId,
+
 
         Modele:
           modeleId,
 
+
         Utilisateur:
           document
-            .getElementById("editUtilisateur")
+            .getElementById(
+              "editUtilisateur"
+            )
             .value
             .trim(),
+
 
         Site:
           siteId,
 
+
         Localisation:
           localisationId,
 
+
         Etat:
           document
-            .getElementById("editEtat")
+            .getElementById(
+              "editEtat"
+            )
             .value,
+
 
         Commentaire:
           document
-            .getElementById("editCommentaire")
+            .getElementById(
+              "editCommentaire"
+            )
             .value
             .trim(),
 
+
         DernierInventaire:
-          Math.floor(Date.now() / 1000)
+          Math.floor(
+            Date.now()
+            /
+            1000
+          )
 
       };
 
+
       /*
-        Seulement si intervention saisie.
+        Suivi n'est mis à jour
+        que si une intervention a été saisie.
       */
 
-      if (intervention) {
-        valeurs.Suivi = nouveauSuivi;
+      if (
+        intervention
+      ) {
+
+        valeurs.Suivi =
+          nouveauSuivi;
+
       }
 
+
       const fields =
-        construireChampsGrist(valeurs);
+        construireChampsGrist(
+          valeurs
+        );
+
 
       await table.update({
 
-        id: currentRecordId,
+        id:
+          currentRecordId,
 
-        fields: fields
+        fields:
+          fields
 
       });
 
+
       /*
-        Mise à jour de notre copie locale afin que
-        le suivi reste cohérent jusqu'au prochain
-        rafraîchissement envoyé par Grist.
+        Mise à jour de la copie locale.
       */
 
-      if (intervention) {
-        currentRecord.Suivi = nouveauSuivi;
+      if (
+        intervention
+      ) {
+
+        currentRecord.Suivi =
+          nouveauSuivi;
+
       }
 
+
       mettreAJourContexte(
+
         siteId,
+
         localisationId
+
       );
+
 
       const messageIntervention =
         intervention
-          ? `
-            <p class="success">
-              🔧 Intervention ajoutée au suivi.
-            </p>
+
+          ?
+
           `
-          : "";
+
+            <p class="success">
+
+              🔧 Intervention ajoutée au suivi.
+
+            </p>
+
+          `
+
+          :
+
+          "";
+
 
       afficherSucces(`
+
         <div class="serial">
+
           ${echapperHTML(
+
             document
-              .getElementById("editNumeroSerie")
+              .getElementById(
+                "editNumeroSerie"
+              )
               .value
+
           )}
+
         </div>
 
         <p>
+
           Inventaire confirmé.
+
         </p>
 
         ${messageIntervention}
+
       `);
 
     }
 
+
     catch(error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       alert(
-        "Erreur lors de la confirmation : " +
-        (error.message || String(error))
+
+        "Erreur lors de la confirmation : "
+
+        +
+
+        (
+          error.message
+          ||
+          String(
+            error
+          )
+        )
+
       );
 
     }
 
+
     finally {
 
-      confirmButton.disabled = false;
+      confirmButton.disabled =
+        false;
+
+
       confirmButton.textContent =
         "✅ Confirmer l'inventaire";
 
@@ -3466,10 +5806,19 @@ serialInput.addEventListener(
   () => {
 
     const serial =
-      serialInput.value.trim();
+      serialInput
+        .value
+        .trim();
 
-    if (serial) {
-      rechercherMateriel(serial);
+
+    if (
+      serial
+    ) {
+
+      rechercherMateriel(
+        serial
+      );
+
     }
 
   }
@@ -3480,19 +5829,43 @@ serialInput.addEventListener(
    HTML SAFE
 ================================================== */
 
-function echapperHTML(value) {
+function echapperHTML(
+  value
+) {
 
-  return String(value)
+  return String(
+    value
+  )
 
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
 </script>
 
 </body>
+
 </html>
